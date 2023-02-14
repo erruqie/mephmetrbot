@@ -32,7 +32,7 @@ async def start_command(message: types.Message):
     donate_button = InlineKeyboardButton('💰 Донат', url='https://t.me/mefmetrch')
     chat_button = InlineKeyboardButton('💬 Чат', url='https://t.me/mefmetrchat')
     keyboard.row(channel_button, donate_button, chat_button)
-    await message.reply("👋 *Здарова шныр*, этот бот сделан для того, чтобы *считать* сколько *грамм мефедрончика* ты снюхал\n🧑‍💻 Бот разработан *t.me/xanaxnotforfree* и *t.me/cl0wnl3ss*", reply_markup=keyboard, parse_mode='markdown')
+    await message.reply("👋 *Здарова шныр*, этот бот сделан для того, чтобы *считать* сколько *грамм мефедрончика* ты снюхал\n🧑‍💻 Бот разработан *xanaxnotforfree.t.me* и *cl0wnl3ss.t.me*", reply_markup=keyboard, parse_mode='markdown')
 
 @dp.message_handler(commands=['help'])
 async def help_command(message: types.Message):
@@ -324,7 +324,7 @@ async def about_command(message: types.Message):
     donate_button = InlineKeyboardButton('💰 Донат', url='https://t.me/mefmetrch')
     chat_button = InlineKeyboardButton('💬 Чат', url='https://t.me/mefmetrchat')
     keyboard.row(channel_button, donate_button, chat_button)
-    await message.reply("🧑‍💻 Бот разработан t.me/xanaxnotforfree и t.me/cl0wnl3ss.", reply_markup=keyboard)
+    await message.reply("🧑‍💻 Бот разработан xanaxnotforfree.t.me и cl0wnl3ss.t.me.", reply_markup=keyboard)
 
 @dp.message_handler(commands=['setdrugs'])
 async def setdrugs_command(message: types.Message):
