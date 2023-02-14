@@ -186,13 +186,11 @@ async def casino(message: types.Message):
             await bot.send_message(-1001659076963, f"#CASINO\n\nfirst\_name: `{message.from_user.first_name}`\nuserid: `{user_id}`\nmultiplier: `{multiplier}`\ndrug\_count: `{drug_count}`\n\n[mention](tg://user?id={user_id})", parse_mode='markdown')
             await message.reply(f'🤑 *Ебать тебе повезло!* Твое кол-во снюханных грамм *умножилось* на `{multiplier}` и теперь равно `{drug_count}`.', parse_mode='markdown')
             cursor.execute('UPDATE users SET drug_count = ? WHERE id = ?', (drug_count, user_id,))
-            conn.commit()
         elif multiplier == 0:
             drug_count = 0
             await bot.send_message(-1001659076963, f"#CASINO\n\nfirst\_name: `{message.from_user.first_name}`\nuserid: `{user_id}`\nmultiplier: `{multiplier}`\ndrug\_count: `{drug_count}`\n\n[mention](tg://user?id={user_id})", parse_mode='markdown')
             cursor.execute('UPDATE users SET drug_count = ? WHERE id = ?', (drug_count, user_id,))
             await message.reply('😔 *Ты проебал* весь свой мефчик, *нехуй было* крутить казик.', parse_mode='markdown')
-            conn.commit()
         cursor.execute('UPDATE users SET last_casino = ? WHERE id = ?', (datetime.now().isoformat(), user_id,))
         conn.commit()
 
@@ -227,7 +225,6 @@ async def give_command(message: types.Message, state: FSMContext):
                     else:
                         if drug_count >= value:
                             cursor.execute('UPDATE users SET drug_count = drug_count + ? WHERE id = ?', (value,user_id))
-                            conn.commit()
                             cursor.execute('UPDATE users SET drug_count = drug_count - ? WHERE id = ?', (value,your_user_id))
                             conn.commit()
                             await bot.send_message(-1001659076963, f"#GIVE\n\nfirst\_name: `{message.from_user.first_name}`\nuserid: `{user_id}`\nto: `{reply_msg.from_user.first_name}`\nvalue: `{value}`\nmention: @{reply_msg.from_user.username}", parse_mode='markdown')
@@ -262,7 +259,6 @@ async def drug_command(message: types.Message, state: FSMContext):
                 cursor.execute('UPDATE users SET drug_count = ? WHERE id = ?', (drug_count + count, user_id))
             else:
                 cursor.execute('INSERT INTO users (id, drug_count) VALUES (?, ?)', (user_id, count))
-            conn.commit()
             cursor.execute('UPDATE users SET last_use_time = ? WHERE id = ?', ('2006-02-20 12:45:37.666666', user_id,))
             cursor.execute('UPDATE users SET last_find = ? WHERE id = ?', (datetime.now().isoformat(), user_id,))
             conn.commit()
