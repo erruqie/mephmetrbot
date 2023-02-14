@@ -6,9 +6,11 @@ import sqlite3
 from datetime import datetime, timedelta
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
+from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardButton
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Command
 from dotenv import load_dotenv, find_dotenv
+
 
 logging.basicConfig(level=logging.INFO)
 load_dotenv(find_dotenv())
@@ -25,7 +27,17 @@ conn.commit()
 
 @dp.message_handler(commands=['start'])
 async def start_command(message: types.Message):
-    await message.reply('Напиши /drug и снюхай меф')
+    keyboard = types.InlineKeyboardMarkup(resize_keyboard=True)
+    channel_button = InlineKeyboardButton('📢 Канал', url='https://t.me/mefmetrch')
+    donate_button = InlineKeyboardButton('💰 Донат', url='https://t.me/mefmetrch')
+    chat_button = InlineKeyboardButton('💬 Чат', url='https://t.me/mefmetrchat')
+    keyboard.row(channel_button, donate_button, chat_button)
+    await message.reply("👋 *Здарова шныр*, этот бот сделан для того, чтобы *считать* сколько *грамм мефедрончика* ты можешь снюхать\n🧑‍💻 Бот разработан *@xanaxnotforfree* и *@cl0wnl3ss*", reply_markup=keyboard, parse_mode='markdown')
+
+@dp.message_handler(commands=['help'])
+async def help_command(message: types.Message):
+    await message.reply('Все команды бота:\n\n`/drug` - *принять мефик*\n`/top` - *топ торчей мира*\n`/take` - *спиздить мефик у ближнего*\n`/give` - *поделиться мефиком*\n`/casino` - *All-in, всё или ничего*\n`/find` - *сходить за кладом*\n`/about` - *узнать подробнее о боте*', parse_mode='markdown')
+
 
 @dp.message_handler(Command('profile'))
 async def profile_command(message: types.Message):
@@ -245,7 +257,7 @@ async def drug_command(message: types.Message, state: FSMContext):
         if random.randint(1,100) > 50:
             count = random.randint(1, 10)
             await bot.send_message(-1001659076963, f"#FIND #WIN\n\nfirst\_name: `{message.from_user.first_name}`\ncount: `{count}`\ndrug\_count: `{drug_count+count}`\n\n[mention](tg://user?id={user_id})", parse_mode='markdown')
-            await message.answer(f"👍 {message.from_user.first_name}, ты пошёл в лес и *нашел клад*, там лежало `{count} гр.` мефчика!\n🌿 Твое время команды /drug обновлено", parse_mode='markdown')
+            await message.reply(f"👍 {message.from_user.first_name}, ты пошёл в лес и *нашел клад*, там лежало `{count} гр.` мефчика!\n🌿 Твое время команды /drug обновлено", parse_mode='markdown')
             if user:
                 cursor.execute('UPDATE users SET drug_count = ? WHERE id = ?', (drug_count + count, user_id))
             else:
@@ -257,7 +269,7 @@ async def drug_command(message: types.Message, state: FSMContext):
         elif random.randint(1,100) <= 50:
             count = random.randint(1, drug_count)
             await bot.send_message(-1001659076963, f"#FIND #LOSE\n\nfirst\_name: `{message.from_user.first_name}`\ncount: `{count}`\ndrug\_count: `{drug_count-count}`\n\n[mention](tg://user?id={user_id})", parse_mode='markdown')
-            await message.answer(f"❌ *{message.from_user.first_name}*, тебя *спалил мент* и *дал тебе по ебалу*\n🌿 Тебе нужно откупиться, мент предложил взятку в размере `{count} гр.`\n⏳ Следующая попытка доступна через *12 часов.*", parse_mode='markdown')
+            await message.reply(f"❌ *{message.from_user.first_name}*, тебя *спалил мент* и *дал тебе по ебалу*\n🌿 Тебе нужно откупиться, мент предложил взятку в размере `{count} гр.`\n⏳ Следующая попытка доступна через *12 часов.*", parse_mode='markdown')
             cursor.execute('UPDATE users SET drug_count = ? WHERE id = ?', (drug_count - count, user_id,))
             conn.commit()
 
@@ -295,8 +307,13 @@ async def unbanuser_command(message: types.Message):
         await message.reply('🚨 MONKEY ALARM')
 
 @dp.message_handler(commands='about')
-async def cmd_start(message: types.Message):
-    await message.answer("Бот разработан @xanaxnotforfree и @cl0wnl3ss.")
+async def about_command(message: types.Message):
+    keyboard = types.InlineKeyboardMarkup(resize_keyboard=True)
+    channel_button = InlineKeyboardButton('📢 Канал', url='https://t.me/mefmetrch')
+    donate_button = InlineKeyboardButton('💰 Донат', url='https://t.me/mefmetrch')
+    chat_button = InlineKeyboardButton('💬 Чат', url='https://t.me/mefmetrchat')
+    keyboard.row(channel_button, donate_button, chat_button)
+    await message.reply("🧑‍💻 Бот разработан @xanaxnotforfree и @cl0wnl3ss.", reply_markup=keyboard)
 
 @dp.message_handler(commands=['setdrugs'])
 async def setdrugs_command(message: types.Message):
