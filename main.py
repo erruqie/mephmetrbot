@@ -171,6 +171,7 @@ async def casino(message: types.Message):
     user = cursor.fetchone()
     drug_count = user[1] if user else 0
     last_used = user[5] if user else 0
+    is_banned = user[4] if user else 0
     if is_banned == 1:
         await message.reply('🛑 Вы заблокированы в боте!')
     elif is_banned == 0:
@@ -253,7 +254,8 @@ async def drug_command(message: types.Message, state: FSMContext):
     user = cursor.fetchone()
     drug_count = user[1] if user else 0
     last_time = await state.get_data()
-    last_used = user[6]
+    last_used = user[6] if user else 0
+    is_banned = user[4] if user else 0
     if is_banned == 1:
         await message.reply('🛑 Вы заблокированы в боте!')
     elif is_banned == 0:
