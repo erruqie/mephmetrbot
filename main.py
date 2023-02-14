@@ -168,8 +168,8 @@ async def casino(message: types.Message):
     user_id = message.from_user.id
     cursor.execute('SELECT * FROM users WHERE id = ?', (user_id,))
     user = cursor.fetchone()
-    drug_count = user[1]
-    last_used = user[5]
+    drug_count = user[1] if user else 0
+    last_used = user[5] if user else 0
     if drug_count < 20:
         await message.reply(f"🛑 Для игры в казино необходимо имееть больше *20-ти снюханных грамм*", parse_mode='markdown')
     else:
