@@ -38,7 +38,7 @@ async def profile_command(message: types.Message):
         drug_count = user[1]
         is_admin = user[3]
         if is_admin == 1:
-            await message.reply(f"👑 *Администратор*\n👤 *Имя:* _{message.from_user.first_name}_\n👥 *Ваш username:* _@{message.from_user.username}_\n🌿 *Снюхано* _{drug_count}_ грамм.", parse_mode='markdown')
+            await message.reply(f"👑 *Создатель бота*\n👤 *Имя:* _{message.from_user.first_name}_\n👥 *Ваш username:* _@{message.from_user.username}_\n🌿 *Снюхано* _{drug_count}_ грамм.", parse_mode='markdown')
         else:
             await message.reply(f"👤 *Имя:* _{message.from_user.first_name}_\n👥 *Ваш username:* _@{message.from_user.username}_\n🌿 *Снюхано* _{drug_count}_ грамм.", parse_mode='markdown')
     else:
