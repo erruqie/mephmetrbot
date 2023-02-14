@@ -105,7 +105,7 @@ async def top_command(message: types.Message):
                 user_id = user[0]
                 drug_count = user[1]
                 user_info = await bot.get_chat(user_id)
-                response += f"{counter}) *{user_info.full_name}*: `{drug_count} грамм мефедрона`\n"
+                response += f"{counter}) *{user_info.full_name}*: `{drug_count} гр. мефа`\n"
                 counter += 1
             await message.reply(response, parse_mode='markdown')
         else:
