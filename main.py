@@ -32,9 +32,15 @@ async def profile_command(message: types.Message):
     user_id = message.from_user.id
     cursor.execute('SELECT * FROM users WHERE id = ?', (user_id,))
     user = cursor.fetchone()
+    is_admin = user[3]
+
     if user:
         drug_count = user[1]
-        await message.reply(f"👤 *Имя:* _{message.from_user.first_name}_\n👥 *Ваш username:* _@{message.from_user.username}_\n🌿 *Снюхано* _{drug_count}_ грамм.", parse_mode='markdown')
+        is_admin = user[3]
+        if is_admin == 1:
+            await message.reply(f"👑 *Администратор*\n👤 *Имя:* _{message.from_user.first_name}_\n👥 *Ваш username:* _@{message.from_user.username}_\n🌿 *Снюхано* _{drug_count}_ грамм.", parse_mode='markdown')
+        else:
+            await message.reply(f"👤 *Имя:* _{message.from_user.first_name}_\n👥 *Ваш username:* _@{message.from_user.username}_\n🌿 *Снюхано* _{drug_count}_ грамм.", parse_mode='markdown')
     else:
         await message.reply('❌ Вы еще не нюхали мефчик')
 
