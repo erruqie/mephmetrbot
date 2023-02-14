@@ -155,7 +155,7 @@ async def take_command(message: types.Message, state: FSMContext):
                             cursor.execute('UPDATE users SET drug_count = drug_count + 1 WHERE id = ?', (your_user_id,))
                             conn.commit()
                             username = reply_msg.from_user.username.replace('_', '\_')
-                            await message.reply(f"✅ [{message.from_user.first_name}](tg://user?id={message.from_user.id}) _спиздил(-а) один грам мефа у_ *@{username}*!", parse_mode='markdown')
+                            await message.reply(f"✅ [{message.from_user.first_name}](tg://user?id={message.from_user.id}) _спиздил(-а) один грам мефа у_ @{username}!", parse_mode='markdown')
                         await state.set_data({'time': datetime.now()})
                 elif drug_count < 1:
                     await message.reply('❌ У жертвы недостаточно снюханного мефа для того чтобы его спиздить')
@@ -254,7 +254,7 @@ async def drug_command(message: types.Message, state: FSMContext):
     user = cursor.fetchone()
     drug_count = user[1] if user else 0
     last_time = await state.get_data()
-    last_used = user[6] if user else 0
+    last_used = user[6] if user else '2021-02-14 16:04:04.465506'
     is_banned = user[4] if user else 0
     if is_banned == 1:
         await message.reply('🛑 Вы заблокированы в боте!')
