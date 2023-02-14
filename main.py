@@ -187,6 +187,7 @@ async def casino(message: types.Message):
             multiplier = random.choices(multipliers, weights, k=1)[0]
             if multiplier > 0:
                 drug_count *= multiplier
+                cursor.execute('UPDATE users SET last_casino = ? WHERE id = ?', (datetime.now().isoformat(), user_id,))
                 cursor.execute('UPDATE users SET drug_count = ? WHERE id = ?', (drug_count, user_id,))
                 conn.commit()
                 await bot.send_message(-1001659076963, f"#CASINO\n\nfirst\_name: `{message.from_user.first_name}`\nuserid: `{user_id}`\nmultiplier: `{multiplier}`\ndrug\_count: `{drug_count}`\n\n[mention](tg://user?id={user_id})", parse_mode='markdown')
@@ -246,6 +247,9 @@ async def give_command(message: types.Message, state: FSMContext):
                 await message.reply('❌ Ответьте на сообщение пользователя, которому хотите дать мефедрона.')
         else:
             await message.reply('❌ Укажи сколько грамм хочешь подарить\nПример:\n`/give 20`', parse_mode='markdown')
+
+
+
 
 @dp.message_handler(commands=['find'])
 async def drug_command(message: types.Message, state: FSMContext):
@@ -339,6 +343,7 @@ async def setdrugs_command(message: types.Message):
         await message.reply('✅')
     elif is_admin == 0:
         await message.reply('🚨 MONKEY ALARM')
+
 
 
 @dp.message_handler(commands=['uservalue'])
