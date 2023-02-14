@@ -234,7 +234,7 @@ async def give_command(message: types.Message, state: FSMContext):
                             await message.reply(f"✅ [{message.from_user.first_name}](tg://user?id={message.from_user.id}) _подарил(-а) {value} гр. мефа _ *@{reply_msg.from_user.username}*!", parse_mode='markdown')
                             await state.set_data({'time': datetime.now()})
                         elif drug_count < value:
-                            await message.reply(f'❌ Недостаточно граммов мефа для того чтобы их передать\ndrugcount {drug_count}\nvalue {value}')
+                            await message.reply(f'❌ Недостаточно граммов мефа для того чтобы их передать')
                 else:
                     await message.reply('❌ Этот пользователь еще не нюхал меф')
             else:
