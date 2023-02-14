@@ -34,7 +34,7 @@ async def profile_command(message: types.Message):
     user = cursor.fetchone()
     if user:
         drug_count = user[1]
-        await message.reply(f"👤 *Имя:* _{message.from_user.first_name}_\n👥 *Ваш username:* _@{message.from_user.username}_\n🎖 *Вы приняли мефчик* _{drug_count}_ раз(а).", parse_mode='markdown')
+        await message.reply(f"👤 *Имя:* _{message.from_user.first_name}_\n👥 *Ваш username:* _@{message.from_user.username}_\n🌿 *Снюхано* _{drug_count}_ грамм.", parse_mode='markdown')
     else:
         await message.reply('❌ Вы еще не нюхали мефчик')
 
@@ -56,15 +56,15 @@ async def drug_command(message: types.Message, state: FSMContext):
             remaining_time = timedelta(hours=1) - (datetime.now() - use_time)
             #debug
             #await message.answer(f"remaining_time: {remaining_time}\nlast_use_time: {use_time}")
-            await message.reply(f"❌ *{message.from_user.first_name}*, _ты уже нюхал(-а)!_\n\n🌿 Всего занюхано `{drug_count} грамм` мефедрона\n\n⏳ Следующий занюх доступен через `1 час.`", parse_mode='markdown')
+            await message.reply(f"❌ *{message.from_user.first_name}*, _ты уже нюхал(-а)!_\n\n🌿 Всего снюхано `{drug_count} грамм` мефедрона\n\n⏳ Следующий занюх доступен через `1 час.`", parse_mode='markdown')
         
         elif random.randint(0,100) < 20:
-            await message.reply(f"🧂 *{message.from_user.first_name}*, _ты просыпал(-а) весь мефчик!_\n\n🌿 Всего занюхано `{drug_count}` грамм мефедрона\n\n⏳ Следующий занюх доступен через `1 час.`", parse_mode='markdown')
+            await message.reply(f"🧂 *{message.from_user.first_name}*, _ты просыпал(-а) весь мефчик!_\n\n🌿 Всего снюхано `{drug_count}` грамм мефедрона\n\n⏳ Следующий занюх доступен через `1 час.`", parse_mode='markdown')
             await state.set_data({'time': datetime.now()})
         
         else:
             count = random.randint(1, 10)
-            await message.reply(f"👍 *{message.from_user.first_name}*, _ты занюхнул(-а) {count} грамм мефчика!_\n\n🌿 Всего занюхано `{drug_count+count}` грамм мефедрона\n\n⏳ Следующий занюх доступен через `1 час.`", parse_mode='markdown')
+            await message.reply(f"👍 *{message.from_user.first_name}*, _ты занюхнул(-а) {count} грамм мефчика!_\n\n🌿 Всего снюхано `{drug_count+count}` грамм мефедрона\n\n⏳ Следующий занюх доступен через `1 час.`", parse_mode='markdown')
             if user:
                 cursor.execute('UPDATE users SET drug_count = drug_count + ? WHERE id = ?', (count, user_id))
             else:
