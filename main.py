@@ -344,14 +344,13 @@ async def setdrugs_command(message: types.Message):
 @dp.message_handler(commands=['uservalue'])
 async def uservalue(message: types.Message):
     user_id = message.from_user.id
-    cursor.execute('SELECT COUNT(id) FROM users WHERE id = ?', (user_id,))
+    cursor.execute('SELECT * FROM users WHERE id = ?', (user_id,))
     user = cursor.fetchone()
     is_admin = user[3]
+    cursor.execute('SELECT COUNT(id) FROM users')
+    user = cursor.fetchone()[0]
     if is_admin == 1:
-        args = message.get_args().split(maxsplit=1)
-        cursor.execute('UPDATE users SET drug_count = ? WHERE id = ?', (args[1],args[0]))
-        conn.commit()
-        await message.reply('✅')
+        await message.reply(f'Количество пользователей в боте: {user}')
     else:
         await message.reply('🚨 MONKEY ALARM')
 
