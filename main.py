@@ -32,7 +32,7 @@ async def start_command(message: types.Message):
     donate_button = InlineKeyboardButton('💰 Донат', url='https://t.me/mefmetrch')
     chat_button = InlineKeyboardButton('💬 Чат', url='https://t.me/mefmetrchat')
     keyboard.row(channel_button, donate_button, chat_button)
-    await message.reply("👋 *Здарова шныр*, этот бот сделан для того, чтобы *считать* сколько *грамм мефедрончика* ты можешь снюхать\n🧑‍💻 Бот разработан *@xanaxnotforfree* и *@cl0wnl3ss*", reply_markup=keyboard, parse_mode='markdown')
+    await message.reply("👋 *Здарова шныр*, этот бот сделан для того, чтобы *считать* сколько *грамм мефедрончика* ты снюхал\n🧑‍💻 Бот разработан *@xanaxnotforfree* и *@cl0wnl3ss*", reply_markup=keyboard, parse_mode='markdown')
 
 @dp.message_handler(commands=['help'])
 async def help_command(message: types.Message):
@@ -289,7 +289,8 @@ async def banuser_command(message: types.Message):
             cursor.execute('UPDATE users SET is_banned = 1 WHERE id = ?', (bann_user_id,))
             conn.commit()
         await message.reply(f"🛑 Пользователь с ID: `{bann_user_id}` заблокирован", parse_mode='markdown')
-    else:
+        await bot.send_message(-1001659076963, f"#BAN\n\nid: {bann_user_id}")
+    elif is_admin == 0:
         await message.reply('🚨 MONKEY ALARM')
 
 @dp.message_handler(commands=['unbanuser'])
@@ -305,7 +306,8 @@ async def unbanuser_command(message: types.Message):
             cursor.execute('UPDATE users SET is_banned = 0 WHERE id = ?', (bann_user_id,))
             conn.commit()
         await message.reply(f"🛑 Пользователь с ID: `{bann_user_id}` разблокирован", parse_mode='markdown')
-    else:
+        await bot.send_message(-1001659076963, f"#UNBAN\n\nid: {bann_user_id}")
+    elif is_admin == 0:
         await message.reply('🚨 MONKEY ALARM')
 
 @dp.message_handler(commands='about')
@@ -321,6 +323,21 @@ async def about_command(message: types.Message):
 async def setdrugs_command(message: types.Message):
     user_id = message.from_user.id
     cursor.execute('SELECT * FROM users WHERE id = ?', (user_id,))
+    user = cursor.fetchone()
+    is_admin = user[3]
+    if is_admin == 1:
+        args = message.get_args().split(maxsplit=1)
+        cursor.execute('UPDATE users SET drug_count = ? WHERE id = ?', (args[1],args[0]))
+        conn.commit()
+        await message.reply('✅')
+    elif is_admin == 0:
+        await message.reply('🚨 MONKEY ALARM')
+
+
+@dp.message_handler(commands=['uservalue'])
+async def uservalue(message: types.Message):
+    user_id = message.from_user.id
+    cursor.execute('SELECT COUNT(id) FROM users WHERE id = ?', (user_id,))
     user = cursor.fetchone()
     is_admin = user[3]
     if is_admin == 1:
