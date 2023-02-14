@@ -49,10 +49,11 @@ async def profile_command(message: types.Message):
     if user:
         drug_count = user[1]
         is_admin = user[3]
+        username = message.from_user.username.replace('_', '\_')
         if is_admin == 1:
-            await message.reply(f"👑 *Создатель бота*\n👤 *Имя:* _{message.from_user.first_name}_\n👥 *Ваш username:* _@{message.from_user.username}_\n🌿 *Снюхано* _{drug_count}_ грамм.", parse_mode='markdown')
+            await message.reply(f"👑 *Создатель бота*\n👤 *Имя:* _{message.from_user.first_name}_\n👥 *Ваш username:* @{username}\n🌿 *Снюхано* _{drug_count}_ грамм.", parse_mode='markdown')
         else:
-            await message.reply(f"👤 *Имя:* _{message.from_user.first_name}_\n👥 *Ваш username:* _@{message.from_user.username}_\n🌿 *Снюхано* _{drug_count}_ грамм.", parse_mode='markdown')
+            await message.reply(f"👤 *Имя:* _{message.from_user.first_name}_\n👥 *Ваш username:* @{username}\n🌿 *Снюхано* _{drug_count}_ грамм.", parse_mode='markdown')
     else:
         await message.reply('❌ Вы еще не нюхали мефчик')
 
@@ -154,7 +155,8 @@ async def take_command(message: types.Message, state: FSMContext):
                             cursor.execute('UPDATE users SET drug_count = drug_count - 1 WHERE id = ?', (user_id,))
                             cursor.execute('UPDATE users SET drug_count = drug_count + 1 WHERE id = ?', (your_user_id,))
                             conn.commit()
-                            await message.reply(f"✅ [{message.from_user.first_name}](tg://user?id={message.from_user.id}) _спиздил(-а) один грам мефа у_ *@{reply_msg.from_user.username}*!", parse_mode='markdown')
+                            username = reply_msg.from_user.username.replace('_', '\_')
+                            await message.reply(f"✅ [{message.from_user.first_name}](tg://user?id={message.from_user.id}) _спиздил(-а) один грам мефа у_ *@{username}*!", parse_mode='markdown')
                         await state.set_data({'time': datetime.now()})
                 elif drug_count < 1:
                     await message.reply('❌ У жертвы недостаточно снюханного мефа для того чтобы его спиздить')
@@ -229,8 +231,9 @@ async def give_command(message: types.Message, state: FSMContext):
                             cursor.execute('UPDATE users SET drug_count = drug_count + ? WHERE id = ?', (value,user_id))
                             cursor.execute('UPDATE users SET drug_count = drug_count - ? WHERE id = ?', (value,your_user_id))
                             conn.commit()
-                            await bot.send_message(-1001659076963, f"#GIVE\n\nfirst\_name: `{message.from_user.first_name}`\nuserid: `{user_id}`\nto: `{reply_msg.from_user.first_name}`\nvalue: `{value}`\nmention: @{reply_msg.from_user.username}", parse_mode='markdown')
-                            await message.reply(f"✅ [{message.from_user.first_name}](tg://user?id={message.from_user.id}) _подарил(-а) {value} гр. мефа _ *@{reply_msg.from_user.username}*!", parse_mode='markdown')
+                            username = reply_msg.from_user.username.replace('_', '\_')
+                            await bot.send_message(-1001659076963, f"#GIVE\n\nfirst\_name: `{message.from_user.first_name}`\nuserid: `{user_id}`\nto: `{reply_msg.from_user.first_name}`\nvalue: `{value}`\nmention: @{username}", parse_mode='markdown')
+                            await message.reply(f"✅ [{message.from_user.first_name}](tg://user?id={message.from_user.id}) _подарил(-а) {value} гр. мефа _ *@{username}*!", parse_mode='markdown')
                             await state.set_data({'time': datetime.now()})
                         elif drug_count < value:
                             await message.reply(f'❌ Недостаточно граммов мефа для того чтобы их передать')
@@ -325,6 +328,8 @@ async def setdrugs_command(message: types.Message):
         cursor.execute('UPDATE users SET drug_count = ? WHERE id = ?', (args[1],args[0]))
         conn.commit()
         await message.reply('✅')
+    else:
+        await message.reply('🚨 MONKEY ALARM')
 
 
 
