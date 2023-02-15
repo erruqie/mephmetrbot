@@ -285,12 +285,11 @@ async def give_command(message: types.Message, state: FSMContext):
                         cursor.execute('UPDATE users SET drug_count = drug_count + ? WHERE id = ?', (value,user_id))
                         cursor.execute('UPDATE users SET drug_count = drug_count - ? WHERE id = ?', (value,your_user_id))
                         conn.commit()
-                        username = reply_msg.from_user.username.replace('_', '\_')
-                        await bot.send_message(-1001659076963, f"#GIVE\n\nfirst\_name: `{message.from_user.first_name}`\nuserid: `{user_id}`\nto: `{reply_msg.from_user.first_name}`\nvalue: `{value}`\nmention: @{username}", parse_mode='markdown')
-                        if username:
-                            await message.reply(f"✅ [{message.from_user.first_name}](tg://user?id={message.from_user.id}) _подарил(-а) {value} гр. мефа _ *@{username}*!", parse_mode='markdown')
+                        await bot.send_message(-1001659076963, f"#GIVE\n\nfirst\_name: `{message.from_user.first_name}`\nuserid: `{user_id}`\nto: `{reply_msg.from_user.first_name}`\nvalue: `{value}`", parse_mode='markdown')
+                        if reply_msg.from_user.username:
+                            await message.reply(f"✅ [{message.from_user.first_name}](tg://user?id={message.from_user.id}) _подарил(-а) {value} гр. мефа_ [{reply_msg.from_user.first_name}](tg://user?id={reply_msg.from_user.id})!", parse_mode='markdown')
                         else:
-                            await message.reply(f"✅ [{message.from_user.first_name}](tg://user?id={message.from_user.id}) _подарил(-а) {value} гр. мефа _ *{reply_msg.from_user.full_name}*!", parse_mode='markdown')
+                            await message.reply(f"✅ [{message.from_user.first_name}](tg://user?id={message.from_user.id}) _подарил(-а) {value} гр. мефа_ [{reply_msg.from_user.first_name}](tg://user?id={reply_msg.from_user.id})!", parse_mode='markdown')
                         await state.set_data({'time': datetime.now()})
                     elif drug_count < value:
                         await message.reply(f'❌ Недостаточно граммов мефа для того чтобы их передать')
@@ -540,6 +539,7 @@ async def clankick(message: types.Message):
                 await message.reply(f'✅ Пользователь @{username} *исключен из клана {clan_name}* пользователем @{usernameinviter}', parse_mode='markdown')
         elif clan_id > 0 and user_id != clan_owner_id:
             await message.reply(f"🛑 Исключать из клана может только создатель", parse_mode='markdown')
+
 
 @dp.message_handler(commands=['clanleave'])
 async def clanleave(message: types.Message):
