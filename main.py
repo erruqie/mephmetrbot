@@ -235,7 +235,7 @@ async def casino(message: types.Message):
                     else:
                         randomed = random.randint(1,100)
                         multipliers = [2, 1.5, 1.25, 1.1, 0]
-                        weights = [1, 2, 3, 4, 5, 6, 7, 8]
+                        weights = [1, 2, 3, 4, 5]
                         multiplier = random.choices(multipliers, weights, k=1)[0]
                         if multiplier > 0:
                             bet *= multiplier
@@ -248,7 +248,7 @@ async def casino(message: types.Message):
                             cursor.execute('UPDATE users SET last_casino = ? WHERE id = ?', (datetime.now().isoformat(), user_id,))
                             cursor.execute('UPDATE users SET drug_count = ? WHERE id = ?', (drug_count-bet, user_id,))
                             conn.commit()
-                            await bot.send_message(-1001659076963, f"#CASINO\n\nfirst\_name: `{message.from_user.first_name}`\nuserid: `{user_id}`\nbet: `{bet}`\nmultiplier: `{multiplier}`\ndrug\_count: `{drug_count-stavka}`\n\n[mention](tg://user?id={user_id})", parse_mode='markdown')
+                            await bot.send_message(-1001659076963, f"#CASINO\n\nfirst\_name: `{message.from_user.first_name}`\nuserid: `{user_id}`\nbet: `{bet}`\nmultiplier: `{multiplier}`\ndrug\_count: `{drug_count-bet}`\n\n[mention](tg://user?id={user_id})", parse_mode='markdown')
                             await message.reply('😔 *Ты проебал* свою ставку, *нехуй было* крутить казик.', parse_mode='markdown')
         else:
             await message.reply(f"🛑 Укажи сумму, на которую ты бы хотел сыграть! Пример:\n`/casino 40`", parse_mode='markdown')
