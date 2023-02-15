@@ -64,6 +64,7 @@ async def help_command(message: types.Message):
 `/clankick` - *кикнуть из клана*
 `/clanaccept` - *принять приглашение в клан*
 `/clanleave` - *добровольно выйти из клана*
+`/clandisband` - *распустить клан*
     ''', parse_mode='markdown')
 
 
@@ -238,6 +239,11 @@ async def casino(message: types.Message):
                         weights = [1, 2, 3, 4, 5]
                         multiplier = random.choices(multipliers, weights, k=1)[0]
                         if multiplier > 0:
+                            cursor.execute('UPDATE users SET drug_count = ? WHERE id = ?', (drug_count - bet, user_id,))
+                            conn.commit()
+                            cursor.execute('SELECT * FROM users WHERE id = ?', (user_id,))
+                            user = cursor.fetchone()
+                            drug_count = user[1]
                             bet *= multiplier
                             cursor.execute('UPDATE users SET last_casino = ? WHERE id = ?', (datetime.now().isoformat(), user_id,))
                             cursor.execute('UPDATE users SET drug_count = ? WHERE id = ?', (drug_count + bet, user_id,))
@@ -356,6 +362,10 @@ async def deposit(message: types.Message):
         await message.reply('🛑 Вы заблокированы в боте!')
     elif is_banned == 0:
         if args:
+            try:
+                cost = int(args)
+            except ValueError:
+                await message.reply(f'❌ Введи целое число')
             user_id = message.from_user.id
             cursor.execute('SELECT drug_count, clan_member FROM users WHERE id = ?', (user_id,))
             user = cursor.fetchone()
@@ -369,10 +379,15 @@ async def deposit(message: types.Message):
                 clan_balance = clan[3]
                 clan_name = clan[1]
                 clan_owner_id = clan[2]
-                cost = int(args)
-                if cost > user_balance:
+                if cost < 0:
+                    await message.reply(f'❌ Значение не может быть отрицательным')
+                    return
+                elif cost == 0:
+                    await message.reply(f'❌ Значение не может быть равным нулю')
+                    return
+                elif cost > user_balance:
                     await message.reply(f"🛑 Недостаточно средств. Ваш баланс: `{user_balance}` гр.", parse_mode='markdown')
-                elif cost <= user_balance:
+                elif cost <= user_balance and cost != 0:
                     cursor.execute('UPDATE users SET drug_count = ? WHERE id = ?', (user_balance - cost, user_id,))
                     conn.commit()
                     newbalance = clan_balance+cost
@@ -393,6 +408,10 @@ async def withdraw(message: types.Message):
         await message.reply('🛑 Вы заблокированы в боте!')
     elif is_banned == 0:
         if args:
+            try:
+                cost = int(args)
+            except ValueError:
+                await message.reply(f'❌ Введи целое число')
             user_id = message.from_user.id
             cursor.execute('SELECT drug_count, clan_member FROM users WHERE id = ?', (user_id,))
             user = cursor.fetchone()
@@ -409,10 +428,15 @@ async def withdraw(message: types.Message):
                 if user_id != clan_owner_id:
                     await message.reply(f"🛑 Снимать деньги со счёта клана может только его владелец.", parse_mode='markdown')
                 else:
-                    cost = int(args)
-                    if cost > clan_balance:
+                    if cost < 0:
+                        await message.reply(f'❌ Значение не может быть отрицательным')
+                        return
+                    elif cost == 0:
+                        await message.reply(f'❌ Значение не может быть равным нулю')
+                        return
+                    elif cost > clan_balance:
                         await message.reply(f"🛑 Недостаточно средств. Баланс клана: `{clan_balance}` гр.", parse_mode='markdown')
-                    elif cost <= clan_balance:
+                    elif cost <= clan_balance and cost != 0:
                         cursor.execute('UPDATE clans SET clan_balance = ? WHERE clan_owner_id = ?', (clan_balance - cost, user_id,))
                         cursor.execute('UPDATE users SET drug_count = ? WHERE id = ?', (user_balance + cost, user_id,))
                         conn.commit()
