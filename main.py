@@ -227,9 +227,9 @@ async def give_command(message: types.Message, state: FSMContext):
                 if user and your_user:
                     drug_count = your_user[1]
                     last_time = await state.get_data()
-                    if last_time and (datetime.now() - last_time['time']) < timedelta(days=1):
-                        remaining_time = timedelta(days=1) - (datetime.now() - last_time['time'])
-                        await message.reply(f"❌ Нельзя делиться мефом так часто! Ты сможешь подарить меф через 1 день.")
+                    if last_time and (datetime.now() - last_time['time']) < timedelta(hours=0.0166667):
+                        remaining_time = timedelta(hours=0.0166667) - (datetime.now() - last_time['time'])
+                        await message.reply(f"❌ Нельзя делиться мефом так часто! Ты сможешь поделиться весом через 1 минуту!")
                     else:
                         if drug_count >= value:
                             cursor.execute('UPDATE users SET drug_count = drug_count + ? WHERE id = ?', (value,user_id))
