@@ -57,7 +57,10 @@ async def profile_command(message: types.Message):
             cursor.execute('SELECT clan_name FROM clans WHERE clan_id = ?', (clan_member,))
             clan = cursor.fetchone()
             clan_name = clan[0]
-        username = message.from_user.username.replace('_', '\_')
+        if message.from_user.username:
+            username = message.from_user.username.replace('_', '\_')
+        else:
+            username = f'[{message.from_user.full_name}](tg://user?id={message.from_user.id})'
         if is_admin == 1:
             if clan_member:
                 await message.reply(f"👑 *Создатель бота*\n👤 *Имя:* _{message.from_user.first_name}_\n👥 *Клан:* *{clan_name}*\n👥 *Ваш username:* @{username}\n🌿 *Снюхано* _{drug_count}_ грамм.", parse_mode='markdown')
@@ -250,7 +253,10 @@ async def give_command(message: types.Message, state: FSMContext):
                             conn.commit()
                             username = reply_msg.from_user.username.replace('_', '\_')
                             await bot.send_message(-1001659076963, f"#GIVE\n\nfirst\_name: `{message.from_user.first_name}`\nuserid: `{user_id}`\nto: `{reply_msg.from_user.first_name}`\nvalue: `{value}`\nmention: @{username}", parse_mode='markdown')
-                            await message.reply(f"✅ [{message.from_user.first_name}](tg://user?id={message.from_user.id}) _подарил(-а) {value} гр. мефа _ *@{username}*!", parse_mode='markdown')
+                            if username:
+                                await message.reply(f"✅ [{message.from_user.first_name}](tg://user?id={message.from_user.id}) _подарил(-а) {value} гр. мефа _ *@{username}*!", parse_mode='markdown')
+                            else:
+                                await message.reply(f"✅ [{message.from_user.first_name}](tg://user?id={message.from_user.id}) _подарил(-а) {value} гр. мефа _ *{reply_msg.from_user.full_name}*!", parse_mode='markdown')
                             await state.set_data({'time': datetime.now()})
                         elif drug_count < value:
                             await message.reply(f'❌ Недостаточно граммов мефа для того чтобы их передать')
@@ -274,23 +280,28 @@ async def create_clan(message: types.Message):
     elif is_banned == 0:
         if args:
             clan_name = args
-            clan_id = random.randint(100000, 999999)
-            user_id = message.from_user.id
-            cursor.execute('SELECT clan_member, drug_count FROM users WHERE id = ?', (user_id,))
-            user = cursor.fetchone()
-            drug_count = user[1]
-            if user[0] != 0:
-                await message.reply(f"🛑 Вы уже состоите в клане.", parse_mode='markdown')
+            cursor.execute('SELECT * FROM clans WHERE clan_name = ?', (clan_name,))
+            clanexist = cursor.fetchone()
+            if clanexist:
+                await message.reply('🛑 Клан с таким названием уже существует')
             else:
-                if drug_count >= 100:
-                    cursor.execute('INSERT INTO clans (clan_id, clan_name, clan_owner_id, clan_balance) VALUES (?, ?, ?, ?)', (clan_id, clan_name, user_id, 0))
-                    cursor.execute('UPDATE users SET clan_member = ? WHERE id = ?', (clan_id, user_id))
-                    cursor.execute('UPDATE users SET drug_count = ? WHERE id = ?', (drug_count - 100, user_id))
-                    conn.commit()
-                    await bot.send_message(-1001659076963, f"#NEWCLAN\n\nclanid: `{clan_id}`\nclanname: `{clan_name}`\nclanownerid: `{user_id}`", parse_mode='markdown')
-                    await message.answer(f"✅ Клан *{clan_name}* успешно создан.\nВаш идентификатор клана: `{clan_id}`\nС вашего баланса списано `100` гр.",parse_mode='markdown')
+                clan_id = random.randint(100000, 999999)
+                user_id = message.from_user.id
+                cursor.execute('SELECT clan_member, drug_count FROM users WHERE id = ?', (user_id,))
+                user = cursor.fetchone()
+                drug_count = user[1]
+                if user[0] != 0:
+                    await message.reply(f"🛑 Вы уже состоите в клане.", parse_mode='markdown')
                 else:
-                    await message.reply(f"🛑 Недостаточно средств.\nСтоимость создания клана: `100` гр.", parse_mode='markdown')
+                    if drug_count >= 100:
+                        cursor.execute('INSERT INTO clans (clan_id, clan_name, clan_owner_id, clan_balance) VALUES (?, ?, ?, ?)', (clan_id, clan_name, user_id, 0))
+                        cursor.execute('UPDATE users SET clan_member = ? WHERE id = ?', (clan_id, user_id))
+                        cursor.execute('UPDATE users SET drug_count = ? WHERE id = ?', (drug_count - 100, user_id))
+                        conn.commit()
+                        await bot.send_message(-1001659076963, f"#NEWCLAN\n\nclanid: `{clan_id}`\nclanname: `{clan_name}`\nclanownerid: `{user_id}`", parse_mode='markdown')
+                        await message.answer(f"✅ Клан *{clan_name}* успешно создан.\nВаш идентификатор клана: `{clan_id}`\nС вашего баланса списано `100` гр.",parse_mode='markdown')
+                    else:
+                        await message.reply(f"🛑 Недостаточно средств.\nСтоимость создания клана: `100` гр.", parse_mode='markdown')
         else:
             await message.reply(f"🛑 Укажи название клана\nПример:\n`/clancreate КрУтЫе_ПеРцЫ`\nСтоимость создания клана: `100` гр.", parse_mode='markdown')
 
