@@ -68,9 +68,13 @@ async def help_command(message: types.Message):
     ''', parse_mode='markdown')
 
 
-@dp.message_handler(Command('profile'))
+@dp.message_handler(commands=['profile'])
 async def profile_command(message: types.Message):
-    user_id = message.from_user.id
+    user_id = None
+    if message.reply_to_message and message.reply_to_message.from_user:
+        user_id = message.reply_to_message.from_user.id
+    else:
+        user_id = message.from_user.id
     cursor.execute('SELECT * FROM users WHERE id = ?', (user_id,))
     user = cursor.fetchone()
     is_admin = user[3]
@@ -82,22 +86,25 @@ async def profile_command(message: types.Message):
             cursor.execute('SELECT clan_name FROM clans WHERE clan_id = ?', (clan_member,))
             clan = cursor.fetchone()
             clan_name = clan[0] if clan else 0
-        if message.from_user.username:
-            username = message.from_user.username.replace('_', '\_')
+        if user_id == message.from_user.id:
+            username = message.from_user.username.replace('_', '\_') if message.from_user.username else None
+            full_name = message.from_user.full_name
         else:
-            username = f'[{message.from_user.full_name}](tg://user?id={message.from_user.id})'
+            username = message.reply_to_message.from_user.username.replace('_', '\_') if message.reply_to_message.from_user.username else None
+            full_name = message.reply_to_message.from_user.full_name
+
         if is_admin == 1:
             if clan_member:
-                await message.reply(f"👑 *Создатель бота*\n👤 *Имя:* _{message.from_user.first_name}_\n👥 *Клан:* *{clan_name}*\n👥 *Ваш username:* @{username}\n🌿 *Снюхано* _{drug_count}_ грамм.", parse_mode='markdown')
+                await message.reply(f"👑 *Создатель бота*\n👤 *Имя:* _{full_name}_\n👥 *Клан:* *{clan_name}*\n👥 *Ваш username:* @{username}\n🆔 *Ваш ID:* {user_id}\n🌿 *Снюхано* _{drug_count}_ грамм.", parse_mode='markdown')
             else:
-                await message.reply(f"👑 *Создатель бота*\n👤 *Имя:* _{message.from_user.first_name}_\n👥 *Ваш username:* @{username}\n🌿 *Снюхано* _{drug_count}_ грамм.", parse_mode='markdown')
+                await message.reply(f"👑 *Создатель бота*\n👤 *Имя:* _{full_name}_\n👥 *Ваш username:* @{username}\n🆔 *Ваш ID:* {user_id}\n🌿 *Снюхано* _{drug_count}_ грамм.", parse_mode='markdown')
         else:
             if clan_member:
-                await message.reply(f"👤 *Имя:* _{message.from_user.first_name}_\n👥 *Клан:* *{clan_name}*\n👥 *Ваш username:* @{username}\n🌿 *Снюхано* _{drug_count}_ грамм.", parse_mode='markdown')
+                await message.reply(f"👤 *Имя:* _{full_name}_\n👥 *Клан:* *{clan_name}*\n👥 *Ваш username:* @{username}\n🆔 *Ваш ID:* {user_id}\n🌿 *Снюхано* _{drug_count}_ грамм.", parse_mode='markdown')
             else:
-                await message.reply(f"👤 *Имя:* _{message.from_user.first_name}_\n👥 *Ваш username:* @{username}\n🌿 *Снюхано* _{drug_count}_ грамм.", parse_mode='markdown')
+                await message.reply(f"👤 *Имя:* _{full_name}_\n👥 *Ваш username:* @{username}\n🆔 *Ваш ID: *{user_id}\n🌿 *Снюхано* _{drug_count}_ грамм.", parse_mode='markdown')
     else:
-        await message.reply('❌ Вы еще не нюхали мефчик')
+        await message.reply('❌ Профиль не найден')
 
 @dp.message_handler(Command('drug'))
 async def drug_command(message: types.Message, state: FSMContext):
