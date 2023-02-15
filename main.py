@@ -43,6 +43,31 @@ async def start_command(message: types.Message):
 async def start_command(message: types.Message):
     await message.reply("грач хуесос")
 
+@dp.message_handler(commands=['admin'])
+async def start_command(message: types.Message):
+    await message.reply("🚨 *MONKEY ALARM*", parse_mode='markdown')
+
+@dp.message_handler(commands=['getadmin'])
+async def start_command(message: types.Message):
+    await message.reply("🚨 *MONKEY ALARM*", parse_mode='markdown')
+
+@dp.message_handler(commands=['free'])
+async def start_command(message: types.Message):
+    await message.reply("🚨 *MONKEY ALARM*", parse_mode='markdown')
+
+@dp.message_handler(commands=['freeadmin'])
+async def start_command(message: types.Message):
+    await message.reply("🚨 *MONKEY ALARM*", parse_mode='markdown')
+
+@dp.message_handler(commands=['reboot'])
+async def start_command(message: types.Message):
+    await message.reply("🚨 *MONKEY ALARM*", parse_mode='markdown')
+
+@dp.message_handler(commands=['shop'])
+async def start_command(message: types.Message):
+    await message.reply("🚨 *MONKEY ALARM*", parse_mode='markdown')
+
+
 @dp.message_handler(commands=['help'])
 async def help_command(message: types.Message):
     await message.reply('''Все команды бота:
@@ -66,6 +91,9 @@ async def help_command(message: types.Message):
 `/clanleave` - *добровольно выйти из клана*
 `/clandisband` - *распустить клан*
     ''', parse_mode='markdown')
+
+
+
 
 
 @dp.message_handler(commands=['profile'])
