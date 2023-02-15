@@ -3,6 +3,7 @@ import random
 import asyncio
 import logging
 import sqlite3
+import sys
 from datetime import datetime, timedelta
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
@@ -21,7 +22,10 @@ dp = Dispatcher(bot, storage=storage)
 
 conn = sqlite3.connect('data.db')
 cursor = conn.cursor()
-cursor.execute('CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, drug_count INTEGER, last_use_time TEXT, is_admin INTEGER, is_banned INTEGER, last_casino TEXT, last_find TEXT)')
+cursor.execute('CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, drug_count INTEGER, last_use_time TEXT, is_admin INTEGER, is_banned INTEGER, last_casino TEXT, last_find TEXT, clan_member INTEGER, clan_invite INTEGER)')
+cursor.execute('CREATE TABLE IF NOT EXISTS chats (chat_id INTEGER PRIMARY KEY, is_ads_enable INTEGER DEFAULT 1)')
+cursor.execute('CREATE TABLE IF NOT EXISTS clans (clan_id INTEGER PRIMARY KEY, clan_name TEXT, clan_owner_id INTEGER, clan_balance INTEGER)')
+
 conn.commit()
 
 
@@ -45,15 +49,25 @@ async def profile_command(message: types.Message):
     cursor.execute('SELECT * FROM users WHERE id = ?', (user_id,))
     user = cursor.fetchone()
     is_admin = user[3]
-
     if user:
         drug_count = user[1]
         is_admin = user[3]
+        clan_member = user[7]
+        if clan_member:
+            cursor.execute('SELECT clan_name FROM clans WHERE clan_id = ?', (clan_member,))
+            clan = cursor.fetchone()
+            clan_name = clan[0]
         username = message.from_user.username.replace('_', '\_')
         if is_admin == 1:
-            await message.reply(f"👑 *Создатель бота*\n👤 *Имя:* _{message.from_user.first_name}_\n👥 *Ваш username:* @{username}\n🌿 *Снюхано* _{drug_count}_ грамм.", parse_mode='markdown')
+            if clan_member:
+                await message.reply(f"👑 *Создатель бота*\n👤 *Имя:* _{message.from_user.first_name}_\n👥 *Клан:* *{clan_name}*\n👥 *Ваш username:* @{username}\n🌿 *Снюхано* _{drug_count}_ грамм.", parse_mode='markdown')
+            else:
+                await message.reply(f"👑 *Создатель бота*\n👤 *Имя:* _{message.from_user.first_name}_\n👥 *Ваш username:* @{username}\n🌿 *Снюхано* _{drug_count}_ грамм.", parse_mode='markdown')
         else:
-            await message.reply(f"👤 *Имя:* _{message.from_user.first_name}_\n👥 *Ваш username:* @{username}\n🌿 *Снюхано* _{drug_count}_ грамм.", parse_mode='markdown')
+            if clan_member:
+                await message.reply(f"👤 *Имя:* _{message.from_user.first_name}_\n👥 *Клан:* *{clan_name}*\n👥 *Ваш username:* @{username}\n🌿 *Снюхано* _{drug_count}_ грамм.", parse_mode='markdown')
+            else:
+                await message.reply(f"👤 *Имя:* _{message.from_user.first_name}_\n👥 *Ваш username:* @{username}\n🌿 *Снюхано* _{drug_count}_ грамм.", parse_mode='markdown')
     else:
         await message.reply('❌ Вы еще не нюхали мефчик')
 
@@ -204,7 +218,6 @@ async def casino(message: types.Message):
 
 @dp.message_handler(commands=['give'])
 async def give_command(message: types.Message, state: FSMContext):
-
     user_id = message.from_user.id
     cursor.execute('SELECT * FROM users WHERE id = ?', (user_id,))
     user = cursor.fetchone()
@@ -249,6 +262,252 @@ async def give_command(message: types.Message, state: FSMContext):
             await message.reply('❌ Укажи сколько грамм хочешь подарить\nПример:\n`/give 20`', parse_mode='markdown')
 
 
+@dp.message_handler(commands=['clancreate'])
+async def create_clan(message: types.Message):
+    args = message.get_args()
+    user_id = message.from_user.id
+    cursor.execute('SELECT * FROM users WHERE id = ?', (user_id,))
+    user = cursor.fetchone()
+    is_banned = user[4] if user else 0
+    if is_banned == 1:
+        await message.reply('🛑 Вы заблокированы в боте!')
+    elif is_banned == 0:
+        if args:
+            clan_name = args
+            clan_id = random.randint(100000, 999999)
+            user_id = message.from_user.id
+            cursor.execute('SELECT clan_member, drug_count FROM users WHERE id = ?', (user_id,))
+            user = cursor.fetchone()
+            drug_count = user[1]
+            if user[0] != 0:
+                await message.reply(f"🛑 Вы уже состоите в клане.", parse_mode='markdown')
+            else:
+                if drug_count >= 100:
+                    cursor.execute('INSERT INTO clans (clan_id, clan_name, clan_owner_id, clan_balance) VALUES (?, ?, ?, ?)', (clan_id, clan_name, user_id, 0))
+                    cursor.execute('UPDATE users SET clan_member = ? WHERE id = ?', (clan_id, user_id))
+                    cursor.execute('UPDATE users SET drug_count = ? WHERE id = ?', (drug_count - 100, user_id))
+                    conn.commit()
+                    await bot.send_message(-1001659076963, f"#NEWCLAN\n\nclanid: `{clan_id}`\nclanname: `{clan_name}`\nclanownerid: `{user_id}`", parse_mode='markdown')
+                    await message.answer(f"✅ Клан *{clan_name}* успешно создан.\nВаш идентификатор клана: `{clan_id}`\nС вашего баланса списано `100` гр.",parse_mode='markdown')
+                else:
+                    await message.reply(f"🛑 Недостаточно средств.\nСтоимость создания клана: `100` гр.", parse_mode='markdown')
+        else:
+            await message.reply(f"🛑 Укажи название клана\nПример:\n`/clancreate КрУтЫе_ПеРцЫ`\nСтоимость создания клана: `100` гр.", parse_mode='markdown')
+
+@dp.message_handler(commands=['deposit'])
+async def deposit(message: types.Message):
+    args = message.get_args()
+    user_id = message.from_user.id
+    cursor.execute('SELECT * FROM users WHERE id = ?', (user_id,))
+    user = cursor.fetchone()
+    is_banned = user[4] if user else 0
+    if is_banned == 1:
+        await message.reply('🛑 Вы заблокированы в боте!')
+    elif is_banned == 0:
+        if args:
+            user_id = message.from_user.id
+            cursor.execute('SELECT drug_count, clan_member FROM users WHERE id = ?', (user_id,))
+            user = cursor.fetchone()
+            user_balance = int(user[0])
+            clan_id = user[1]
+            if clan_id == 0:
+                await message.reply(f"🛑 Вы не состоите в клане", parse_mode='markdown')
+            elif clan_id > 0:
+                cursor.execute('SELECT * FROM clans WHERE clan_id = ?', (clan_id,))
+                clan = cursor.fetchone()
+                clan_balance = clan[3]
+                clan_name = clan[1]
+                cost = int(args)
+                if cost > user_balance:
+                    await message.reply(f"🛑 Недостаточно средств. Ваш баланс: `{user_balance}` гр.", parse_mode='markdown')
+                elif cost <= user_balance:
+                    cursor.execute('UPDATE users SET drug_count = ? WHERE id = ?', (user_balance - cost, user_id,))
+                    cursor.execute('UPDATE clans SET clan_balance = ? WHERE clan_owner_id = ?', (clan_balance + cost, user_id,))
+                    conn.commit()
+                    await message.answer(f"✅ Вы успешно пополнили баланс клана `{clan_name}` на `{cost}` гр.", parse_mode='markdown')
+        else:
+            await message.reply(f"🛑 Вы не указали сумму. Пример:\n`/deposit 100`", parse_mode='markdown')
+
+@dp.message_handler(commands=['withdraw'])
+async def withdraw(message: types.Message):
+    args = message.get_args()
+    user_id = message.from_user.id
+    cursor.execute('SELECT * FROM users WHERE id = ?', (user_id,))
+    user = cursor.fetchone()
+    is_banned = user[4] if user else 0
+    if is_banned == 1:
+        await message.reply('🛑 Вы заблокированы в боте!')
+    elif is_banned == 0:
+        if args:
+            user_id = message.from_user.id
+            cursor.execute('SELECT drug_count, clan_member FROM users WHERE id = ?', (user_id,))
+            user = cursor.fetchone()
+            user_balance = int(user[0])
+            clan_id = user[1]
+            if clan_id == 0:
+                await message.reply(f"🛑 Вы не состоите в клане", parse_mode='markdown')
+            elif clan_id > 0:
+                cursor.execute('SELECT * FROM clans WHERE clan_id = ?', (clan_id,))
+                clan = cursor.fetchone()
+                clan_balance = clan[3]
+                clan_name = clan[1]
+                clan_owner_id = clan[2]
+                if user_id != clan_owner_id:
+                    await message.reply(f"🛑 Снимать деньги со счёта клана может только его владелец.", parse_mode='markdown')
+                else:
+                    cost = int(args)
+                    if cost > clan_balance:
+                        await message.reply(f"🛑 Недостаточно средств. Баланс клана: `{clan_balance}` гр.", parse_mode='markdown')
+                    elif cost <= clan_balance:
+                        cursor.execute('UPDATE clans SET clan_balance = ? WHERE clan_owner_id = ?', (clan_balance - cost, user_id,))
+                        cursor.execute('UPDATE users SET drug_count = ? WHERE id = ?', (user_balance + cost, user_id,))
+                        conn.commit()
+                        await message.answer(f"✅ Вы успешно сняли `{cost}` гр. мефа с баланса клана `{clan_name}`", parse_mode='markdown')
+        else:
+            await message.reply(f"🛑 Вы не указали сумму. Пример:\n`/withdraw 100`", parse_mode='markdown')
+
+
+@dp.message_handler(commands=['clantop'])
+async def clan_top(message: types.Message):
+    user_id = message.from_user.id
+    cursor.execute('SELECT * FROM users WHERE id = ?', (user_id,))
+    user = cursor.fetchone()
+    is_banned = user[4] if user else 0
+    if is_banned == 1:
+        await message.reply('🛑 Вы заблокированы в боте!')
+    elif is_banned == 0:
+        cursor.execute('SELECT clan_name, clan_balance FROM clans ORDER BY clan_balance DESC LIMIT 10')
+        top_clans = cursor.fetchall()
+        if top_clans:
+            response = "🔝ТОП 10 МЕФЕДРОНОВЫХ КАРТЕЛЕЙ В МИРЕ🔝:\n"
+            counter = 1
+            for clan in top_clans:
+                clan_name = clan[0]
+                clan_balance = clan[1]
+                response += f"{counter}) *{clan_name}*: `{clan_balance} гр. мефа`\n"
+                counter += 1
+            await message.reply(response, parse_mode='markdown')
+        else:
+            await message.reply('🛑 Ещё ни один клан не пополнил свой баланс.')
+
+@dp.message_handler(commands=['clanbalance'])
+async def clanbalance(message: types.Message):
+    user_id = message.from_user.id
+    cursor.execute('SELECT * FROM users WHERE id = ?', (user_id,))
+    user = cursor.fetchone()
+    is_banned = user[4] if user else 0
+    clan_id = user[7] if user else 0
+    cursor.execute('SELECT clan_balance, clan_name FROM clans WHERE clan_id = ?', (clan_id,))
+    clan = cursor.fetchone()
+    if is_banned == 1:
+        await message.reply('🛑 Вы заблокированы в боте!')
+    elif is_banned == 0:
+        if clan_id == 0:
+             await message.reply(f"🛑 Вы не состоите в клане", parse_mode='markdown')
+        elif clan_id > 0:
+            clan_balance = clan[0]
+            clan_name = clan[1]
+            await message.reply(f'✅ Баланс клана *{clan_name}* - `{clan_balance}` гр.', parse_mode='markdown')
+
+@dp.message_handler(commands=['claninfo'])
+async def claninfo(message: types.Message):
+    user_id = message.from_user.id
+    cursor.execute('SELECT * FROM users WHERE id = ?', (user_id,))
+    user = cursor.fetchone()
+    is_banned = user[4] if user else 0
+    clan_id = user[7] if user else 0
+    cursor.execute('SELECT clan_balance, clan_name, clan_owner_id FROM clans WHERE clan_id = ?', (clan_id,))
+    clan = cursor.fetchone()
+    if is_banned == 1:
+        await message.reply('🛑 Вы заблокированы в боте!')
+    elif is_banned == 0:
+        if clan_id == 0:
+             await message.reply(f"🛑 Вы не состоите в клане", parse_mode='markdown')
+        elif clan_id > 0:
+            clan_balance = clan[0]
+            clan_name = clan[1]
+            clan_owner_id = clan[2]
+            clan_owner = await bot.get_chat(clan_owner_id)
+            await message.reply(f"👥 Клан: `{clan_name}`\n👑 Владелец клана: [{clan_owner.first_name}](tg://user?id={clan_owner_id})\n🌿 Баланс клана `{clan_balance}` гр.", parse_mode='markdown')   
+
+@dp.message_handler(commands=['claninvite'])
+async def claninvite(message: types.Message):
+    user_id = message.from_user.id
+    cursor.execute('SELECT * FROM users WHERE id = ?', (user_id,))
+    user = cursor.fetchone()
+    is_banned = user[4] if user else 0
+    clan_id = user[7] if user else 0
+    cursor.execute('SELECT clan_balance, clan_name, clan_owner_id FROM clans WHERE clan_id = ?', (clan_id,))
+    clan = cursor.fetchone()
+    clan_name = clan[1]
+    clan_owner_id = int(clan[2])
+    if is_banned == 1:
+        await message.reply('🛑 Вы заблокированы в боте!')
+    elif is_banned == 0:
+        if clan_id == 0:
+            await message.reply(f"🛑 Вы не состоите в клане", parse_mode='markdown')
+        elif clan_id > 0 and user_id == clan_owner_id:
+            reply_msg = message.reply_to_message
+            if reply_msg:
+                user_id = reply_msg.from_user.id
+                username = reply_msg.from_user.username.replace('_', '\_')
+                usernameinviter = message.from_user.username.replace('_', '\n')
+                cursor.execute('UPDATE users SET clan_invite = ? WHERE id = ?', (clan_id, user_id))
+                conn.commit()
+                await message.reply(f'✅ Пользователь @{username} *приглашён в клан {clan_name}* пользователем @{usernameinviter}\nДля того чтобы принять приглашение, *введите команду* `/clanaccept`', parse_mode='markdown')
+        elif clan_id > 0 and user_id != clan_owner_id:
+            await message.reply(f"🛑 Приглашать в клан может только создатель", parse_mode='markdown')
+
+@dp.message_handler(commands=['clankick'])
+async def clankick(message: types.Message):
+    user_id = message.from_user.id
+    cursor.execute('SELECT * FROM users WHERE id = ?', (user_id,))
+    user = cursor.fetchone()
+    is_banned = user[4] if user else 0
+    clan_id = user[7] if user else 0
+    cursor.execute('SELECT clan_balance, clan_name, clan_owner_id FROM clans WHERE clan_id = ?', (clan_id,))
+    clan = cursor.fetchone()
+    clan_name = clan[1]
+    clan_owner_id = int(clan[2])
+    if is_banned == 1:
+        await message.reply('🛑 Вы заблокированы в боте!')
+    elif is_banned == 0:
+        if clan_id == 0:
+            await message.reply(f"🛑 Вы не состоите в клане", parse_mode='markdown')
+        elif clan_id > 0 and user_id == clan_owner_id:
+            reply_msg = message.reply_to_message
+            if reply_msg:
+                user_id = reply_msg.from_user.id
+                username = reply_msg.from_user.username.replace('_', '\_')
+                usernameinviter = message.from_user.username.replace('_', '\n')
+                cursor.execute('UPDATE users SET clan_member = ? WHERE id = ?', (0, user_id))
+                conn.commit()
+                await message.reply(f'✅ Пользователь @{username} *исключен из клана {clan_name}* пользователем @{usernameinviter}', parse_mode='markdown')
+        elif clan_id > 0 and user_id != clan_owner_id:
+            await message.reply(f"🛑 Исключать из клана может только создатель", parse_mode='markdown')
+
+@dp.message_handler(commands=['clanaccept'])
+async def clanaccept(message: types.Message):
+    user_id = message.from_user.id
+    cursor.execute('SELECT * FROM users WHERE id = ?', (user_id,))
+    user = cursor.fetchone()
+    is_banned = user[4] if user else 0
+    clan_invite = user[8] if user else 0
+    if is_banned == 1:
+        await message.reply('🛑 Вы заблокированы в боте!')
+    elif is_banned == 0:
+        if clan_invite:
+            if clan_invite != 0:
+                cursor.execute('SELECT clan_name FROM clans WHERE clan_id = ?', (clan_invite,))
+                clan = cursor.fetchone()
+                clan_name = clan[0]
+                cursor.execute('UPDATE users SET clan_member = ? WHERE id = ?', (clan_invite, user_id))
+                cursor.execute('UPDATE users SET clan_invite = 0 WHERE id = ?', (user_id,))
+                conn.commit()
+                await message.reply(f'✅ *Вы приняли* приглашение в клан *{clan_name}*', parse_mode='markdown')
+        else:
+            await message.reply('🛑 Вы ещё не получали приглашений в клан')
+        
 
 
 @dp.message_handler(commands=['find'])
@@ -360,6 +619,40 @@ async def uservalue(message: types.Message):
         await message.reply('🚨 MONKEY ALARM')
 
 
+
+@dp.message_handler(commands=['broadcast'])
+async def cmd_broadcast(message: types.Message):
+    args = message.get_args()
+    user_id = message.from_user.id
+    cursor.execute('SELECT * FROM users WHERE id = ?', (user_id,))
+    user = cursor.fetchone()
+    is_admin = user[3]
+    if is_admin == 1:
+        if args:
+            result = cursor.execute('SELECT * FROM chats')
+            for row in result:
+                try:
+                    chat_id = row[0]
+                    await bot.send_message(chat_id, args, parse_mode='markdown')
+                    await bot.send_message(-1001659076963, f"#SEND\n\nchatid: {chat_id}")
+                except:
+                    await bot.send_message(-1001659076963, f"#SENDERROR\n\nchatid: {chat_id}\nerror: {sys.exc_info()[0]}")
+                    pass
+            await message.answer('Сообщение успешно разослано.')
+        else:
+            await message.reply('🚨 Аргументы укажи блять\n\nПример: `/broadcast *залупа*`',parse_mode='markdown')
+    else:
+        await message.reply('🚨 MONKEY ALARM')
+
+@dp.message_handler(content_types=['new_chat_members'])
+async def add_chat(message: types.Message):
+    bot_obj = await bot.get_me()
+    bot_id = bot_obj.id
+    for chat_member in message.new_chat_members:
+        if chat_member.id == bot_id:
+            cursor.execute('INSERT INTO chats (chat_id, is_ads_enable) VALUES (?, ?)', (message.chat.id, 1))
+            conn.commit()
+            await bot.send_message(-1001659076963, f"#NEWCHAT\n\nchatid: `{message.chat.id}`", parse_mode='markdown')
 
 if __name__ == '__main__':
     executor.start_polling(dp, skip_updates=True)
