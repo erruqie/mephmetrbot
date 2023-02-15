@@ -264,7 +264,10 @@ async def give_command(message: types.Message, state: FSMContext):
     elif is_banned == 0:
         args = message.get_args().split(maxsplit=1)
         if args:
-            value = int(args[0])
+            try:
+                value = int(args[0])
+            except ValueError:
+                await message.reply(f'❌ Введи целое число')
             reply_msg = message.reply_to_message
             if reply_msg and reply_msg.from_user.id != message.from_user.id:
                 user_id = reply_msg.from_user.id
@@ -273,7 +276,6 @@ async def give_command(message: types.Message, state: FSMContext):
                 your_user_id = message.from_user.id
                 cursor.execute('SELECT * FROM users WHERE id = ?', (your_user_id,))
                 your_user = cursor.fetchone()
-
                 if user and your_user:
                     drug_count = your_user[1]
                     last_time = await state.get_data()
@@ -281,7 +283,11 @@ async def give_command(message: types.Message, state: FSMContext):
                     #    remaining_time = timedelta(hours=0.0166667) - (datetime.now() - last_time['time'])
                     #    await message.reply(f"❌ Нельзя делиться мефом так часто! Ты сможешь поделиться весом через 1 минуту!")
                     #else:
-                    if drug_count >= value:
+                    if value < 0:
+                        await message.reply(f'❌ Значение не может быть отрицательным')
+                    elif value == 0:
+                        await message.reply(f'❌ Значение не может быть равным нулю')
+                    elif drug_count >= value and value != 0 and value > 0:
                         cursor.execute('UPDATE users SET drug_count = drug_count + ? WHERE id = ?', (value,user_id))
                         cursor.execute('UPDATE users SET drug_count = drug_count - ? WHERE id = ?', (value,your_user_id))
                         conn.commit()
@@ -293,6 +299,7 @@ async def give_command(message: types.Message, state: FSMContext):
                         await state.set_data({'time': datetime.now()})
                     elif drug_count < value:
                         await message.reply(f'❌ Недостаточно граммов мефа для того чтобы их передать')
+
                 else:
                     await message.reply('❌ Этот пользователь еще не нюхал меф')
             else:
@@ -560,9 +567,36 @@ async def clanleave(message: types.Message):
         elif clan_id > 0 and user_id != clan_owner_id:
             cursor.execute('UPDATE users SET clan_member = ? WHERE id = ?', (0, user_id))
             conn.commit()
-            await message.reply(f'✅ Вы покинули клан {clan_name}', parse_mode='markdown')
+            await message.reply(f'✅ *Вы покинули* клан *{clan_name}*', parse_mode='markdown')
         elif clan_id > 0 and user_id == clan_owner_id:
             await message.reply(f"🛑 Создатель клана не может его покинуть", parse_mode='markdown')
+
+@dp.message_handler(commands=['clandisband'])
+async def clandisband(message: types.Message):
+    user_id = message.from_user.id
+    cursor.execute('SELECT * FROM users WHERE id = ?', (user_id,))
+    user = cursor.fetchone()
+    is_banned = user[4] if user else 0
+    clan_id = user[7] if user else 0
+    cursor.execute('SELECT clan_owner_id, clan_name FROM clans WHERE clan_id = ?', (clan_id,))
+    clan = cursor.fetchone()
+
+    if is_banned == 1:
+        await message.reply('🛑 Вы заблокированы в боте!')
+    elif is_banned == 0:
+        try:
+            clan_owner_id = clan[0]
+            clan_name = clan[1]
+        except:
+            await message.reply(f"🛑 Вы не состоите в клане", parse_mode='markdown')
+        if clan_id > 0 and user_id == clan_owner_id:
+            cursor.execute('DELETE FROM clans WHERE clan_id = ?', (clan_id,))
+            cursor.execute('UPDATE users SET clan_member = 0 WHERE clan_member = ?', (clan_id,))
+            cursor.execute('UPDATE users SET clan_invite = 0 WHERE clan_invite = ?', (clan_id,))
+            conn.commit()
+            await message.reply(f'✅ Вы распустили клан `{clan_name}`', parse_mode='markdown')
+        elif clan_id > 0 and user_id != clan_owner_id:
+            await message.reply(f"🛑 Вы не владелец клана!", parse_mode='markdown')
 
 @dp.message_handler(commands=['clanaccept'])
 async def clanaccept(message: types.Message):
