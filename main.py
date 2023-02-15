@@ -20,7 +20,7 @@ bot = Bot(token=os.environ.get('BOT_TOKEN'))
 storage = MemoryStorage()
 dp = Dispatcher(bot, storage=storage)
 
-conn = sqlite3.connect('data.db')
+conn = sqlite3.connect('/root/MefMetrBot/asdf.db')
 cursor = conn.cursor()
 cursor.execute('CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, drug_count INTEGER, last_use_time TEXT, is_admin INTEGER, is_banned INTEGER, last_casino TEXT, last_find TEXT, clan_member INTEGER, clan_invite INTEGER)')
 cursor.execute('CREATE TABLE IF NOT EXISTS chats (chat_id INTEGER PRIMARY KEY, is_ads_enable INTEGER DEFAULT 1)')
@@ -45,7 +45,26 @@ async def start_command(message: types.Message):
 
 @dp.message_handler(commands=['help'])
 async def help_command(message: types.Message):
-    await message.reply('Все команды бота:\n\n`/drug` - *принять мефик*\n`/top` - *топ торчей мира*\n`/take` - *спиздить мефик у ближнего*\n`/give` - *поделиться мефиком*\n`/casino` - *All-in, всё или ничего*\n`/find` - *сходить за кладом*\n`/about` - *узнать подробнее о боте*', parse_mode='markdown')
+    await message.reply('''Все команды бота:
+
+`/drug` - *принять мефик*
+`/top` - *топ торчей мира*
+`/take` - *спиздить мефик у ближнего*
+`/give` - *поделиться мефиком*
+`/casino` - *казино*
+`/find` - *сходить за кладом*
+`/about` - *узнать подробнее о боте*
+`/clancreate` - *создать клан*
+`/deposit` - *пополнить баланс клана*
+`/withdraw` - *вывести средства с клана*
+`/clantop` - *топ 10 кланов по состоянию баланса*
+`/clanbalance` - *баланс клана*
+`/claninfo` - *о клане*
+`/claninvite` - *пригласить в клан*
+`/clankick` - *кикнуть из клана*
+`/clanaccept` - *принять приглашение в клан*
+`/clanleave` - *добровольно выйти из клана*
+    ''', parse_mode='markdown')
 
 
 @dp.message_handler(Command('profile'))
@@ -160,13 +179,13 @@ async def take_command(message: types.Message, state: FSMContext):
                         remaining_time = timedelta(days=1) - (datetime.now() - last_time['time'])
                         await message.reply(f"❌ Нельзя пиздить меф так часто! Ты сможешь спиздить меф через 1 день.")
                     else:
-                        variables = ['zametil', 'otpor', 'pass']
+                        variables = ['noticed', 'hit', 'pass']
                         randomed = random.choice(variables)
-                        if randomed == 'zametil':
+                        if randomed == 'noticed':
                             cursor.execute('UPDATE users SET drug_count = drug_count - 1 WHERE id = ?', (your_user_id,))
                             conn.commit()
                             await message.reply('❌ *Жертва тебя заметила*, и ты решил убежать. Спиздить меф не получилось. Пока ты бежал, *ты потерял* `1 гр.`', parse_mode='markdown')
-                        elif randomed == 'otpor':
+                        elif randomed == 'hit':
                             cursor.execute('UPDATE users SET drug_count = drug_count - 1 WHERE id = ?', (your_user_id,))
                             cursor.execute('UPDATE users SET drug_count = drug_count + 1 WHERE id = ?', (user_id,))
                             conn.commit()
@@ -200,36 +219,37 @@ async def casino(message: types.Message):
     elif is_banned == 0:
         if args:
             try:
-                stavka = int(args)
+                bet = int(args)
             except ValueError:
                 await message.reply(f"🛑 Нужно указать целое число!", parse_mode='markdown')
                 return
-            if stavka < 20:
+            if bet < 20:
                 await message.reply(f"🛑 Ставка должна быть больше `20` гр.", parse_mode='markdown')
             else:
-                if stavka > drug_count:
+                if bet > drug_count:
                     await message.reply(f"🛑 Твоя ставка больше твоего баланса!", parse_mode='markdown')
-                elif stavka <= drug_count:
-                #if last_used is not None and (datetime.now() - datetime.fromisoformat(last_used)).total_seconds() < 3600:
-                #    await message.reply('⏳ Ты только что *крутил казик*, солевая обезьяна, *подожди один час по братски.*', parse_mode='markdown')
-                #    return
-                    randomed = random.randint(1,100)
-                    multipliers = [5, 2.5, 2, 1.5, 0]
-                    weights = [1, 2, 3, 4, 5]
-                    multiplier = random.choices(multipliers, weights, k=1)[0]
-                    if multiplier > 0:
-                        stavka *= multiplier
-                        cursor.execute('UPDATE users SET last_casino = ? WHERE id = ?', (datetime.now().isoformat(), user_id,))
-                        cursor.execute('UPDATE users SET drug_count = ? WHERE id = ?', (drug_count + stavka, user_id,))
-                        conn.commit()
-                        await bot.send_message(-1001659076963, f"#CASINO\n\nfirst\_name: `{message.from_user.first_name}`\nuserid: `{user_id}`\nstavka: `{stavka}`\nmultiplier: `{multiplier}`\ndrug\_count: `{drug_count+stavka}`\n\n[mention](tg://user?id={user_id})", parse_mode='markdown')
-                        await message.reply(f'🤑 *Ебать тебе повезло!* Твоя ставка *умножилось* на `{multiplier}`. Твой выйгрыш: `{stavka}` гр.\nТвой баланс: `{drug_count+stavka}` гр.', parse_mode='markdown')
-                    elif multiplier == 0:
-                        cursor.execute('UPDATE users SET last_casino = ? WHERE id = ?', (datetime.now().isoformat(), user_id,))
-                        cursor.execute('UPDATE users SET drug_count = ? WHERE id = ?', (drug_count-stavka, user_id,))
-                        conn.commit()
-                        await bot.send_message(-1001659076963, f"#CASINO\n\nfirst\_name: `{message.from_user.first_name}`\nuserid: `{user_id}`\nstavka: `{stavka}`\nmultiplier: `{multiplier}`\ndrug\_count: `{drug_count-stavka}`\n\n[mention](tg://user?id={user_id})", parse_mode='markdown')
-                        await message.reply('😔 *Ты проебал* свою ставку, *нехуй было* крутить казик.', parse_mode='markdown')
+                elif bet <= drug_count:
+                    if last_used is not None and (datetime.now() - datetime.fromisoformat(last_used)).total_seconds() < 300:
+                        await message.reply('⏳ Ты только что *крутил казик*, солевая обезьяна, *подожди 5 минут по братски.*', parse_mode='markdown')
+                        return
+                    else:
+                        randomed = random.randint(1,100)
+                        multipliers = [2, 1.5, 1.25, 1.1, 0]
+                        weights = [1, 2, 3, 4, 5, 6, 7, 8]
+                        multiplier = random.choices(multipliers, weights, k=1)[0]
+                        if multiplier > 0:
+                            bet *= multiplier
+                            cursor.execute('UPDATE users SET last_casino = ? WHERE id = ?', (datetime.now().isoformat(), user_id,))
+                            cursor.execute('UPDATE users SET drug_count = ? WHERE id = ?', (drug_count + bet, user_id,))
+                            conn.commit()
+                            await bot.send_message(-1001659076963, f"#CASINO\n\nfirst\_name: `{message.from_user.first_name}`\nuserid: `{user_id}`\nbet: `{bet}`\nmultiplier: `{multiplier}`\ndrug\_count: `{drug_count+bet}`\n\n[mention](tg://user?id={user_id})", parse_mode='markdown')
+                            await message.reply(f'🤑 *Ебать тебе повезло!* Твоя ставка *умножилось* на `{multiplier}`. Твой выйгрыш: `{bet}` гр.\nТвой баланс: `{drug_count+bet}` гр.', parse_mode='markdown')
+                        elif multiplier == 0:
+                            cursor.execute('UPDATE users SET last_casino = ? WHERE id = ?', (datetime.now().isoformat(), user_id,))
+                            cursor.execute('UPDATE users SET drug_count = ? WHERE id = ?', (drug_count-bet, user_id,))
+                            conn.commit()
+                            await bot.send_message(-1001659076963, f"#CASINO\n\nfirst\_name: `{message.from_user.first_name}`\nuserid: `{user_id}`\nbet: `{bet}`\nmultiplier: `{multiplier}`\ndrug\_count: `{drug_count-stavka}`\n\n[mention](tg://user?id={user_id})", parse_mode='markdown')
+                            await message.reply('😔 *Ты проебал* свою ставку, *нехуй было* крутить казик.', parse_mode='markdown')
         else:
             await message.reply(f"🛑 Укажи сумму, на которую ты бы хотел сыграть! Пример:\n`/casino 40`", parse_mode='markdown')
 
@@ -257,23 +277,23 @@ async def give_command(message: types.Message, state: FSMContext):
                 if user and your_user:
                     drug_count = your_user[1]
                     last_time = await state.get_data()
-                    if last_time and (datetime.now() - last_time['time']) < timedelta(hours=0.0166667):
-                        remaining_time = timedelta(hours=0.0166667) - (datetime.now() - last_time['time'])
-                        await message.reply(f"❌ Нельзя делиться мефом так часто! Ты сможешь поделиться весом через 1 минуту!")
-                    else:
-                        if drug_count >= value:
-                            cursor.execute('UPDATE users SET drug_count = drug_count + ? WHERE id = ?', (value,user_id))
-                            cursor.execute('UPDATE users SET drug_count = drug_count - ? WHERE id = ?', (value,your_user_id))
-                            conn.commit()
-                            username = reply_msg.from_user.username.replace('_', '\_')
-                            await bot.send_message(-1001659076963, f"#GIVE\n\nfirst\_name: `{message.from_user.first_name}`\nuserid: `{user_id}`\nto: `{reply_msg.from_user.first_name}`\nvalue: `{value}`\nmention: @{username}", parse_mode='markdown')
-                            if username:
-                                await message.reply(f"✅ [{message.from_user.first_name}](tg://user?id={message.from_user.id}) _подарил(-а) {value} гр. мефа _ *@{username}*!", parse_mode='markdown')
-                            else:
-                                await message.reply(f"✅ [{message.from_user.first_name}](tg://user?id={message.from_user.id}) _подарил(-а) {value} гр. мефа _ *{reply_msg.from_user.full_name}*!", parse_mode='markdown')
-                            await state.set_data({'time': datetime.now()})
-                        elif drug_count < value:
-                            await message.reply(f'❌ Недостаточно граммов мефа для того чтобы их передать')
+                    #if last_time and (datetime.now() - last_time['time']) < timedelta(hours=0.0166667):
+                    #    remaining_time = timedelta(hours=0.0166667) - (datetime.now() - last_time['time'])
+                    #    await message.reply(f"❌ Нельзя делиться мефом так часто! Ты сможешь поделиться весом через 1 минуту!")
+                    #else:
+                    if drug_count >= value:
+                        cursor.execute('UPDATE users SET drug_count = drug_count + ? WHERE id = ?', (value,user_id))
+                        cursor.execute('UPDATE users SET drug_count = drug_count - ? WHERE id = ?', (value,your_user_id))
+                        conn.commit()
+                        username = reply_msg.from_user.username.replace('_', '\_')
+                        await bot.send_message(-1001659076963, f"#GIVE\n\nfirst\_name: `{message.from_user.first_name}`\nuserid: `{user_id}`\nto: `{reply_msg.from_user.first_name}`\nvalue: `{value}`\nmention: @{username}", parse_mode='markdown')
+                        if username:
+                            await message.reply(f"✅ [{message.from_user.first_name}](tg://user?id={message.from_user.id}) _подарил(-а) {value} гр. мефа _ *@{username}*!", parse_mode='markdown')
+                        else:
+                            await message.reply(f"✅ [{message.from_user.first_name}](tg://user?id={message.from_user.id}) _подарил(-а) {value} гр. мефа _ *{reply_msg.from_user.full_name}*!", parse_mode='markdown')
+                        await state.set_data({'time': datetime.now()})
+                    elif drug_count < value:
+                        await message.reply(f'❌ Недостаточно граммов мефа для того чтобы их передать')
                 else:
                     await message.reply('❌ Этот пользователь еще не нюхал меф')
             else:
@@ -521,6 +541,29 @@ async def clankick(message: types.Message):
         elif clan_id > 0 and user_id != clan_owner_id:
             await message.reply(f"🛑 Исключать из клана может только создатель", parse_mode='markdown')
 
+@dp.message_handler(commands=['clanleave'])
+async def clanleave(message: types.Message):
+    user_id = message.from_user.id
+    cursor.execute('SELECT * FROM users WHERE id = ?', (user_id,))
+    user = cursor.fetchone()
+    is_banned = user[4] if user else 0
+    clan_id = user[7] if user else 0
+    cursor.execute('SELECT clan_balance, clan_name, clan_owner_id FROM clans WHERE clan_id = ?', (clan_id,))
+    clan = cursor.fetchone()
+    clan_name = clan[1]
+    clan_owner_id = int(clan[2])
+    if is_banned == 1:
+        await message.reply('🛑 Вы заблокированы в боте!')
+    elif is_banned == 0:
+        if clan_id == 0:
+            await message.reply(f"🛑 Вы не состоите в клане", parse_mode='markdown')
+        elif clan_id > 0 and user_id != clan_owner_id:
+            cursor.execute('UPDATE users SET clan_member = ? WHERE id = ?', (0, user_id))
+            conn.commit()
+            await message.reply(f'✅ Вы покинули клан {clan_name}', parse_mode='markdown')
+        elif clan_id > 0 and user_id == clan_owner_id:
+            await message.reply(f"🛑 Создатель клана не может его покинуть", parse_mode='markdown')
+
 @dp.message_handler(commands=['clanaccept'])
 async def clanaccept(message: types.Message):
     user_id = message.from_user.id
@@ -583,6 +626,7 @@ async def drug_command(message: types.Message, state: FSMContext):
 
 @dp.message_handler(commands=['banuser'])
 async def banuser_command(message: types.Message):
+    args = message.get_args()
     user_id = message.from_user.id
     cursor.execute('SELECT * FROM users WHERE id = ?', (user_id,))
     user = cursor.fetchone()
@@ -593,6 +637,10 @@ async def banuser_command(message: types.Message):
             bann_user_id = reply_msg.from_user.id
             cursor.execute('UPDATE users SET is_banned = 1 WHERE id = ?', (bann_user_id,))
             conn.commit()
+        elif args:
+            bann_user_id = int(args)
+            cursor.execute('UPDATE users SET is_banned = 1 WHERE id = ?', (bann_user_id,))
+            conn.commit()
         await message.reply(f"🛑 Пользователь с ID: `{bann_user_id}` заблокирован", parse_mode='markdown')
         await bot.send_message(-1001659076963, f"#BAN\n\nid: {bann_user_id}")
     elif is_admin == 0:
@@ -600,6 +648,7 @@ async def banuser_command(message: types.Message):
 
 @dp.message_handler(commands=['unbanuser'])
 async def unbanuser_command(message: types.Message):
+    args = message.get_args()
     user_id = message.from_user.id
     cursor.execute('SELECT * FROM users WHERE id = ?', (user_id,))
     user = cursor.fetchone()
@@ -608,6 +657,10 @@ async def unbanuser_command(message: types.Message):
         reply_msg = message.reply_to_message
         if reply_msg and reply_msg.from_user.id != message.from_user.id:
             bann_user_id = reply_msg.from_user.id
+            cursor.execute('UPDATE users SET is_banned = 0 WHERE id = ?', (bann_user_id,))
+            conn.commit()
+        elif args:
+            bann_user_id = int(args)
             cursor.execute('UPDATE users SET is_banned = 0 WHERE id = ?', (bann_user_id,))
             conn.commit()
         await message.reply(f"🛑 Пользователь с ID: `{bann_user_id}` разблокирован", parse_mode='markdown')
