@@ -1,17 +1,18 @@
 import os
 import random
-import asyncio
+import time
 import logging
 import sqlite3
 import sys
 from datetime import datetime, timedelta
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
-from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardButton
+from aiogram.types import InlineKeyboardButton
+from aiogram.types import Message
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Command
 from dotenv import load_dotenv, find_dotenv
-
+from utils import states
 
 logging.basicConfig(level=logging.INFO)
 load_dotenv(find_dotenv())
@@ -67,6 +68,14 @@ async def start_command(message: types.Message):
 async def start_command(message: types.Message):
     await message.reply("🚨 *MONKEY ALARM*", parse_mode='markdown')
 
+@dp.message_handler(commands=['hack'])
+async def start_command(message: types.Message):
+    await message.reply("🚨 *MONKEY ALARM*", parse_mode='markdown')
+
+@dp.message_handler(commands=['ban'])
+async def start_command(message: types.Message):
+    await message.reply("🚨 *MONKEY ALARM*", parse_mode='markdown')
+
 
 @dp.message_handler(commands=['help'])
 async def help_command(message: types.Message):
@@ -93,19 +102,14 @@ async def help_command(message: types.Message):
     ''', parse_mode='markdown')
 
 
-
-
-
 @dp.message_handler(commands=['profile'])
 async def profile_command(message: types.Message):
-    user_id = None
-    if message.reply_to_message and message.reply_to_message.from_user:
+    if message.reply_to_message:
         user_id = message.reply_to_message.from_user.id
-    else:
+    elif message.from_user:
         user_id = message.from_user.id
     cursor.execute('SELECT * FROM users WHERE id = ?', (user_id,))
     user = cursor.fetchone()
-    is_admin = user[3]
     if user:
         drug_count = user[1]
         is_admin = user[3]
@@ -123,14 +127,14 @@ async def profile_command(message: types.Message):
 
         if is_admin == 1:
             if clan_member:
-                await message.reply(f"👑 *Создатель бота*\n👤 *Имя:* _{full_name}_\n👥 *Клан:* *{clan_name}*\n👥 *Ваш username:* @{username}\n🆔 *Ваш ID:* {user_id}\n🌿 *Снюхано* _{drug_count}_ грамм.", parse_mode='markdown')
+                await message.reply(f"👑 *Создатель бота*\n👤 *Имя:* _{full_name}_\n👥 *Клан:* *{clan_name}*\n👥 *Username пользователя:* @{username}\n🆔 *ID пользователя:* `{user_id}`\n🌿 *Снюхано* _{drug_count}_ грамм.", parse_mode='markdown')
             else:
-                await message.reply(f"👑 *Создатель бота*\n👤 *Имя:* _{full_name}_\n👥 *Ваш username:* @{username}\n🆔 *Ваш ID:* {user_id}\n🌿 *Снюхано* _{drug_count}_ грамм.", parse_mode='markdown')
+                await message.reply(f"👑 *Создатель бота*\n👤 *Имя:* _{full_name}_\n👥 *Username пользователя:* @{username}\n🆔 *ID пользователя:* `{user_id}`\n🌿 *Снюхано* _{drug_count}_ грамм.", parse_mode='markdown')
         else:
             if clan_member:
-                await message.reply(f"👤 *Имя:* _{full_name}_\n👥 *Клан:* *{clan_name}*\n👥 *Ваш username:* @{username}\n🆔 *Ваш ID:* {user_id}\n🌿 *Снюхано* _{drug_count}_ грамм.", parse_mode='markdown')
+                await message.reply(f"👤 *Имя:* _{full_name}_\n👥 *Клан:* *{clan_name}*\n👥 *Username пользователя:* @{username}\n🆔 *ID пользователя:* `{user_id}`\n🌿 *Снюхано* _{drug_count}_ грамм.", parse_mode='markdown')
             else:
-                await message.reply(f"👤 *Имя:* _{full_name}_\n👥 *Ваш username:* @{username}\n🆔 *Ваш ID: *{user_id}\n🌿 *Снюхано* _{drug_count}_ грамм.", parse_mode='markdown')
+                await message.reply(f"👤 *Имя:* _{full_name}_\n👥 *Username пользователя:* @{username}\n🆔 *ID пользователя: * `{user_id}`\n🌿 *Снюхано* _{drug_count}_ грамм.", parse_mode='markdown')
     else:
         await message.reply('❌ Профиль не найден')
 
@@ -694,7 +698,7 @@ async def drug_command(message: types.Message, state: FSMContext):
         await message.reply('🛑 Вы заблокированы в боте!')
     elif is_banned == 0:
         if last_used is not None and (datetime.now() - datetime.fromisoformat(last_used)).total_seconds() < 43200:
-            await message.reply('⏳ Ты недавно *ходил за кладом*, *подожди 12 часов.*', parse_mode='markdown')
+            await message.reply('⏳ Ты недавно *ходил за кладом, подожди 12 часов.*', parse_mode='markdown')
             return
         else:
             if random.randint(1,100) > 50:
@@ -784,8 +788,6 @@ async def setdrugs_command(message: types.Message):
     elif is_admin == 0:
         await message.reply('🚨 MONKEY ALARM')
 
-
-
 @dp.message_handler(commands=['uservalue'])
 async def uservalue(message: types.Message):
     user_id = message.from_user.id
@@ -799,29 +801,39 @@ async def uservalue(message: types.Message):
     else:
         await message.reply('🚨 MONKEY ALARM')
 
-
-
-@dp.message_handler(commands=['broadcast'])
-async def cmd_broadcast(message: types.Message):
-    args = message.get_args()
+@dp.message_handler(Command('broadcast'))
+async def cmd_broadcast_start(message: Message):
     user_id = message.from_user.id
     cursor.execute('SELECT * FROM users WHERE id = ?', (user_id,))
     user = cursor.fetchone()
     is_admin = user[3]
+    cursor.execute('SELECT COUNT(id) FROM users')
+    user = cursor.fetchone()[0]
+    reply = message.reply_to_message
+    result = cursor.execute('SELECT * FROM chats')
     if is_admin == 1:
-        if args:
-            result = cursor.execute('SELECT * FROM chats')
-            for row in result:
-                try:
-                    chat_id = row[0]
-                    await bot.send_message(chat_id, args, parse_mode='markdown')
-                    await bot.send_message(-1001659076963, f"#SEND\n\nchatid: {chat_id}")
-                except:
-                    await bot.send_message(-1001659076963, f"#SENDERROR\n\nchatid: {chat_id}\nerror: {sys.exc_info()[0]}")
-                    pass
-            await message.reply('Сообщение успешно разослано.')
+        if reply:
+            if reply.photo:
+                if reply.caption:
+                    for row in result:
+                        try:
+                            chat_id = row[0]
+                            await bot.send_photo(chat_id, reply.photo[-1].file_id, caption=f"{reply.caption}", parse_mode='markdown')
+                            time.sleep(1.5)
+                        except:
+                            await bot.send_message(-1001659076963, f"#SENDERROR\n\nchatid: {chat_id}\nerror: {sys.exc_info()[0]}")
+                            pass
+            elif reply.text:
+                for row in result:
+                    try:
+                        chat_id = row[0]
+                        await bot.send_message(chat_id, f"{reply.text}")
+                        time.sleep(1.5)
+                    except:
+                        await bot.send_message(-1001659076963, f"#SENDERROR\n\nchatid: {chat_id}\nerror: {sys.exc_info()[0]}")
+                        pass
         else:
-            await message.reply('🚨 Аргументы укажи блять\n\nПример: `/broadcast *залупа*`',parse_mode='markdown')
+            await message.reply('Ответь на сообщение с текстом или фото для рассылки')
     else:
         await message.reply('🚨 MONKEY ALARM')
 
