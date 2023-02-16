@@ -104,39 +104,44 @@ async def help_command(message: types.Message):
 
 @dp.message_handler(commands=['profile'])
 async def profile_command(message: types.Message):
+    
     if message.reply_to_message:
         user_id = message.reply_to_message.from_user.id
     elif message.from_user:
         user_id = message.from_user.id
     cursor.execute('SELECT * FROM users WHERE id = ?', (user_id,))
     user = cursor.fetchone()
-    if user:
-        drug_count = user[1]
-        is_admin = user[3]
-        clan_member = user[7]
-        if clan_member:
-            cursor.execute('SELECT clan_name FROM clans WHERE clan_id = ?', (clan_member,))
-            clan = cursor.fetchone()
-            clan_name = clan[0] if clan else 0
-        if user_id == message.from_user.id:
-            username = message.from_user.username.replace('_', '\_') if message.from_user.username else None
-            full_name = message.from_user.full_name
-        else:
-            username = message.reply_to_message.from_user.username.replace('_', '\_') if message.reply_to_message.from_user.username else None
-            full_name = message.reply_to_message.from_user.full_name
+    is_banned = user[4] if user else 0
+    if is_banned == 1:
+            await message.reply('🛑 Вы заблокированы в боте!')
+    elif is_banned == 0:
+        if user:
+            drug_count = user[1]
+            is_admin = user[3]
+            clan_member = user[7]
+            if clan_member:
+                cursor.execute('SELECT clan_name FROM clans WHERE clan_id = ?', (clan_member,))
+                clan = cursor.fetchone()
+                clan_name = clan[0] if clan else 0
+            if user_id == message.from_user.id:
+                username = message.from_user.username.replace('_', '\_') if message.from_user.username else None
+                full_name = message.from_user.full_name
+            else:
+                username = message.reply_to_message.from_user.username.replace('_', '\_') if message.reply_to_message.from_user.username else None
+                full_name = message.reply_to_message.from_user.full_name
 
-        if is_admin == 1:
-            if clan_member:
-                await message.reply(f"👑 *Создатель бота*\n👤 *Имя:* _{full_name}_\n👥 *Клан:* *{clan_name}*\n👥 *Username пользователя:* @{username}\n🆔 *ID пользователя:* `{user_id}`\n🌿 *Снюхано* _{drug_count}_ грамм.", parse_mode='markdown')
+            if is_admin == 1:
+                if clan_member:
+                    await message.reply(f"👑 *Создатель бота*\n👤 *Имя:* _{full_name}_\n👥 *Клан:* *{clan_name}*\n👥 *Username пользователя:* @{username}\n🆔 *ID пользователя:* `{user_id}`\n🌿 *Снюхано* _{drug_count}_ грамм.", parse_mode='markdown')
+                else:
+                    await message.reply(f"👑 *Создатель бота*\n👤 *Имя:* _{full_name}_\n👥 *Username пользователя:* @{username}\n🆔 *ID пользователя:* `{user_id}`\n🌿 *Снюхано* _{drug_count}_ грамм.", parse_mode='markdown')
             else:
-                await message.reply(f"👑 *Создатель бота*\n👤 *Имя:* _{full_name}_\n👥 *Username пользователя:* @{username}\n🆔 *ID пользователя:* `{user_id}`\n🌿 *Снюхано* _{drug_count}_ грамм.", parse_mode='markdown')
+                if clan_member:
+                    await message.reply(f"👤 *Имя:* _{full_name}_\n👥 *Клан:* *{clan_name}*\n👥 *Username пользователя:* @{username}\n🆔 *ID пользователя:* `{user_id}`\n🌿 *Снюхано* _{drug_count}_ грамм.", parse_mode='markdown')
+                else:
+                    await message.reply(f"👤 *Имя:* _{full_name}_\n👥 *Username пользователя:* @{username}\n🆔 *ID пользователя: * `{user_id}`\n🌿 *Снюхано* _{drug_count}_ грамм.", parse_mode='markdown')
         else:
-            if clan_member:
-                await message.reply(f"👤 *Имя:* _{full_name}_\n👥 *Клан:* *{clan_name}*\n👥 *Username пользователя:* @{username}\n🆔 *ID пользователя:* `{user_id}`\n🌿 *Снюхано* _{drug_count}_ грамм.", parse_mode='markdown')
-            else:
-                await message.reply(f"👤 *Имя:* _{full_name}_\n👥 *Username пользователя:* @{username}\n🆔 *ID пользователя: * `{user_id}`\n🌿 *Снюхано* _{drug_count}_ грамм.", parse_mode='markdown')
-    else:
-        await message.reply('❌ Профиль не найден')
+            await message.reply('❌ Профиль не найден')
 
 @dp.message_handler(Command('drug'))
 async def drug_command(message: types.Message, state: FSMContext):
@@ -156,8 +161,11 @@ async def drug_command(message: types.Message, state: FSMContext):
             remaining_time = timedelta(hours=1) - (datetime.now() - use_time)
             await message.reply(f"❌ *{message.from_user.first_name}*, _ты уже нюхал(-а)!_\n\n🌿 Всего снюхано `{drug_count} грамм` мефедрона\n\n⏳ Следующий занюх доступен через `1 час.`", parse_mode='markdown')
         elif random.randint(0,100) < 20:
-            await message.reply(f"🧂 *{message.from_user.first_name}*, _ты просыпал(-а) весь мефчик!_\n\n🌿 Всего снюхано `{drug_count}` грамм мефедрона\n\n⏳ Следующий занюх доступен через `1 час.`", parse_mode='markdown')
-            await state.set_data({'time': datetime.now()})
+            if last_use_time and (datetime.now() - use_time) < timedelta(hours=1):
+                remaining_time = timedelta(hours=1) - (datetime.now() - use_time)
+                await message.reply(f"🧂 *{message.from_user.first_name}*, _ты просыпал(-а) весь мефчик!_\n\n🌿 Всего снюхано `{drug_count}` грамм мефедрона\n\n⏳ Следующий занюх доступен через `1 час.`", parse_mode='markdown')
+                cursor.execute('UPDATE users SET last_use_time = ? WHERE id = ?', (datetime.now(), user_id))
+                conn.commit()
         else:
             count = random.randint(1, 10)
             if user:
@@ -227,9 +235,8 @@ async def take_command(message: types.Message, state: FSMContext):
                             await message.reply('❌ *Жертва тебя заметила*, и ты решил убежать. Спиздить меф не получилось. Пока ты бежал, *ты потерял* `1 гр.`', parse_mode='markdown')
                         elif randomed == 'hit':
                             cursor.execute('UPDATE users SET drug_count = drug_count - 1 WHERE id = ?', (your_user_id,))
-                            cursor.execute('UPDATE users SET drug_count = drug_count + 1 WHERE id = ?', (user_id,))
                             conn.commit()
-                            await message.reply('❌ *Жертва тебя заметила*, и пизданула тебе бутылкой по башке бля. Спиздить меф не получилось. *Жертва достала из твоего кармана* `1 гр.`', parse_mode='markdown')
+                            await message.reply('❌ *Жертва тебя заметила*, и пизданула тебя бутылкой по башке бля. Спиздить меф не получилось. *Жертва достала из твоего кармана* `1 гр.`', parse_mode='markdown')
                             
                         elif randomed == 'pass':
                             cursor.execute('UPDATE users SET drug_count = drug_count - 1 WHERE id = ?', (user_id,))
@@ -815,6 +822,7 @@ async def cmd_broadcast_start(message: Message):
         if reply:
             if reply.photo:
                 if reply.caption:
+                    await message.reply('Начинаю рассылку')
                     for row in result:
                         try:
                             chat_id = row[0]
@@ -823,7 +831,18 @@ async def cmd_broadcast_start(message: Message):
                         except:
                             await bot.send_message(-1001659076963, f"#SENDERROR\n\nchatid: {chat_id}\nerror: {sys.exc_info()[0]}")
                             pass
+                else:
+                    await message.reply('Начинаю рассылку')
+                    for row in result:
+                        try:
+                            chat_id = row[0]
+                            await bot.send_photo(chat_id, reply.photo[-1].file_id)
+                            time.sleep(1.5)
+                        except:
+                            await bot.send_message(-1001659076963, f"#SENDERROR\n\nchatid: {chat_id}\nerror: {sys.exc_info()[0]}")
+                            pass
             elif reply.text:
+                await message.reply('Начинаю рассылку')
                 for row in result:
                     try:
                         chat_id = row[0]
