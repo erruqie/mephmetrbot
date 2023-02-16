@@ -557,6 +557,46 @@ async def claninfo(message: types.Message):
             clan_owner = await bot.get_chat(clan_owner_id)
             await message.reply(f"👥 Клан: `{clan_name}`\n👑 Владелец клана: [{clan_owner.first_name}](tg://user?id={clan_owner_id})\n🌿 Баланс клана `{clan_balance}` гр.", parse_mode='markdown')   
 
+@dp.message_handler(commands=['clanmembers'])
+async def clanmembers(message: types.Message):
+    user_id = message.from_user.id
+    cursor.execute('SELECT * FROM users WHERE id = ?', (user_id,))
+    user = cursor.fetchone()
+    is_banned = user[4] if user else 0
+
+    if is_banned == 1:
+        await message.reply('🛑 Вы заблокированы в боте!')
+    elif is_banned == 0:
+        clan_id = user[7] if user else 0
+        cursor.execute('SELECT * FROM users WHERE clan_member = ?', (clan_id,))
+        clan_members = cursor.fetchall()
+        cursor.execute('SELECT clan_name, clan_owner_id FROM clans WHERE clan_id = ?', (clan_id,))
+        clan = cursor.fetchone()
+        if clan:
+            clan_name = clan[0]
+            clan_owner_id = clan[1]
+            if clan_id > 0:
+                if clan_members:
+                    response = f"👥 Список участников клана *{clan_name}*:\n"
+                    counter = 1
+                    clan_owner = None
+                    for member in clan_members:
+                        if member[0] == clan_owner_id:
+                            clan_owner = member
+                            break
+                    if clan_owner:
+                        user_info = await bot.get_chat(clan_owner[0])
+                        response += f"{counter}) *{user_info.full_name}* 👑\n"
+                        counter += 1
+                    for member in clan_members:
+                        if member[0] != clan_owner_id:
+                            user_info = await bot.get_chat(member[0])
+                            response += f"{counter}) {user_info.full_name}\n"
+                            counter += 1
+                    await message.reply(response, parse_mode='markdown')
+        else:
+            await message.reply(f"🛑 Вы не состоите в клане", parse_mode='markdown')
+
 @dp.message_handler(commands=['claninvite'])
 async def claninvite(message: types.Message):
     user_id = message.from_user.id
@@ -566,31 +606,35 @@ async def claninvite(message: types.Message):
     clan_id = user[7] if user else 0
     cursor.execute('SELECT clan_balance, clan_name, clan_owner_id FROM clans WHERE clan_id = ?', (clan_id,))
     clan = cursor.fetchone()
-    clan_name = clan[1]
-    clan_owner_id = int(clan[2])
     if is_banned == 1:
         await message.reply('🛑 Вы заблокированы в боте!')
     elif is_banned == 0:
-        if clan_id == 0:
-            await message.reply(f"🛑 Вы не состоите в клане", parse_mode='markdown')
-        elif clan_id > 0 and user_id == clan_owner_id:
-            reply_msg = message.reply_to_message
-            if reply_msg:
-                user_id = reply_msg.from_user.id
-                username = reply_msg.from_user.username.replace('_', '\_')
-                usernameinviter = message.from_user.username.replace('_', '\n')
-                cursor.execute('SELECT clan_member, clan_invite FROM users WHERE id = ?', (user_id,))
-                user = cursor.fetchone()
-                clan_member = user[0]
-                clan_invite = user[1]
-                if clan_member > 0 or clan_invite > 0:
-                    await message.reply(f"🛑 Этот пользователь уже в клане, или имеет активное приглашение", parse_mode='markdown')
-                else:
-                    cursor.execute('UPDATE users SET clan_invite = ? WHERE id = ?', (clan_id, user_id))
-                    conn.commit()
-                    await message.reply(f'✅ Пользователь @{username} *приглашён в клан {clan_name}* пользователем @{usernameinviter}\nДля того чтобы принять приглашение, *введите команду* `/clanaccept`', parse_mode='markdown')
-        elif clan_id > 0 and user_id != clan_owner_id:
-            await message.reply(f"🛑 Приглашать в клан может только создатель", parse_mode='markdown')
+        if clan:
+            clan_name = clan[1]
+            clan_owner_id = clan[2]
+            if user_id == clan_owner_id:
+                reply_msg = message.reply_to_message
+                if reply_msg:
+                    user_id = reply_msg.from_user.id
+                    username = reply_msg.from_user.username.replace('_', '\_')
+                    usernameinviter = message.from_user.username.replace('_', '\n')
+                    cursor.execute('SELECT clan_member, clan_invite FROM users WHERE id = ?', (user_id,))
+                    user = cursor.fetchone()
+                    clan_member = user[0] if user else 0
+                    clan_invite = user[1] if user else 0
+                    if clan_member > 0 or clan_invite > 0:
+                        await message.reply(f"🛑 Этот пользователь уже в клане, или имеет активное приглашение", parse_mode='markdown')
+                    else:
+                        if user:
+                            cursor.execute('UPDATE users SET clan_invite = ? WHERE id = ?', (clan_id, user_id))
+                        else:
+                            cursor.execute('INSERT INTO users (id, drug_count, is_admin, is_banned, clan_member, clan_invite) VALUES (?, 0, 0, 0, 0, ?)', (user_id, clan_id))
+                        conn.commit()
+                        await message.reply(f'✅ Пользователь @{username} *приглашён в клан {clan_name}* пользователем @{usernameinviter}\nДля того чтобы принять приглашение, *введите команду* `/clanaccept`', parse_mode='markdown')
+            elif user_id != clan_owner_id:
+                await message.reply(f"🛑 Приглашать в клан может только создатель", parse_mode='markdown')
+        else:
+            await message.reply(f"🛑 {sys.exc_info()[0]}")
 
 @dp.message_handler(commands=['clankick'])
 async def clankick(message: types.Message):
@@ -798,8 +842,8 @@ async def setdrugs_command(message: types.Message):
     elif is_admin == 0:
         await message.reply('🚨 MONKEY ALARM')
 
-@dp.message_handler(commands=['uservalue'])
-async def uservalue(message: types.Message):
+@dp.message_handler(commands=['usercount'])
+async def usercount(message: types.Message):
     user_id = message.from_user.id
     cursor.execute('SELECT * FROM users WHERE id = ?', (user_id,))
     user = cursor.fetchone()
