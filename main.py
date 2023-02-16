@@ -346,33 +346,26 @@ async def give_command(message: types.Message, state: FSMContext):
                 if user and your_user:
                     drug_count = your_user[1]
                     last_time = await state.get_data()
-                    #if last_time and (datetime.now() - last_time['time']) < timedelta(hours=0.0166667):
-                    #    remaining_time = timedelta(hours=0.0166667) - (datetime.now() - last_time['time'])
-                    #    await message.reply(f"❌ Нельзя делиться мефом так часто! Ты сможешь поделиться весом через 1 минуту!")
-                    #else:
                     if value < 0:
                         await message.reply(f'❌ Значение не может быть отрицательным')
                     elif value == 0:
                         await message.reply(f'❌ Значение не может быть равным нулю')
                     elif drug_count >= value and value != 0 and value > 0:
-                        cursor.execute('UPDATE users SET drug_count = drug_count + ? WHERE id = ?', (value,user_id))
-                        cursor.execute('UPDATE users SET drug_count = drug_count - ? WHERE id = ?', (value,your_user_id))
+                        commission = round(value * 0.10) 
+                        net_value = value - commission 
+                        cursor.execute('UPDATE users SET drug_count = drug_count + ? WHERE id = ?', (net_value, user_id))
+                        cursor.execute('UPDATE users SET drug_count = drug_count - ? WHERE id = ?', (value, your_user_id))
                         conn.commit()
-                        await bot.send_message(-1001659076963, f"#GIVE\n\nfirst\_name: `{message.from_user.first_name}`\nuserid: `{user_id}`\nto: `{reply_msg.from_user.first_name}`\nvalue: `{value}`", parse_mode='markdown')
+                        await bot.send_message(-1001659076963, f"#GIVE\n\nfirst\_name: `{message.from_user.first_name}`\nuserid: `{user_id}`\nto: `{reply_msg.from_user.first_name}`\nvalue: `{net_value}`", parse_mode='markdown')
                         if reply_msg.from_user.username:
-                            await message.reply(f"✅ [{message.from_user.first_name}](tg://user?id={message.from_user.id}) _подарил(-а) {value} гр. мефа_ [{reply_msg.from_user.first_name}](tg://user?id={reply_msg.from_user.id})!", parse_mode='markdown')
+                            await message.reply(f"✅ [{message.from_user.first_name}](tg://user?id={message.from_user.id}) _подарил(-а) {value} гр. мефа_ [{reply_msg.from_user.first_name}](tg://user?id={reply_msg.from_user.id})!\nКомиссия: {commission} гр. мефа\nВы получили {net_value} гр. мефа.", parse_mode='markdown')
                         else:
-                            await message.reply(f"✅ [{message.from_user.first_name}](tg://user?id={message.from_user.id}) _подарил(-а) {value} гр. мефа_ [{reply_msg.from_user.first_name}](tg://user?id={reply_msg.from_user.id})!", parse_mode='markdown')
+                            await message.reply(f"✅ [{message.from_user.first_name}](tg://user?id={message.from_user.id}) _подарил(-а) {value} гр. мефа_ [{reply_msg.from_user.first_name}](tg://user?id={reply_msg.from_user.id})!\nКомиссия: {commission} гр. мефа\nКомиссия: {commission} гр. мефа\nВы получили {net_value} гр. мефа.", parse_mode='markdown')
                         await state.set_data({'time': datetime.now()})
                     elif drug_count < value:
                         await message.reply(f'❌ Недостаточно граммов мефа для того чтобы их передать')
 
-                else:
-                    await message.reply('❌ Этот пользователь еще не нюхал меф')
-            else:
-                await message.reply('❌ Ответьте на сообщение пользователя, которому хотите дать мефедрона.')
-        else:
-            await message.reply('❌ Укажи сколько грамм хочешь подарить\nПример:\n`/give 20`', parse_mode='markdown')
+
 
 
 @dp.message_handler(commands=['clancreate'])
