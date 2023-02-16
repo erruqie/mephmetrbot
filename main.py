@@ -242,7 +242,10 @@ async def take_command(message: types.Message, state: FSMContext):
                             cursor.execute('UPDATE users SET drug_count = drug_count - 1 WHERE id = ?', (user_id,))
                             cursor.execute('UPDATE users SET drug_count = drug_count + 1 WHERE id = ?', (your_user_id,))
                             conn.commit()
-                            username = reply_msg.from_user.username.replace('_', '\_')
+                            if reply_msg.from_user.username:
+                                username = reply_msg.from_user.username.replace('_', '\_')
+                            else:
+                                username = f'[{reply_msg.from_user.first_name}](tg://user?id={reply_msg.from_user.id})'
                             await message.reply(f"✅ [{message.from_user.first_name}](tg://user?id={message.from_user.id}) _спиздил(-а) один грам мефа у_ @{username}!", parse_mode='markdown')
                         await state.set_data({'time': datetime.now()})
                 elif drug_count < 1:
