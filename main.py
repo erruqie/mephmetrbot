@@ -279,8 +279,8 @@ async def casino(message: types.Message):
                 if bet > drug_count:
                     await message.reply(f"🛑 Твоя ставка больше твоего баланса!", parse_mode='markdown')
                 elif bet <= drug_count:
-                    if last_used is not None and (datetime.now() - datetime.fromisoformat(last_used)).total_seconds() < 300:
-                        await message.reply('⏳ Ты только что *крутил казик*, солевая обезьяна, *подожди 5 минут по братски.*', parse_mode='markdown')
+                    if last_used is not None and (datetime.now() - datetime.fromisoformat(last_used)).total_seconds() < 30:
+                        await message.reply('⏳ Ты только что *крутил казик*, солевая обезьяна, *подожди 30 секунд по братски.*', parse_mode='markdown')
                         return
                     else:
                         randomed = random.randint(1,100)
