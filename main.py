@@ -21,7 +21,7 @@ bot = Bot(token=os.environ.get('BOT_TOKEN'))
 storage = MemoryStorage()
 dp = Dispatcher(bot, storage=storage)
 
-conn = sqlite3.connect('/root/MefMetrBot/asdf.db')
+conn = sqlite3.connect('/root/MefMetrBot/database/mefmetrbot.db')
 cursor = conn.cursor()
 cursor.execute('CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, drug_count INTEGER, last_use_time TEXT, is_admin INTEGER, is_banned INTEGER, last_casino TEXT, last_find TEXT, clan_member INTEGER, clan_invite INTEGER)')
 cursor.execute('CREATE TABLE IF NOT EXISTS chats (chat_id INTEGER PRIMARY KEY, is_ads_enable INTEGER DEFAULT 1)')
@@ -289,8 +289,8 @@ async def casino(message: types.Message):
             except ValueError:
                 await message.reply(f"🛑 Нужно указать целое число!", parse_mode='markdown')
                 return
-            if bet < 20:
-                await message.reply(f"🛑 Ставка должна быть больше `20` гр.", parse_mode='markdown')
+            if bet < 1:
+                await message.reply(f"🛑 Ставка должна быть больше `1` гр.", parse_mode='markdown')
             else:
                 if bet > drug_count:
                     await message.reply(f"🛑 Твоя ставка больше твоего баланса!", parse_mode='markdown')
