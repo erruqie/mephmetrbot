@@ -236,10 +236,10 @@ async def take_command(message: types.Message, state: FSMContext):
             your_user_id = message.from_user.id
             cursor.execute('SELECT * FROM users WHERE id = ?', (your_user_id,))
             your_user = cursor.fetchone()
-
             if user and your_user:
                 drug_count = user[1]
-                if drug_count > 1:
+                your_drug_count = your_user[1]
+                if drug_count > 1 and your_drug_count > 1:
                     last_time = await state.get_data()
                     if last_time and (datetime.now() - last_time['time']) < timedelta(days=1):
                         remaining_time = timedelta(days=1) - (datetime.now() - last_time['time'])
@@ -268,6 +268,8 @@ async def take_command(message: types.Message, state: FSMContext):
                         await state.set_data({'time': datetime.now()})
                 elif drug_count < 1:
                     await message.reply('❌ У жертвы недостаточно снюханного мефа для того чтобы его спиздить')
+                elif your_drug_count < 1:
+                    await message.reply('❌ У тебя недостаточно снюханного мефа для того пойти искать жертву')
             else:
                 await message.reply('❌ Этот пользователь еще не нюхал меф')
         else:
