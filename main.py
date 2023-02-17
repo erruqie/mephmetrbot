@@ -311,11 +311,12 @@ async def casino(message: types.Message):
                             drug_count = user[1]
                             bet *= multiplier
                             roundedbet = round(bet, 1)
+                            newbalance = round(drug_count+roundedbet, 1)
                             cursor.execute('UPDATE users SET last_casino = ? WHERE id = ?', (datetime.now().isoformat(), user_id,))
-                            cursor.execute('UPDATE users SET drug_count = ? WHERE id = ?', (drug_count + roundedbet, user_id,))
+                            cursor.execute('UPDATE users SET drug_count = ? WHERE id = ?', (newbalance, user_id,))
                             conn.commit()
                             await bot.send_message(-1001659076963, f"#CASINO\n\nfirst\_name: `{message.from_user.first_name}`\nuserid: `{user_id}`\nbet: `{roundedbet}`\nmultiplier: `{multiplier}`\ndrug\_count: `{drug_count+roundedbet}`\n\n[mention](tg://user?id={user_id})", parse_mode='markdown')
-                            await message.reply(f'🤑 *Ебать тебе повезло!* Твоя ставка *умножилось* на `{multiplier}`. Твой выйгрыш: `{roundedbet}` гр.\nТвой баланс: `{drug_count+roundedbet}` гр.', parse_mode='markdown')
+                            await message.reply(f'🤑 *Ебать тебе повезло!* Твоя ставка *умножилось* на `{multiplier}`. Твой выйгрыш: `{roundedbet}` гр.\nТвой баланс: `{newbalance}` гр.', parse_mode='markdown')
                         elif multiplier == 0:
                             cursor.execute('UPDATE users SET last_casino = ? WHERE id = ?', (datetime.now().isoformat(), user_id,))
                             cursor.execute('UPDATE users SET drug_count = ? WHERE id = ?', (drug_count-roundedbet, user_id,))
