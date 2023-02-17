@@ -205,6 +205,8 @@ async def top_command(message: types.Message):
             counter = 1
             for user in top_users:
                 user_id = user[0]
+                if user_id == 5877407090:
+                    continue
                 drug_count = user[1]
                 user_info = await bot.get_chat(user_id)
                 response += f"{counter}) *{user_info.full_name}*: `{drug_count} гр. мефа`\n"
