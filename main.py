@@ -50,6 +50,7 @@ async def start_command(message: types.Message):
 *1) Мультиаккаунтинг - бан навсегда и обнуление всех аккаунтов *
 *2) Использование любых уязвимостей бота - бан до исправления и возможное обнуление*
 *3) Запрещена реклама через топ кланов и топ юзеров - выговор, после бан с обнулением*
+*4) Запрещена продажа валюты между игроками - обнуление и бан*
 
 *Бот не имеет никакого отношения к реальности. Все совпадения случайны. 
 Создатели не пропагандируют наркотики и против их распространения и употребления. 
@@ -223,7 +224,10 @@ async def take_command(message: types.Message, state: FSMContext):
         await message.reply('🛑 Вы заблокированы в боте!')
     elif is_banned == 0:
         reply_msg = message.reply_to_message
-        if reply_msg and reply_msg.from_user.id != message.from_user.id:
+        if reply_msg and reply_msg.from_user.id == 5877407090:
+            await message.reply(f'❌ Вы не можете забрать меф у бота')
+            return
+        elif reply_msg and reply_msg.from_user.id != message.from_user.id:
             user_id = reply_msg.from_user.id
             cursor.execute('SELECT * FROM users WHERE id = ?', (user_id,))
             user = cursor.fetchone()
@@ -336,7 +340,10 @@ async def give_command(message: types.Message, state: FSMContext):
             except ValueError:
                 await message.reply(f'❌ Введи целое число')
             reply_msg = message.reply_to_message
-            if reply_msg and reply_msg.from_user.id != message.from_user.id:
+            if reply_msg and reply_msg.from_user.id == 5877407090:
+                await message.reply(f'❌ Вы не можете передать средства боту')
+                return
+            elif reply_msg and reply_msg.from_user.id != message.from_user.id:
                 user_id = reply_msg.from_user.id
                 cursor.execute('SELECT * FROM users WHERE id = ?', (user_id,))
                 user = cursor.fetchone()
@@ -364,9 +371,6 @@ async def give_command(message: types.Message, state: FSMContext):
                         await state.set_data({'time': datetime.now()})
                     elif drug_count < value:
                         await message.reply(f'❌ Недостаточно граммов мефа для того чтобы их передать')
-
-
-
 
 @dp.message_handler(commands=['clancreate'])
 async def create_clan(message: types.Message):
@@ -619,7 +623,10 @@ async def claninvite(message: types.Message):
             clan_owner_id = clan[2]
             if user_id == clan_owner_id:
                 reply_msg = message.reply_to_message
-                if reply_msg:
+                if reply_msg and reply_msg.from_user.id == 5877407090:
+                    await message.reply(f'❌ Вы не можете пригласить бота в клан')
+                    return
+                elif reply_msg:
                     user_id = reply_msg.from_user.id
                     username = reply_msg.from_user.username.replace('_', '\_')
                     usernameinviter = message.from_user.username.replace('_', '\n')
@@ -627,7 +634,7 @@ async def claninvite(message: types.Message):
                     user = cursor.fetchone()
                     clan_member = user[0] if user else 0
                     clan_invite = user[1] if user else 0
-                    if clan_member > 0 or clan_invite > 0:
+                    if clan_member != 0 or clan_invite != 0:
                         await message.reply(f"🛑 Этот пользователь уже в клане, или имеет активное приглашение", parse_mode='markdown')
                     else:
                         if user:
