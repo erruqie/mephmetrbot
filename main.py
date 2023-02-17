@@ -310,16 +310,17 @@ async def casino(message: types.Message):
                             user = cursor.fetchone()
                             drug_count = user[1]
                             bet *= multiplier
+                            roundedbet = round(bet, 1)
                             cursor.execute('UPDATE users SET last_casino = ? WHERE id = ?', (datetime.now().isoformat(), user_id,))
-                            cursor.execute('UPDATE users SET drug_count = ? WHERE id = ?', (drug_count + bet, user_id,))
+                            cursor.execute('UPDATE users SET drug_count = ? WHERE id = ?', (drug_count + roundedbet, user_id,))
                             conn.commit()
-                            await bot.send_message(-1001659076963, f"#CASINO\n\nfirst\_name: `{message.from_user.first_name}`\nuserid: `{user_id}`\nbet: `{bet}`\nmultiplier: `{multiplier}`\ndrug\_count: `{drug_count+bet}`\n\n[mention](tg://user?id={user_id})", parse_mode='markdown')
-                            await message.reply(f'🤑 *Ебать тебе повезло!* Твоя ставка *умножилось* на `{multiplier}`. Твой выйгрыш: `{bet}` гр.\nТвой баланс: `{drug_count+bet}` гр.', parse_mode='markdown')
+                            await bot.send_message(-1001659076963, f"#CASINO\n\nfirst\_name: `{message.from_user.first_name}`\nuserid: `{user_id}`\nbet: `{roundedbet}`\nmultiplier: `{multiplier}`\ndrug\_count: `{drug_count+roundedbet}`\n\n[mention](tg://user?id={user_id})", parse_mode='markdown')
+                            await message.reply(f'🤑 *Ебать тебе повезло!* Твоя ставка *умножилось* на `{multiplier}`. Твой выйгрыш: `{roundedbet}` гр.\nТвой баланс: `{drug_count+roundedbet}` гр.', parse_mode='markdown')
                         elif multiplier == 0:
                             cursor.execute('UPDATE users SET last_casino = ? WHERE id = ?', (datetime.now().isoformat(), user_id,))
-                            cursor.execute('UPDATE users SET drug_count = ? WHERE id = ?', (drug_count-bet, user_id,))
+                            cursor.execute('UPDATE users SET drug_count = ? WHERE id = ?', (drug_count-roundedbet, user_id,))
                             conn.commit()
-                            await bot.send_message(-1001659076963, f"#CASINO\n\nfirst\_name: `{message.from_user.first_name}`\nuserid: `{user_id}`\nbet: `{bet}`\nmultiplier: `{multiplier}`\ndrug\_count: `{drug_count-bet}`\n\n[mention](tg://user?id={user_id})", parse_mode='markdown')
+                            await bot.send_message(-1001659076963, f"#CASINO\n\nfirst\_name: `{message.from_user.first_name}`\nuserid: `{user_id}`\nbet: `{roundedbet}`\nmultiplier: `{multiplier}`\ndrug\_count: `{drug_count-roundedbet}`\n\n[mention](tg://user?id={user_id})", parse_mode='markdown')
                             await message.reply('😔 *Ты проебал* свою ставку, *нехуй было* крутить казик.', parse_mode='markdown')
         else:
             await message.reply(f"🛑 Укажи сумму, на которую ты бы хотел сыграть! Пример:\n`/casino 40`", parse_mode='markdown')
@@ -362,12 +363,13 @@ async def give_command(message: types.Message, state: FSMContext):
                         net_value = value - commission 
                         cursor.execute('UPDATE users SET drug_count = drug_count + ? WHERE id = ?', (net_value, user_id))
                         cursor.execute('UPDATE users SET drug_count = drug_count - ? WHERE id = ?', (value, your_user_id))
+                        cursor.execute('UPDATE users SET drug_count = ? WHERE id = ?', (commission, 5877407090))
                         conn.commit()
                         await bot.send_message(-1001659076963, f"#GIVE\n\nfirst\_name: `{message.from_user.first_name}`\nuserid: `{user_id}`\nto: `{reply_msg.from_user.first_name}`\nvalue: `{net_value}`", parse_mode='markdown')
                         if reply_msg.from_user.username:
-                            await message.reply(f"✅ [{message.from_user.first_name}](tg://user?id={message.from_user.id}) _подарил(-а) {value} гр. мефа_ [{reply_msg.from_user.first_name}](tg://user?id={reply_msg.from_user.id})!\nКомиссия: {commission} гр. мефа\nВы получили {net_value} гр. мефа.", parse_mode='markdown')
+                            await message.reply(f"✅ [{message.from_user.first_name}](tg://user?id={message.from_user.id}) _подарил(-а) {value} гр. мефа_ [{reply_msg.from_user.first_name}](tg://user?id={reply_msg.from_user.id})!\nКомиссия: {commission} гр. мефа\nПолучено `{net_value}` гр. мефа.", parse_mode='markdown')
                         else:
-                            await message.reply(f"✅ [{message.from_user.first_name}](tg://user?id={message.from_user.id}) _подарил(-а) {value} гр. мефа_ [{reply_msg.from_user.first_name}](tg://user?id={reply_msg.from_user.id})!\nКомиссия: {commission} гр. мефа\nКомиссия: {commission} гр. мефа\nВы получили {net_value} гр. мефа.", parse_mode='markdown')
+                            await message.reply(f"✅ [{message.from_user.first_name}](tg://user?id={message.from_user.id}) _подарил(-а) {value} гр. мефа_ [{reply_msg.from_user.first_name}](tg://user?id={reply_msg.from_user.id})!\nКомиссия: {commission} гр. мефа\nКомиссия: {commission} гр. мефа\nПолучено `{net_value}` гр. мефа.", parse_mode='markdown')
                         await state.set_data({'time': datetime.now()})
                     elif drug_count < value:
                         await message.reply(f'❌ Недостаточно граммов мефа для того чтобы их передать')
