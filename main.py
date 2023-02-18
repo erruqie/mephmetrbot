@@ -37,7 +37,7 @@ async def start_command(message: types.Message):
     donate_button = InlineKeyboardButton('💰 Донат', url='https://t.me/mefmetrch')
     chat_button = InlineKeyboardButton('💬 Чат', url='https://t.me/mefmetrchat')
     keyboard.row(channel_button, donate_button, chat_button)
-    await message.reply("👋 *Здарова шныр*, этот бот сделан для того, чтобы *считать* сколько *грамм мефедрончика* ты снюхал\n🧑‍💻 Бот разработан *xanaxnotforfree.t.me* и *cl0wnl3ss.t.me*", reply_markup=keyboard, parse_mode='markdown')
+    await message.reply("👋 *Здарова шныр*, этот бот сделан для того, чтобы *считать* сколько *грамм мефедрончика* ты снюхал\n🧑‍💻 Бот разработан *xanaxnotforfree.t.me*", reply_markup=keyboard, parse_mode='markdown')
 
 
 @dp.message_handler(commands=['grach'])
@@ -150,9 +150,9 @@ async def profile_command(message: types.Message):
 
             if is_admin == 1:
                 if clan_member:
-                    await message.reply(f"👑 *Создатель бота*\n👤 *Имя:* _{full_name}_\n👥 *Клан:* *{clan_name}*\n👥 *Username пользователя:* @{username}\n🆔 *ID пользователя:* `{user_id}`\n🌿 *Снюхано* _{drug_count}_ грамм.", parse_mode='markdown')
+                    await message.reply(f"👑 *Администратор*\n👤 *Имя:* _{full_name}_\n👥 *Клан:* *{clan_name}*\n👥 *Username пользователя:* @{username}\n🆔 *ID пользователя:* `{user_id}`\n🌿 *Снюхано* _{drug_count}_ грамм.", parse_mode='markdown')
                 else:
-                    await message.reply(f"👑 *Создатель бота*\n👤 *Имя:* _{full_name}_\n👥 *Username пользователя:* @{username}\n🆔 *ID пользователя:* `{user_id}`\n🌿 *Снюхано* _{drug_count}_ грамм.", parse_mode='markdown')
+                    await message.reply(f"👑 *Администратор*\n👤 *Имя:* _{full_name}_\n👥 *Username пользователя:* @{username}\n🆔 *ID пользователя:* `{user_id}`\n🌿 *Снюхано* _{drug_count}_ грамм.", parse_mode='markdown')
             else:
                 if clan_member:
                     await message.reply(f"👤 *Имя:* _{full_name}_\n👥 *Клан:* *{clan_name}*\n👥 *Username пользователя:* @{username}\n🆔 *ID пользователя:* `{user_id}`\n🌿 *Снюхано* _{drug_count}_ грамм.", parse_mode='markdown')
@@ -540,7 +540,7 @@ async def clan_top(message: types.Message):
             for clan in top_clans:
                 clan_name = clan[0]
                 clan_balance = clan[1]
-                response += f"{counter}) *{clan_name}*: `{clan_balance} гр. мефа`\n"
+                response += f"{counter}) *{clan_name}*  `{clan_balance} гр. мефа`\n"
                 counter += 1
             await message.reply(response, parse_mode='markdown')
         else:
@@ -576,30 +576,31 @@ async def clanwar(message: types.Message):
         await message.reply('🛑 Вы заблокированы в боте!')
     elif is_banned == 0:
         if clan_id == 0:
-             await message.reply(f"🛑 Вы не состоите в клане", parse_mode='markdown')
+            await message.reply(f"🛑 *Вы не состоите в клане*", parse_mode='markdown')
         elif clan_id > 0:
             cursor.execute('SELECT clan_name, clan_owner_id FROM clans WHERE clan_id = ?', (clan_id,))
             clan = cursor.fetchone()
             clan_name = clan[0]
             clan_owner_id = clan[1]
-            if not clan_owner_id:
-                await message.reply(f"🛑 Вы не являетесь владельцем клана", parse_mode='markdown')
+            if user_id != clan_owner_id:
+                await message.reply(f"🛑 *Вы не являетесь владельцем клана*", parse_mode='markdown')
                 return
             if len(message.text.split()) < 2:
-                await message.reply(f"🛑 Вы не указали идентификатор клана для начала войны", parse_mode='markdown')
+                await message.reply(f"🛑 *Вы не указали идентификатор клана для начала войны*", parse_mode='markdown')
                 return
             target_clan_id = message.text.split()[1]
             cursor.execute('SELECT clan_name FROM clans WHERE clan_id = ?', (target_clan_id,))
             target_clan = cursor.fetchone()
             if not target_clan:
-                await message.reply(f"🛑 Не удалось найти клан с указанным идентификатором", parse_mode='markdown')
+                await message.reply(f"🛑 *Не удалось найти клан с указанным идентификатором*", parse_mode='markdown')
                 return
             target_clan_name = target_clan[0]
-            await message.reply(f"Клан {clan_name} начал войну с {target_clan_name}!")
-            cursor.execute('SELECT chat_id FROM chats WHERE clan_id = ?', (clan_id,))
+            await message.reply(f"*Клан {clan_name} начал войну с {target_clan_name}!*", parse_mode='markdown')
+            cursor.execute('SELECT chat_id FROM chats')
             chats = cursor.fetchall()
             for chat in chats:
-                await bot.send_message(chat[0], f"Клан {clan_name} начал войну с {target_clan_name}!")
+                await bot.send_message(chat[0], f"*Клан {clan_name} начал войну с {target_clan_name}!*", parse_mode='markdown')
+
 
 @dp.message_handler(commands=['claninfo'])
 async def claninfo(message: types.Message):
@@ -716,8 +717,10 @@ async def claninvite(message: types.Message):
                         await message.reply(f'✅ Пользователь {reply_msg.from_user.first_name} *приглашён в клан {clan_name}* пользователем {message.from_user.first_name}\nДля того чтобы принять приглашение, *введите команду* `/clanaccept`\nДля того чтобы отказаться от приглашения, *введите команду* `/clandecline`', parse_mode='markdown')
                     
                     
-                    elif clan_invite > 0 or clan_member > 0:
-                        await message.reply(f"🛑 Этот пользователь уже в клане, или имеет активное приглашение", parse_mode='markdown')
+                    elif clan_invite > 0:
+                        await message.reply(f"🛑 Этот пользователь уже имеет активное приглашение", parse_mode='markdown')
+                    elif clan_member > 0:
+                        await message.reply(f"🛑 Этот пользователь уже в клане", parse_mode='markdown')
             elif user_id != clan_owner_id:
                 await message.reply(f"🛑 Приглашать в клан может только создатель", parse_mode='markdown')
         else:
@@ -937,7 +940,7 @@ async def about_command(message: types.Message):
     donate_button = InlineKeyboardButton('💰 Донат', url='https://t.me/mefmetrch')
     chat_button = InlineKeyboardButton('💬 Чат', url='https://t.me/mefmetrchat')
     keyboard.row(channel_button, donate_button, chat_button)
-    await message.reply("🧑‍💻 Бот разработан xanaxnotforfree.t.me и cl0wnl3ss.t.me.", reply_markup=keyboard)
+    await message.reply("🧑‍💻 Бот разработан xanaxnotforfree.t.me", reply_markup=keyboard)
 
 @dp.message_handler(commands=['setdrugs'])
 async def setdrugs_command(message: types.Message):
