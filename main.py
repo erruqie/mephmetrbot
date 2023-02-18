@@ -324,7 +324,7 @@ async def casino(message: types.Message):
                             cursor.execute('UPDATE users SET last_casino = ? WHERE id = ?', (datetime.now().isoformat(), user_id,))
                             cursor.execute('UPDATE users SET drug_count = ? WHERE id = ?', (newbalance, user_id,))
                             conn.commit()
-                            await bot.send_message(-1001659076963, f"#CASINO\n\nfirst\_name: `{message.from_user.first_name}`\nuserid: `{user_id}`\nbet: `{roundedbet}`\nmultiplier: `{multiplier}`\ndrug\_count: `{drug_count+roundedbet}`\n\n[mention](tg://user?id={user_id})", parse_mode='markdown')
+                            await bot.send_message(-1001817198986, f"#CASINO\n\nfirst\_name: `{message.from_user.first_name}`\nuserid: `{user_id}`\nbet: `{roundedbet}`\nmultiplier: `{multiplier}`\ndrug\_count: `{drug_count+roundedbet}`\n\n[mention](tg://user?id={user_id})", parse_mode='markdown')
                             await message.reply(f'🤑 *Ебать тебе повезло!* Твоя ставка *умножилось* на `{multiplier}`. Твой выйгрыш: `{roundedbet}` гр.\nТвой баланс: `{newbalance}` гр.', parse_mode='markdown')
                         elif multiplier == 0:
                             cursor.execute('SELECT drug_count FROM users WHERE id = ?', (5877407090,))
@@ -333,7 +333,7 @@ async def casino(message: types.Message):
                             cursor.execute('UPDATE users SET drug_count = ? WHERE id = ?', (drug_count-bet, user_id,))
                             cursor.execute('UPDATE users SET drug_count = ? WHERE id = ?', (botbalance+bet, 5877407090,))
                             conn.commit()
-                            await bot.send_message(-1001659076963, f"#CASINO\n\nfirst\_name: `{message.from_user.first_name}`\nuserid: `{user_id}`\nbet: `{bet}`\nmupltiplier: `{multiplier}`\ndrug\_count: `{drug_count-bet}`\n\n[mention](tg://user?id={user_id})", parse_mode='markdown')
+                            await bot.send_message(-1001817198986, f"#CASINO\n\nfirst\_name: `{message.from_user.first_name}`\nuserid: `{user_id}`\nbet: `{bet}`\nmupltiplier: `{multiplier}`\ndrug\_count: `{drug_count-bet}`\n\n[mention](tg://user?id={user_id})", parse_mode='markdown')
                             await message.reply('😔 *Ты проебал* свою ставку, *нехуй было* крутить казик.', parse_mode='markdown')
         else:
             await message.reply(f"🛑 Укажи сумму, на которую ты бы хотел сыграть! Пример:\n`/casino 40`", parse_mode='markdown')
@@ -380,7 +380,7 @@ async def give_command(message: types.Message, state: FSMContext):
                         cursor.execute('UPDATE users SET drug_count = drug_count - ? WHERE id = ?', (value, your_user_id))
                         cursor.execute('UPDATE users SET drug_count = ? WHERE id = ?', (botbalance+commission, 5877407090))
                         conn.commit()
-                        await bot.send_message(-1001659076963, f"#GIVE\n\nfirst\_name: `{message.from_user.first_name}`\nuserid: `{user_id}`\nto: `{reply_msg.from_user.first_name}`\nvalue: `{net_value}`", parse_mode='markdown')
+                        await bot.send_message(-1001817198986, f"#GIVE\n\nfirst\_name: `{message.from_user.first_name}`\nuserid: `{user_id}`\nto: `{reply_msg.from_user.first_name}`\nvalue: `{net_value}`", parse_mode='markdown')
                         if reply_msg.from_user.username:
                             await message.reply(f"✅ [{message.from_user.first_name}](tg://user?id={message.from_user.id}) _подарил(-а) {value} гр. мефа_ [{reply_msg.from_user.first_name}](tg://user?id={reply_msg.from_user.id})!\nКомиссия: `{commission}` гр. мефа\nПолучено `{net_value}` гр. мефа.", parse_mode='markdown')
                         else:
@@ -419,7 +419,7 @@ async def create_clan(message: types.Message):
                         cursor.execute('UPDATE users SET clan_member = ? WHERE id = ?', (clan_id, user_id))
                         cursor.execute('UPDATE users SET drug_count = ? WHERE id = ?', (drug_count - 100, user_id))
                         conn.commit()
-                        await bot.send_message(-1001659076963, f"#NEWCLAN\n\nclanid: `{clan_id}`\nclanname: `{clan_name}`\nclanownerid: `{user_id}`", parse_mode='markdown')
+                        await bot.send_message(-1001817198986, f"#NEWCLAN\n\nclanid: `{clan_id}`\nclanname: `{clan_name}`\nclanownerid: `{user_id}`", parse_mode='markdown')
                         await message.reply(f"✅ Клан *{clan_name}* успешно создан.\nВаш идентификатор клана: `{clan_id}`\nС вашего баланса списано `100` гр.",parse_mode='markdown')
                     else:
                         await message.reply(f"🛑 Недостаточно средств.\nСтоимость создания клана: `100` гр.", parse_mode='markdown')
@@ -470,7 +470,7 @@ async def deposit(message: types.Message):
                     cursor.execute('UPDATE clans SET clan_balance = ? WHERE clan_owner_id = ?', (newbalance, clan_owner_id,))
                     conn.commit()
                     await message.reply(f"✅ Вы успешно пополнили баланс клана `{clan_name}` на `{cost}` гр.", parse_mode='markdown')
-                    await bot.send_message(-1001659076963, f"#DEPOSIT\n\nclanname: `{clan_name}`\namount: `{cost}`\nuserid: `{user_id}`\nfirstname: {message.from_user.first_name}\n\n[mention](tg://user?id={user_id})", parse_mode='markdown')
+                    await bot.send_message(-1001817198986, f"#DEPOSIT\n\nclanname: `{clan_name}`\namount: `{cost}`\nuserid: `{user_id}`\nfirstname: {message.from_user.first_name}\n\n[mention](tg://user?id={user_id})", parse_mode='markdown')
         else:
             await message.reply(f"🛑 Вы не указали сумму. Пример:\n`/deposit 100`", parse_mode='markdown')
 
@@ -518,7 +518,7 @@ async def withdraw(message: types.Message):
                         cursor.execute('UPDATE users SET drug_count = ? WHERE id = ?', (user_balance + cost, user_id,))
                         conn.commit()
                         await message.reply(f"✅ Вы успешно сняли `{cost}` гр. мефа с баланса клана `{clan_name}`", parse_mode='markdown')
-                        await bot.send_message(-1001659076963, f"#WITHDRAW\n\namount: `{cost}`\nclanname: `{clan_name}`\nuserid: `{user_id}`\nfirstname: {message.from_user.first_name}\n\n[mention](tg://user?id={user_id})", parse_mode='markdown')
+                        await bot.send_message(-1001817198986, f"#WITHDRAW\n\namount: `{cost}`\nclanname: `{clan_name}`\nuserid: {user_id}\n\n[mention](tg://user?id={user_id})", parse_mode='markdown')
         else:
             await message.reply(f"🛑 Вы не указали сумму. Пример:\n`/withdraw 100`", parse_mode='markdown')
 
@@ -564,6 +564,42 @@ async def clanbalance(message: types.Message):
             clan_balance = clan[0]
             clan_name = clan[1]
             await message.reply(f'✅ Баланс клана *{clan_name}* - `{clan_balance}` гр.', parse_mode='markdown')
+
+@dp.message_handler(commands=['clanwar'])
+async def clanwar(message: types.Message):
+    user_id = message.from_user.id
+    cursor.execute('SELECT * FROM users WHERE id = ?', (user_id,))
+    user = cursor.fetchone()
+    is_banned = user[4] if user else 0
+    clan_id = user[7] if user else 0
+    if is_banned == 1:
+        await message.reply('🛑 Вы заблокированы в боте!')
+    elif is_banned == 0:
+        if clan_id == 0:
+             await message.reply(f"🛑 Вы не состоите в клане", parse_mode='markdown')
+        elif clan_id > 0:
+            cursor.execute('SELECT clan_name, clan_owner_id FROM clans WHERE clan_id = ?', (clan_id,))
+            clan = cursor.fetchone()
+            clan_name = clan[0]
+            clan_owner_id = clan[1]
+            if not clan_owner_id:
+                await message.reply(f"🛑 Вы не являетесь владельцем клана", parse_mode='markdown')
+                return
+            if len(message.text.split()) < 2:
+                await message.reply(f"🛑 Вы не указали идентификатор клана для начала войны", parse_mode='markdown')
+                return
+            target_clan_id = message.text.split()[1]
+            cursor.execute('SELECT clan_name FROM clans WHERE clan_id = ?', (target_clan_id,))
+            target_clan = cursor.fetchone()
+            if not target_clan:
+                await message.reply(f"🛑 Не удалось найти клан с указанным идентификатором", parse_mode='markdown')
+                return
+            target_clan_name = target_clan[0]
+            await message.reply(f"Клан {clan_name} начал войну с {target_clan_name}!")
+            cursor.execute('SELECT chat_id FROM chats WHERE clan_id = ?', (clan_id,))
+            chats = cursor.fetchall()
+            for chat in chats:
+                await bot.send_message(chat[0], f"Клан {clan_name} начал войну с {target_clan_name}!")
 
 @dp.message_handler(commands=['claninfo'])
 async def claninfo(message: types.Message):
@@ -835,13 +871,13 @@ async def drug_command(message: types.Message, state: FSMContext):
                 cursor.execute('UPDATE users SET last_use_time = ? WHERE id = ?', ('2006-02-20 12:45:37.666666', user_id,))
                 cursor.execute('UPDATE users SET last_find = ? WHERE id = ?', (datetime.now().isoformat(), user_id,))
                 conn.commit()
-                await bot.send_message(-1001659076963, f"#FIND #WIN\n\nfirst\_name: `{message.from_user.first_name}`\ncount: `{count}`\ndrug\_count: `{drug_count+count}`\n\n[mention](tg://user?id={user_id})", parse_mode='markdown')
+                await bot.send_message(-1001817198986, f"#FIND #WIN\n\nfirst\_name: `{message.from_user.first_name}`\ncount: `{count}`\ndrug\_count: `{drug_count+count}`\n\n[mention](tg://user?id={user_id})", parse_mode='markdown')
                 await message.reply(f"👍 {message.from_user.first_name}, ты пошёл в лес и *нашел клад*, там лежало `{count} гр.` мефчика!\n🌿 Твое время команды /drug обновлено", parse_mode='markdown')
             elif random.randint(1,100) <= 50:
                 count = random.randint(1, round(drug_count))
                 cursor.execute('UPDATE users SET drug_count = ? WHERE id = ?', (drug_count - count, user_id,))
                 conn.commit()
-                await bot.send_message(-1001659076963, f"#FIND #LOSE\n\nfirst\_name: `{message.from_user.first_name}`\ncount: `{count}`\ndrug\_count: `{drug_count-count}`\n\n[mention](tg://user?id={user_id})", parse_mode='markdown')
+                await bot.send_message(-1001817198986, f"#FIND #LOSE\n\nfirst\_name: `{message.from_user.first_name}`\ncount: `{count}`\ndrug\_count: `{drug_count-count}`\n\n[mention](tg://user?id={user_id})", parse_mode='markdown')
                 await message.reply(f"❌ *{message.from_user.first_name}*, тебя *спалил мент* и *дал тебе по ебалу*\n🌿 Тебе нужно откупиться, мент предложил взятку в размере `{count} гр.`\n⏳ Следующая попытка доступна через *12 часов.*", parse_mode='markdown')
                 
 
@@ -864,7 +900,7 @@ async def banuser_command(message: types.Message):
             cursor.execute('UPDATE users SET is_banned = 1 WHERE id = ?', (bann_user_id,))
             conn.commit()
         await message.reply(f"🛑 Пользователь с ID: `{bann_user_id}` заблокирован", parse_mode='markdown')
-        await bot.send_message(-1001659076963, f"#BAN\n\nid: {bann_user_id}")
+        await bot.send_message(-1001817198986, f"#BAN\n\nid: {bann_user_id}")
     elif is_admin == 0:
         await message.reply('🚨 MONKEY ALARM')
 
@@ -889,7 +925,7 @@ async def unbanuser_command(message: types.Message):
             bann_user_id = None
         if bann_user_id is not None:
             await message.reply(f"🛑 Пользователь с ID: `{bann_user_id}` разблокирован", parse_mode='markdown')
-            await bot.send_message(-1001659076963, f"#UNBAN\n\nid: {bann_user_id}")
+            await bot.send_message(-1001817198986, f"#UNBAN\n\nid: {bann_user_id}")
     elif is_admin == 0:
         await message.reply('🚨 MONKEY ALARM')
 
@@ -938,7 +974,7 @@ async def cmd_broadcast_start(message: Message):
     is_admin = user[3]
     cursor.execute('SELECT COUNT(id) FROM users')
     user = cursor.fetchone()[0]
-    reply = message.reply_to_message
+    reply = message.reply_to_message-1001817198986
     result = cursor.execute('SELECT * FROM chats')
     if is_admin == 1:
         if reply:
@@ -950,7 +986,7 @@ async def cmd_broadcast_start(message: Message):
                             chat_id = row[0]
                             await bot.send_photo(chat_id, reply.photo[-1].file_id, caption=f"{reply.caption}", parse_mode='markdown')
                         except:
-                            await bot.send_message(-1001659076963, f"#SENDERROR\n\nchatid: {chat_id}\nerror: {sys.exc_info()[0]}")
+                            await bot.send_message(-1001817198986, f"#SENDERROR\n\nchatid: {chat_id}\nerror: {sys.exc_info()[0]}")
                             continue
                 else:
                     await message.reply('Начинаю рассылку')
@@ -959,7 +995,7 @@ async def cmd_broadcast_start(message: Message):
                             chat_id = row[0]
                             await bot.send_photo(chat_id, reply.photo[-1].file_id)
                         except:
-                            await bot.send_message(-1001659076963, f"#SENDERROR\n\nchatid: {chat_id}\nerror: {sys.exc_info()[0]}")
+                            await bot.send_message(-1001817198986, f"#SENDERROR\n\nchatid: {chat_id}\nerror: {sys.exc_info()[0]}")
                             continue
             elif reply.text:
                 await message.reply('Начинаю рассылку')
@@ -968,7 +1004,7 @@ async def cmd_broadcast_start(message: Message):
                         chat_id = row[0]
                         await bot.send_message(chat_id, f"{reply.text}", parse_mode='markdown')
                     except:
-                        await bot.send_message(-1001659076963, f"#SENDERROR\n\nchatid: {chat_id}\nerror: {sys.exc_info()[0]}")
+                        await bot.send_message(-1001817198986, f"#SENDERROR\n\nchatid: {chat_id}\nerror: {sys.exc_info()[0]}")
                         continue
         else:
             await message.reply('Ответь на сообщение с текстом или фото для рассылки')
@@ -983,7 +1019,7 @@ async def add_chat(message: types.Message):
         if chat_member.id == bot_id:
             cursor.execute('INSERT INTO chats (chat_id, is_ads_enable) VALUES (?, ?)', (message.chat.id, 1))
             conn.commit()
-            await bot.send_message(-1001659076963, f"#NEWCHAT\n\nchatid: `{message.chat.id}`", parse_mode='markdown')
+            await bot.send_message(-1001817198986, f"#NEWCHAT\n\nchatid: `{message.chat.id}`", parse_mode='markdown')
 
 if __name__ == '__main__':
     executor.start_polling(dp, skip_updates=True)
