@@ -596,10 +596,15 @@ async def clanwar(message: types.Message):
                 return
             target_clan_name = target_clan[0]
             await message.reply(f"*Клан {clan_name} начал войну с {target_clan_name}!*", parse_mode='markdown')
+            
             cursor.execute('SELECT chat_id FROM chats')
             chats = cursor.fetchall()
-            for chat in chats:
-                await bot.send_message(chat[0], f"*Клан {clan_name} начал войну с {target_clan_name}!*", parse_mode='markdown')
+            for chat_id in chats:
+                try:
+                    await bot.send_message(chat_id[0], f"*Клан {clan_name} начал войну с {target_clan_name}!*", parse_mode='markdown')
+                except Exception as e:
+                    print(f"Ошибка отправки сообщения в {chat_id}: {e}")
+
 
 
 @dp.message_handler(commands=['claninfo'])
