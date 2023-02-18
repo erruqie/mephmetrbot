@@ -605,6 +605,41 @@ async def clanwar(message: types.Message):
                 except Exception as e:
                     print(f"Ошибка отправки сообщения в {chat_id}: {e}")
 
+@dp.message_handler(commands=['clanowner'])
+async def clan_owner(message: types.Message):
+    user_id = message.from_user.id
+    cursor.execute('SELECT * FROM users WHERE id = ?', (user_id,))
+    user = cursor.fetchone()
+    is_banned = user[4] if user else 0
+    clan_id = user[7] if user else 0
+    if is_banned == 1:
+        await message.reply('🛑 Вы заблокированы в боте!')
+    elif is_banned == 0:
+        if clan_id == 0:
+            await message.reply(f"🛑 *Вы не состоите в клане*", parse_mode='markdown')
+        elif clan_id > 0:
+            cursor.execute('SELECT clan_owner_id FROM clans WHERE clan_id = ?', (clan_id,))
+            current_owner_id = cursor.fetchone()[0]
+            if user_id != current_owner_id:
+                await message.reply(f"🛑 *Вы не являетесь владельцем клана*", parse_mode='markdown')
+                return
+
+            if message.reply_to_message:
+                new_owner_id = message.reply_to_message.from_user.id
+            elif len(message.text.split()) >= 2:
+                new_owner_id = int(message.text.split()[1])
+            else:
+                await message.reply(f"🛑 *Вы не указали нового владельца клана*", parse_mode='markdown')
+                return
+            
+            cursor.execute('SELECT * FROM users WHERE id = ?', (new_owner_id,))
+            new_owner = cursor.fetchone()
+            if not new_owner:
+                await message.reply(f"🛑 *Не удалось найти пользователя с указанным идентификатором*", parse_mode='markdown')
+                return
+            cursor.execute('UPDATE clans SET clan_owner_id = ? WHERE clan_id = ?', (new_owner_id, clan_id))
+            conn.commit()
+            await message.reply(f"✅ *Вы передали владельца клана!*", parse_mode='markdown')
 
 
 @dp.message_handler(commands=['claninfo'])
