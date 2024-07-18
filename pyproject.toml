@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "mephmetrbot"
-version = "0.1.0"
+version = "1.4.0"
 description = ""
 authors = ["Maxim <clownl3ss@icloud.com>"]
 readme = "README.md"
