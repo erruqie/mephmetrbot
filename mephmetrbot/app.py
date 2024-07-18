@@ -1,27 +1,29 @@
 import os
 import random
 import time
+import asyncio
 import logging
 import sqlite3
 import sys
 from datetime import datetime, timedelta
-from aiogram import Bot, Dispatcher, executor, types
-from aiogram.contrib.fsm_storage.memory import MemoryStorage
-from aiogram.types import InlineKeyboardButton
-from aiogram.types import Message
-from aiogram.dispatcher import FSMContext
-from aiogram.dispatcher.filters import Command
-from dotenv import load_dotenv, find_dotenv
-from utils import states
+from aiogram import Bot, Dispatcher, F, Router
+from aiogram.fsm.context import FSMContext
+from aiogram.types import Message, ChatMemberUpdated, InlineKeyboardButton, InlineKeyboardMarkup
+from aiogram.filters.command import Command, CommandObject
+from aiogram.filters.chat_member_updated import ChatMemberUpdatedFilter, IS_NOT_MEMBER, MEMBER, ADMINISTRATOR
+from aiogram.fsm.storage.memory import MemoryStorage
+from aiogram.utils.keyboard import InlineKeyboardBuilder
+from mephmetrbot.utils import states
 
 logging.basicConfig(level=logging.INFO)
-load_dotenv(find_dotenv())
 
 bot = Bot(token=os.environ.get('BOT_TOKEN'))
-storage = MemoryStorage()
-dp = Dispatcher(bot, storage=storage)
+dp = Dispatcher(storage=MemoryStorage())
 
-conn = sqlite3.connect('/root/MefMetrBot/database/mefmetrbot.db')
+router = Router()
+router.my_chat_member.filter(F.chat.type.in_({"group", "supergroup"}))
+
+conn = sqlite3.connect('mephmetrbot.db')
 cursor = conn.cursor()
 cursor.execute('CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, drug_count INTEGER, last_use_time TEXT, is_admin INTEGER, is_banned INTEGER, last_casino TEXT, last_find TEXT, clan_member INTEGER, clan_invite INTEGER)')
 cursor.execute('CREATE TABLE IF NOT EXISTS chats (chat_id INTEGER PRIMARY KEY, is_ads_enable INTEGER DEFAULT 1)')
@@ -30,23 +32,24 @@ cursor.execute('CREATE TABLE IF NOT EXISTS clans (clan_id INTEGER PRIMARY KEY, c
 conn.commit()
 
 
-@dp.message_handler(commands=['start'])
-async def start_command(message: types.Message):
-    keyboard = types.InlineKeyboardMarkup(resize_keyboard=True)
-    channel_button = InlineKeyboardButton('📢 Канал', url='https://t.me/mefmetrch')
-    donate_button = InlineKeyboardButton('💰 Донат', url='https://t.me/mefmetrch')
-    chat_button = InlineKeyboardButton('💬 Чат', url='https://t.me/mefmetrchat')
-    keyboard.row(channel_button, donate_button, chat_button)
-    await message.reply("👋 *Здарова шныр*, этот бот сделан для того, чтобы *считать* сколько *грамм мефедрончика* ты снюхал\n🧑‍💻 Бот разработан *xanaxnotforfree.t.me*", reply_markup=keyboard, parse_mode='markdown')
+@dp.message(Command('start'))
+async def start_command(message: Message):
+    builder = InlineKeyboardBuilder()
+    builder.row(
+        InlineKeyboardButton(text='📢 Канал', url='https://t.me/mefmetrch'),
+        InlineKeyboardButton(text='💰 Донат', url='https://t.me/mefmetrch'),
+        InlineKeyboardButton(text='💬 Чат', url='https://t.me/mefmetrchat')
+    )
+    await message.reply("👋 *Здарова шныр*, этот бот сделан для того, чтобы *считать* сколько *грамм мефедрончика* ты снюхал\n🧑‍💻 Бот разработан *powerplantsmoke.t.me*", reply_markup=builder.as_markup(), parse_mode='markdown')
 
 
-@dp.message_handler(commands=['grach'])
-async def start_command(message: types.Message):
+@dp.message(Command('grach'))
+async def start_command(message: Message):
     await message.reply("грач хуесос")
 
-@dp.message_handler(commands=['rules'])
-async def start_command(message: types.Message):
-    await message.reply('''Правила пользования MefMetrBot:
+@dp.message(Command('rules'))
+async def start_command(message: Message):
+    await message.reply('''Правила пользования mephmetrbot:
 *1) Мультиаккаунтинг - бан навсегда и обнуление всех аккаунтов *
 *2) Использование любых уязвимостей бота - бан до исправления и возможное обнуление*
 *3) Запрещена реклама через топ кланов и топ юзеров - выговор, после бан с обнулением*
@@ -57,45 +60,45 @@ async def start_command(message: types.Message):
 Употребление, хранение и продажа является уголовно наказуемой*
 *Сообщить о багах вы можете администраторам* (*команда* `/about`)''', parse_mode='markdown')
 
-@dp.message_handler(commands=['admin'])
-async def start_command(message: types.Message):
+@dp.message(Command('admin'))
+async def start_command(message: Message):
     await message.reply("🚨 *MONKEY ALARM*", parse_mode='markdown')
 
-@dp.message_handler(commands=['getadmin'])
-async def start_command(message: types.Message):
+@dp.message(Command('getadmin'))
+async def start_command(message: Message):
     await message.reply("🚨 *MONKEY ALARM*", parse_mode='markdown')
 
-@dp.message_handler(commands=['free'])
-async def start_command(message: types.Message):
+@dp.message(Command('free'))
+async def start_command(message: Message):
     await message.reply("🚨 *MONKEY ALARM*", parse_mode='markdown')
 
-@dp.message_handler(commands=['freeadmin'])
-async def start_command(message: types.Message):
+@dp.message(Command('freeadmin'))
+async def start_command(message: Message):
     await message.reply("🚨 *MONKEY ALARM*", parse_mode='markdown')
 
-@dp.message_handler(commands=['reboot'])
-async def start_command(message: types.Message):
+@dp.message(Command('reboot'))
+async def start_command(message: Message):
     await message.reply("🚨 *MONKEY ALARM*", parse_mode='markdown')
 
-@dp.message_handler(commands=['shop'])
-async def start_command(message: types.Message):
+@dp.message(Command('shop'))
+async def start_command(message: Message):
     await message.reply("🚨 *MONKEY ALARM*", parse_mode='markdown')
 
-@dp.message_handler(commands=['hack'])
-async def start_command(message: types.Message):
+@dp.message(Command('hack'))
+async def start_command(message: Message):
     await message.reply("🚨 *MONKEY ALARM*", parse_mode='markdown')
 
-@dp.message_handler(commands=['ban'])
-async def start_command(message: types.Message):
+@dp.message(Command('ban'))
+async def start_command(message: Message):
     await message.reply("🚨 *MONKEY ALARM*", parse_mode='markdown')
 
-# @dp.message_handler(commands=['casino'])
-# async def start_command(message: types.Message):
+# @dp.message(Command('casino'))
+# async def start_command(message: Message):
 #     await message.reply("❌ *Резерв казино закончился. Попробуйте, пожалуйста, позже!*", parse_mode='markdown')
 
 
-@dp.message_handler(commands=['help'])
-async def help_command(message: types.Message):
+@dp.message(Command('help'))
+async def help_command(message: Message):
     await message.reply('''Все команды бота:
 
 `/drug` - *принять мефик*
@@ -120,8 +123,8 @@ async def help_command(message: types.Message):
     ''', parse_mode='markdown')
 
 
-@dp.message_handler(commands=['profile'])
-async def profile_command(message: types.Message):
+@dp.message(Command('profile'))
+async def profile_command(message: Message):
     
     if message.reply_to_message:
         user_id = message.reply_to_message.from_user.id
@@ -142,10 +145,10 @@ async def profile_command(message: types.Message):
                 clan = cursor.fetchone()
                 clan_name = clan[0] if clan else 0
             if user_id == message.from_user.id:
-                username = message.from_user.username.replace('_', '\_') if message.from_user.username else None
+                username = message.from_user.username if message.from_user.username else None
                 full_name = message.from_user.full_name
             else:
-                username = message.reply_to_message.from_user.username.replace('_', '\_') if message.reply_to_message.from_user.username else None
+                username = message.reply_to_message.from_user.username if message.reply_to_message.from_user.username else None
                 full_name = message.reply_to_message.from_user.full_name
 
             if is_admin == 1:
@@ -161,8 +164,8 @@ async def profile_command(message: types.Message):
         else:
             await message.reply('❌ Профиль не найден')
 
-@dp.message_handler(Command('drug'))
-async def drug_command(message: types.Message, state: FSMContext):
+@dp.message(Command('drug'))
+async def drug_command(message: Message, state: FSMContext):
     format = '%Y-%m-%d %H:%M:%S.%f'
     user_id = message.from_user.id
     cursor.execute('SELECT * FROM users WHERE id = ?', (user_id,))
@@ -194,8 +197,8 @@ async def drug_command(message: types.Message, state: FSMContext):
             conn.commit()
             await message.reply(f"👍 *{message.from_user.first_name}*, _ты занюхнул(-а) {count} грамм мефчика!_\n\n🌿 Всего снюхано `{drug_count+count}` грамм мефедрона\n\n⏳ Следующий занюх доступен через `1 час.`", parse_mode='markdown')
   
-@dp.message_handler(commands=['top'])
-async def top_command(message: types.Message):
+@dp.message(Command('top'))
+async def top_command(message: Message):
     user_id = message.from_user.id
     cursor.execute('SELECT * FROM users WHERE id = ?', (user_id,))
     user = cursor.fetchone()
@@ -221,8 +224,8 @@ async def top_command(message: types.Message):
             await message.reply('Никто еще не принимал меф.')
 
 
-@dp.message_handler(commands=['take'])
-async def take_command(message: types.Message, state: FSMContext):
+@dp.message(Command('take'))
+async def take_command(message: Message, state: FSMContext):
     user_id = message.from_user.id
     cursor.execute('SELECT * FROM users WHERE id = ?', (user_id,))
     user = cursor.fetchone()
@@ -266,7 +269,7 @@ async def take_command(message: types.Message, state: FSMContext):
                             cursor.execute('UPDATE users SET drug_count = drug_count + 1 WHERE id = ?', (your_user_id,))
                             conn.commit()
                             if reply_msg.from_user.username:
-                                username = reply_msg.from_user.username.replace('_', '\_')
+                                username = reply_msg.from_user.username
                             else:
                                 username = f'[{reply_msg.from_user.first_name}](tg://user?id={reply_msg.from_user.id})'
                             await message.reply(f"✅ [{message.from_user.first_name}](tg://user?id={message.from_user.id}) _спиздил(-а) один грам мефа у_ @{username}!", parse_mode='markdown')
@@ -280,9 +283,9 @@ async def take_command(message: types.Message, state: FSMContext):
         else:
             await message.reply('❌ Ответьте на сообщение пользователя, у которого хотите спиздить мефедрон.')
             
-@dp.message_handler(commands=['casino'])
-async def casino(message: types.Message):
-    args = message.get_args()
+@dp.message(Command('casino'))
+async def casino(message: Message, command: CommandObject):
+    args = command.args.split(' ', maxsplit=1)[0]
     user_id = message.from_user.id
     cursor.execute('SELECT * FROM users WHERE id = ?', (user_id,))
     user = cursor.fetchone()
@@ -324,7 +327,7 @@ async def casino(message: types.Message):
                             cursor.execute('UPDATE users SET last_casino = ? WHERE id = ?', (datetime.now().isoformat(), user_id,))
                             cursor.execute('UPDATE users SET drug_count = ? WHERE id = ?', (newbalance, user_id,))
                             conn.commit()
-                            await bot.send_message(-1001817198986, f"#CASINO\n\nfirst\_name: `{message.from_user.first_name}`\nuserid: `{user_id}`\nbet: `{roundedbet}`\nmultiplier: `{multiplier}`\ndrug\_count: `{drug_count+roundedbet}`\n\n[mention](tg://user?id={user_id})", parse_mode='markdown')
+                            await bot.send_message(-1001817198986, f"#CASINO\n\nfirst_name: `{message.from_user.first_name}`\nuserid: `{user_id}`\nbet: `{roundedbet}`\nmultiplier: `{multiplier}`\ndrug_count: `{drug_count+roundedbet}`\n\n[mention](tg://user?id={user_id})", parse_mode='markdown')
                             await message.reply(f'🤑 *Ебать тебе повезло!* Твоя ставка *умножилось* на `{multiplier}`. Твой выйгрыш: `{roundedbet}` гр.\nТвой баланс: `{newbalance}` гр.', parse_mode='markdown')
                         elif multiplier == 0:
                             cursor.execute('SELECT drug_count FROM users WHERE id = ?', (5877407090,))
@@ -333,13 +336,13 @@ async def casino(message: types.Message):
                             cursor.execute('UPDATE users SET drug_count = ? WHERE id = ?', (drug_count-bet, user_id,))
                             cursor.execute('UPDATE users SET drug_count = ? WHERE id = ?', (botbalance+bet, 5877407090,))
                             conn.commit()
-                            await bot.send_message(-1001817198986, f"#CASINO\n\nfirst\_name: `{message.from_user.first_name}`\nuserid: `{user_id}`\nbet: `{bet}`\nmupltiplier: `{multiplier}`\ndrug\_count: `{drug_count-bet}`\n\n[mention](tg://user?id={user_id})", parse_mode='markdown')
+                            await bot.send_message(-1001817198986, f"#CASINO\n\nfirst_name: `{message.from_user.first_name}`\nuserid: `{user_id}`\nbet: `{bet}`\nmupltiplier: `{multiplier}`\ndrug_count: `{drug_count-bet}`\n\n[mention](tg://user?id={user_id})", parse_mode='markdown')
                             await message.reply('😔 *Ты проебал* свою ставку, *нехуй было* крутить казик.', parse_mode='markdown')
         else:
             await message.reply(f"🛑 Укажи сумму, на которую ты бы хотел сыграть! Пример:\n`/casino 40`", parse_mode='markdown')
 
-@dp.message_handler(commands=['give'])
-async def give_command(message: types.Message, state: FSMContext):
+@dp.message(Command('give'))
+async def give_command(message: Message, state: FSMContext, command: CommandObject):
     user_id = message.from_user.id
     cursor.execute('SELECT * FROM users WHERE id = ?', (user_id,))
     user = cursor.fetchone()
@@ -347,7 +350,7 @@ async def give_command(message: types.Message, state: FSMContext):
     if is_banned == 1:
         await message.reply('🛑 Вы заблокированы в боте!')
     elif is_banned == 0:
-        args = message.get_args().split(maxsplit=1)
+        args = command.args.split(' ', maxsplit=1)
         if args:
             try:
                 value = int(args[0])
@@ -380,7 +383,7 @@ async def give_command(message: types.Message, state: FSMContext):
                         cursor.execute('UPDATE users SET drug_count = drug_count - ? WHERE id = ?', (value, your_user_id))
                         cursor.execute('UPDATE users SET drug_count = ? WHERE id = ?', (botbalance+commission, 5877407090))
                         conn.commit()
-                        await bot.send_message(-1001817198986, f"#GIVE\n\nfirst\_name: `{message.from_user.first_name}`\nuserid: `{user_id}`\nto: `{reply_msg.from_user.first_name}`\nvalue: `{net_value}`", parse_mode='markdown')
+                        await bot.send_message(-1001817198986, f"#GIVE\n\nfirst_name: `{message.from_user.first_name}`\nuserid: `{user_id}`\nto: `{reply_msg.from_user.first_name}`\nvalue: `{net_value}`", parse_mode='markdown')
                         if reply_msg.from_user.username:
                             await message.reply(f"✅ [{message.from_user.first_name}](tg://user?id={message.from_user.id}) _подарил(-а) {value} гр. мефа_ [{reply_msg.from_user.first_name}](tg://user?id={reply_msg.from_user.id})!\nКомиссия: `{commission}` гр. мефа\nПолучено `{net_value}` гр. мефа.", parse_mode='markdown')
                         else:
@@ -389,9 +392,9 @@ async def give_command(message: types.Message, state: FSMContext):
                     elif drug_count < value:
                         await message.reply(f'❌ Недостаточно граммов мефа для того чтобы их передать')
 
-@dp.message_handler(commands=['clancreate'])
-async def create_clan(message: types.Message):
-    args = message.get_args()
+@dp.message(Command('clancreate'))
+async def create_clan(message: Message, command: CommandObject):
+    args = command.args.split(' ', maxsplit=1)[0]
     user_id = message.from_user.id
     cursor.execute('SELECT * FROM users WHERE id = ?', (user_id,))
     user = cursor.fetchone()
@@ -426,9 +429,9 @@ async def create_clan(message: types.Message):
         else:
             await message.reply(f"🛑 Укажи название клана\nПример:\n`/clancreate КрУтЫе_ПеРцЫ`\nСтоимость создания клана: `100` гр.", parse_mode='markdown')
 
-@dp.message_handler(commands=['deposit'])
-async def deposit(message: types.Message):
-    args = message.get_args()
+@dp.message(Command('deposit'))
+async def deposit(message: Message, command: CommandObject):
+    args = command.args.split(' ', maxsplit=1)[0]
     user_id = message.from_user.id
     cursor.execute('SELECT * FROM users WHERE id = ?', (user_id,))
     user = cursor.fetchone()
@@ -474,9 +477,9 @@ async def deposit(message: types.Message):
         else:
             await message.reply(f"🛑 Вы не указали сумму. Пример:\n`/deposit 100`", parse_mode='markdown')
 
-@dp.message_handler(commands=['withdraw'])
-async def withdraw(message: types.Message):
-    args = message.get_args()
+@dp.message(Command('withdraw'))
+async def withdraw(message: Message, command: CommandObject):
+    args = command.args.split(' ', maxsplit=1)[0]
     user_id = message.from_user.id
     cursor.execute('SELECT * FROM users WHERE id = ?', (user_id,))
     user = cursor.fetchone()
@@ -523,8 +526,8 @@ async def withdraw(message: types.Message):
             await message.reply(f"🛑 Вы не указали сумму. Пример:\n`/withdraw 100`", parse_mode='markdown')
 
 
-@dp.message_handler(commands=['clantop'])
-async def clan_top(message: types.Message):
+@dp.message(Command('clantop'))
+async def clan_top(message: Message):
     user_id = message.from_user.id
     cursor.execute('SELECT * FROM users WHERE id = ?', (user_id,))
     user = cursor.fetchone()
@@ -546,8 +549,8 @@ async def clan_top(message: types.Message):
         else:
             await message.reply('🛑 Ещё ни один клан не пополнил свой баланс.')
 
-@dp.message_handler(commands=['clanbalance'])
-async def clanbalance(message: types.Message):
+@dp.message(Command('clanbalance'))
+async def clanbalance(message: Message):
     user_id = message.from_user.id
     cursor.execute('SELECT * FROM users WHERE id = ?', (user_id,))
     user = cursor.fetchone()
@@ -565,8 +568,8 @@ async def clanbalance(message: types.Message):
             clan_name = clan[1]
             await message.reply(f'✅ Баланс клана *{clan_name}* - `{clan_balance}` гр.', parse_mode='markdown')
 
-@dp.message_handler(commands=['clanwar'])
-async def clanwar(message: types.Message):
+@dp.message(Command('clanwar'))
+async def clanwar(message: Message):
     user_id = message.from_user.id
     cursor.execute('SELECT * FROM users WHERE id = ?', (user_id,))
     user = cursor.fetchone()
@@ -605,8 +608,8 @@ async def clanwar(message: types.Message):
                 except Exception as e:
                     print(f"Ошибка отправки сообщения в {chat_id}: {e}")
 
-@dp.message_handler(commands=['clanowner'])
-async def clan_owner(message: types.Message):
+@dp.message(Command('clanowner'))
+async def clan_owner(message: Message):
     user_id = message.from_user.id
     cursor.execute('SELECT * FROM users WHERE id = ?', (user_id,))
     user = cursor.fetchone()
@@ -642,8 +645,8 @@ async def clan_owner(message: types.Message):
             await message.reply(f"✅ *Вы передали владельца клана!*", parse_mode='markdown')
 
 
-@dp.message_handler(commands=['claninfo'])
-async def claninfo(message: types.Message):
+@dp.message(Command('claninfo'))
+async def claninfo(message: Message):
     user_id = message.from_user.id
     cursor.execute('SELECT * FROM users WHERE id = ?', (user_id,))
     user = cursor.fetchone()
@@ -663,8 +666,8 @@ async def claninfo(message: types.Message):
             clan_owner = await bot.get_chat(clan_owner_id)
             await message.reply(f"👥 Клан: `{clan_name}`\n👑 Владелец клана: [{clan_owner.first_name}](tg://user?id={clan_owner_id})\n🌿 Баланс клана `{clan_balance}` гр.", parse_mode='markdown')   
 
-@dp.message_handler(commands=['clanmembers'])
-async def clanmembers(message: types.Message):
+@dp.message(Command('clanmembers'))
+async def clanmembers(message: Message):
     user_id = message.from_user.id
     cursor.execute('SELECT * FROM users WHERE id = ?', (user_id,))
     user = cursor.fetchone()
@@ -703,8 +706,8 @@ async def clanmembers(message: types.Message):
         else:
             await message.reply(f"🛑 Вы не состоите в клане", parse_mode='markdown')
 
-@dp.message_handler(commands=['claninvite'])
-async def claninvite(message: types.Message):
+@dp.message(Command('claninvite'))
+async def claninvite(message: Message):
     user_id = message.from_user.id
     cursor.execute('SELECT * FROM users WHERE id = ?', (user_id,))
     user = cursor.fetchone()
@@ -766,8 +769,8 @@ async def claninvite(message: types.Message):
         else:
             await message.reply(f"🛑 {sys.exc_info()[0]}")
 
-@dp.message_handler(commands=['clankick'])
-async def clankick(message: types.Message):
+@dp.message(Command('clankick'))
+async def clankick(message: Message):
     user_id = message.from_user.id
     cursor.execute('SELECT * FROM users WHERE id = ?', (user_id,))
     user = cursor.fetchone()
@@ -786,7 +789,7 @@ async def clankick(message: types.Message):
             reply_msg = message.reply_to_message
             if reply_msg:
                 user_id = reply_msg.from_user.id
-                username = reply_msg.from_user.username.replace('_', '\_')
+                username = reply_msg.from_user.username
                 usernameinviter = message.from_user.username.replace('_', '\n')
                 cursor.execute('UPDATE users SET clan_member = ? WHERE id = ?', (0, user_id))
                 conn.commit()
@@ -794,8 +797,8 @@ async def clankick(message: types.Message):
         elif clan_id > 0 and user_id != clan_owner_id:
             await message.reply(f"🛑 Исключать из клана может только создатель", parse_mode='markdown')
 
-@dp.message_handler(commands=['clanleave'])
-async def clanleave(message: types.Message):
+@dp.message(Command('clanleave'))
+async def clanleave(message: Message):
     user_id = message.from_user.id
     cursor.execute('SELECT * FROM users WHERE id = ?', (user_id,))
     user = cursor.fetchone()
@@ -817,8 +820,8 @@ async def clanleave(message: types.Message):
         elif clan_id > 0 and user_id == clan_owner_id:
             await message.reply(f"🛑 Создатель клана не может его покинуть", parse_mode='markdown')
 
-@dp.message_handler(commands=['clandisband'])
-async def clandisband(message: types.Message):
+@dp.message(Command('clandisband'))
+async def clandisband(message: Message):
     user_id = message.from_user.id
     cursor.execute('SELECT * FROM users WHERE id = ?', (user_id,))
     user = cursor.fetchone()
@@ -844,8 +847,8 @@ async def clandisband(message: types.Message):
         elif clan_id > 0 and user_id != clan_owner_id:
             await message.reply(f"🛑 Вы не владелец клана!", parse_mode='markdown')
 
-@dp.message_handler(commands=['clanaccept'])
-async def clanaccept(message: types.Message):
+@dp.message(Command('clanaccept'))
+async def clanaccept(message: Message):
     user_id = message.from_user.id
     cursor.execute('SELECT * FROM users WHERE id = ?', (user_id,))
     user = cursor.fetchone()
@@ -866,8 +869,8 @@ async def clanaccept(message: types.Message):
         else:
             await message.reply('🛑 Вы ещё не получали приглашений в клан')
         
-@dp.message_handler(commands=['clandecline'])
-async def clandecline(message: types.Message):
+@dp.message(Command('clandecline'))
+async def clandecline(message: Message):
     user_id = message.from_user.id
     cursor.execute('SELECT * FROM users WHERE id = ?', (user_id,))
     user = cursor.fetchone()
@@ -889,8 +892,8 @@ async def clandecline(message: types.Message):
         
 
 
-@dp.message_handler(commands=['find'])
-async def drug_command(message: types.Message, state: FSMContext):
+@dp.message(Command('find'))
+async def drug_command(message: Message, state: FSMContext):
     user_id = message.from_user.id
     cursor.execute('SELECT * FROM users WHERE id = ?', (user_id,))
     user = cursor.fetchone()
@@ -914,20 +917,20 @@ async def drug_command(message: types.Message, state: FSMContext):
                 cursor.execute('UPDATE users SET last_use_time = ? WHERE id = ?', ('2006-02-20 12:45:37.666666', user_id,))
                 cursor.execute('UPDATE users SET last_find = ? WHERE id = ?', (datetime.now().isoformat(), user_id,))
                 conn.commit()
-                await bot.send_message(-1001817198986, f"#FIND #WIN\n\nfirst\_name: `{message.from_user.first_name}`\ncount: `{count}`\ndrug\_count: `{drug_count+count}`\n\n[mention](tg://user?id={user_id})", parse_mode='markdown')
+                await bot.send_message(-1001817198986, f"#FIND #WIN\n\nfirst_name: `{message.from_user.first_name}`\ncount: `{count}`\ndrug_count: `{drug_count+count}`\n\n[mention](tg://user?id={user_id})", parse_mode='markdown')
                 await message.reply(f"👍 {message.from_user.first_name}, ты пошёл в лес и *нашел клад*, там лежало `{count} гр.` мефчика!\n🌿 Твое время команды /drug обновлено", parse_mode='markdown')
             elif random.randint(1,100) <= 50:
                 count = random.randint(1, round(drug_count))
                 cursor.execute('UPDATE users SET drug_count = ? WHERE id = ?', (drug_count - count, user_id,))
                 conn.commit()
-                await bot.send_message(-1001817198986, f"#FIND #LOSE\n\nfirst\_name: `{message.from_user.first_name}`\ncount: `{count}`\ndrug\_count: `{drug_count-count}`\n\n[mention](tg://user?id={user_id})", parse_mode='markdown')
+                await bot.send_message(-1001817198986, f"#FIND #LOSE\n\nfirst_name: `{message.from_user.first_name}`\ncount: `{count}`\ndrug_count: `{drug_count-count}`\n\n[mention](tg://user?id={user_id})", parse_mode='markdown')
                 await message.reply(f"❌ *{message.from_user.first_name}*, тебя *спалил мент* и *дал тебе по ебалу*\n🌿 Тебе нужно откупиться, мент предложил взятку в размере `{count} гр.`\n⏳ Следующая попытка доступна через *12 часов.*", parse_mode='markdown')
                 
 
 
-@dp.message_handler(commands=['banuser'])
-async def banuser_command(message: types.Message):
-    args = message.get_args()
+@dp.message(Command('banuser'))
+async def banuser_command(message: Message, command: CommandObject):
+    args = command.args.split(' ', maxsplit=1)[0]
     user_id = message.from_user.id
     cursor.execute('SELECT * FROM users WHERE id = ?', (user_id,))
     user = cursor.fetchone()
@@ -947,9 +950,9 @@ async def banuser_command(message: types.Message):
     elif is_admin == 0:
         await message.reply('🚨 MONKEY ALARM')
 
-@dp.message_handler(commands=['unbanuser'])
-async def unbanuser_command(message: types.Message):
-    args = message.get_args()
+@dp.message(Command('unbanuser'))
+async def unbanuser_command(message: Message, command: CommandObject):
+    args = command.args.split(' ', maxsplit=1)[0]
     user_id = message.from_user.id
     cursor.execute('SELECT * FROM users WHERE id = ?', (user_id,))
     user = cursor.fetchone()
@@ -973,31 +976,31 @@ async def unbanuser_command(message: types.Message):
         await message.reply('🚨 MONKEY ALARM')
 
 
-@dp.message_handler(commands='about')
-async def about_command(message: types.Message):
-    keyboard = types.InlineKeyboardMarkup(resize_keyboard=True)
+@dp.message(Command('about'))
+async def about_command(message: Message):
+    keyboard = InlineKeyboardMarkup(resize_keyboard=True)
     channel_button = InlineKeyboardButton('📢 Канал', url='https://t.me/mefmetrch')
     donate_button = InlineKeyboardButton('💰 Донат', url='https://t.me/mefmetrch')
     chat_button = InlineKeyboardButton('💬 Чат', url='https://t.me/mefmetrchat')
     keyboard.row(channel_button, donate_button, chat_button)
     await message.reply("🧑‍💻 Бот разработан xanaxnotforfree.t.me", reply_markup=keyboard)
 
-@dp.message_handler(commands=['setdrugs'])
-async def setdrugs_command(message: types.Message):
+@dp.message(Command('setdrugs'))
+async def setdrugs_command(message: Message, command: CommandObject):
     user_id = message.from_user.id
     cursor.execute('SELECT * FROM users WHERE id = ?', (user_id,))
     user = cursor.fetchone()
     is_admin = user[3]
     if is_admin == 1:
-        args = message.get_args().split(maxsplit=1)
+        args = command.args.split(' ', maxsplit=1)
         cursor.execute('UPDATE users SET drug_count = ? WHERE id = ?', (args[1],args[0]))
         conn.commit()
         await message.reply('✅')
     elif is_admin == 0:
         await message.reply('🚨 MONKEY ALARM')
 
-@dp.message_handler(commands=['usercount'])
-async def usercount(message: types.Message):
+@dp.message(Command('usercount'))
+async def usercount(message: Message):
     user_id = message.from_user.id
     cursor.execute('SELECT * FROM users WHERE id = ?', (user_id,))
     user = cursor.fetchone()
@@ -1009,7 +1012,7 @@ async def usercount(message: types.Message):
     else:
         await message.reply('🚨 MONKEY ALARM')
 
-@dp.message_handler(Command('broadcast'))
+@dp.message(Command('broadcast'))
 async def cmd_broadcast_start(message: Message):
     user_id = message.from_user.id
     cursor.execute('SELECT * FROM users WHERE id = ?', (user_id,))
@@ -1054,15 +1057,23 @@ async def cmd_broadcast_start(message: Message):
     else:
         await message.reply('🚨 MONKEY ALARM')
 
-@dp.message_handler(content_types=['new_chat_members'])
-async def add_chat(message: types.Message):
+@router.my_chat_member(
+    ChatMemberUpdatedFilter(
+        member_status_changed=IS_NOT_MEMBER >> MEMBER
+    )
+)
+async def add_chat(event: ChatMemberUpdated):
     bot_obj = await bot.get_me()
     bot_id = bot_obj.id
-    for chat_member in message.new_chat_members:
-        if chat_member.id == bot_id:
-            cursor.execute('INSERT INTO chats (chat_id, is_ads_enable) VALUES (?, ?)', (message.chat.id, 1))
-            conn.commit()
-            await bot.send_message(-1001817198986, f"#NEWCHAT\n\nchatid: `{message.chat.id}`", parse_mode='markdown')
+    cursor.execute('INSERT INTO chats (chat_id, is_ads_enable) VALUES (?, ?)', (event.chat.id, 1))
+    conn.commit()
+    await bot.send_message(-1001817198986, f"#NEWCHAT\n\nchatid: `{event.chat.id}`", parse_mode='markdown')
 
-if __name__ == '__main__':
-    executor.start_polling(dp, skip_updates=True)
+async def run():
+    await dp.start_polling(bot)
+
+def main():
+    asyncio.run(run())
+
+if __name__ == "__main__":
+    main()
