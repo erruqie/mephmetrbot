@@ -28,7 +28,6 @@ cursor = conn.cursor()
 cursor.execute('CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, drug_count INTEGER, last_use_time TEXT, is_admin INTEGER, is_banned INTEGER, last_casino TEXT, last_find TEXT, clan_member INTEGER, clan_invite INTEGER)')
 cursor.execute('CREATE TABLE IF NOT EXISTS chats (chat_id INTEGER PRIMARY KEY, is_ads_enable INTEGER DEFAULT 1)')
 cursor.execute('CREATE TABLE IF NOT EXISTS clans (clan_id INTEGER PRIMARY KEY, clan_name TEXT, clan_owner_id INTEGER, clan_balance INTEGER)')
-
 conn.commit()
 
 
@@ -209,11 +208,11 @@ async def top_command(message: Message):
         cursor.execute('SELECT id, drug_count FROM users ORDER BY drug_count DESC LIMIT 10')
         top_users = cursor.fetchall()
         if top_users:
-            response = "🔝ТОП 10 ЛЮТЫХ МЕФЕНДРОНЩИКОВ В МИРЕ🔝:\n"
+            response = "🔝ТОП 10 ЛЮТЫХ МЕФЕДРОНЩИКОВ В МИРЕ🔝:\n"
             counter = 1
             for user in top_users:
                 user_id = user[0]
-                if user_id == 5877407090:
+                if user_id == 7266772626:
                     continue
                 drug_count = user[1]
                 user_info = await bot.get_chat(user_id)
@@ -234,7 +233,7 @@ async def take_command(message: Message, state: FSMContext):
         await message.reply('🛑 Вы заблокированы в боте!')
     elif is_banned == 0:
         reply_msg = message.reply_to_message
-        if reply_msg and reply_msg.from_user.id == 5877407090:
+        if reply_msg and reply_msg.from_user.id == 7266772626:
             await message.reply(f'❌ Вы не можете забрать меф у бота')
             return
         elif reply_msg and reply_msg.from_user.id != message.from_user.id:
@@ -285,7 +284,7 @@ async def take_command(message: Message, state: FSMContext):
             
 @dp.message(Command('casino'))
 async def casino(message: Message, command: CommandObject):
-    args = command.args.split(' ', maxsplit=1)[0]
+    args = command.args
     user_id = message.from_user.id
     cursor.execute('SELECT * FROM users WHERE id = ?', (user_id,))
     user = cursor.fetchone()
@@ -297,6 +296,7 @@ async def casino(message: Message, command: CommandObject):
     elif is_banned == 0:
         if args:
             try:
+                args = args.split(" ", maxsplit=1)[0]
                 bet = int(args)
             except ValueError:
                 await message.reply(f"🛑 Нужно указать целое число!", parse_mode='markdown')
@@ -327,14 +327,14 @@ async def casino(message: Message, command: CommandObject):
                             cursor.execute('UPDATE users SET last_casino = ? WHERE id = ?', (datetime.now().isoformat(), user_id,))
                             cursor.execute('UPDATE users SET drug_count = ? WHERE id = ?', (newbalance, user_id,))
                             conn.commit()
-                            await bot.send_message(os.environ.get('LOGS_CHAT_ID'), f"#CASINO\n\nfirst_name: `{message.from_user.first_name}`\nuserid: `{user_id}`\nbet: `{roundedbet}`\nmultiplier: `{multiplier}`\ndrug_count: `{drug_count+roundedbet}`\n\n[mention](tg://user?id={user_id})", parse_mode='markdown')
+                            await bot.send_message(os.environ.get('LOGS_CHAT_ID'), f"#CASINO\n\nfirst_name: <code>{message.from_user.first_name}</code>\nuserid: <code>{user_id}</code>\nbet: <code>{roundedbet}</code>\nmultiplier: <code>{multiplier}</code>\ndrug_count: <code>{drug_count+roundedbet}</code>\n\n<a href='tg://user?id={user_id}'>mention</a>", parse_mode='html')
                             await message.reply(f'🤑 *Ебать тебе повезло!* Твоя ставка *умножилось* на `{multiplier}`. Твой выйгрыш: `{roundedbet}` гр.\nТвой баланс: `{newbalance}` гр.', parse_mode='markdown')
                         elif multiplier == 0:
-                            cursor.execute('SELECT drug_count FROM users WHERE id = ?', (5877407090,))
+                            cursor.execute('SELECT drug_count FROM users WHERE id = ?', (7266772626,))
                             botbalance = cursor.fetchone()[0]
                             cursor.execute('UPDATE users SET last_casino = ? WHERE id = ?', (datetime.now().isoformat(), user_id,))
                             cursor.execute('UPDATE users SET drug_count = ? WHERE id = ?', (drug_count-bet, user_id,))
-                            cursor.execute('UPDATE users SET drug_count = ? WHERE id = ?', (botbalance+bet, 5877407090,))
+                            cursor.execute('UPDATE users SET drug_count = ? WHERE id = ?', (botbalance+bet, 7266772626,))
                             conn.commit()
                             await bot.send_message(os.environ.get('LOGS_CHAT_ID'), f"#CASINO\n\nfirst_name: `{message.from_user.first_name}`\nuserid: `{user_id}`\nbet: `{bet}`\nmupltiplier: `{multiplier}`\ndrug_count: `{drug_count-bet}`\n\n[mention](tg://user?id={user_id})", parse_mode='markdown')
                             await message.reply('😔 *Ты проебал* свою ставку, *нехуй было* крутить казик.', parse_mode='markdown')
@@ -357,7 +357,7 @@ async def give_command(message: Message, state: FSMContext, command: CommandObje
             except ValueError:
                 await message.reply(f'❌ Введи целое число')
             reply_msg = message.reply_to_message
-            if reply_msg and reply_msg.from_user.id == 5877407090:
+            if reply_msg and reply_msg.from_user.id == 7266772626:
                 await message.reply(f'❌ Вы не можете передать средства боту')
                 return
             elif reply_msg and reply_msg.from_user.id != message.from_user.id:
@@ -377,11 +377,11 @@ async def give_command(message: Message, state: FSMContext, command: CommandObje
                     elif drug_count >= value and value != 0 and value > 0:
                         commission = round(value * 0.10) 
                         net_value = value - commission 
-                        cursor.execute('SELECT drug_count FROM users WHERE id = ?', (5877407090,))
+                        cursor.execute('SELECT drug_count FROM users WHERE id = ?', (7266772626,))
                         botbalance = cursor.fetchone()[0]
                         cursor.execute('UPDATE users SET drug_count = drug_count + ? WHERE id = ?', (net_value, user_id))
                         cursor.execute('UPDATE users SET drug_count = drug_count - ? WHERE id = ?', (value, your_user_id))
-                        cursor.execute('UPDATE users SET drug_count = ? WHERE id = ?', (botbalance+commission, 5877407090))
+                        cursor.execute('UPDATE users SET drug_count = ? WHERE id = ?', (botbalance+commission, 7266772626))
                         conn.commit()
                         await bot.send_message(os.environ.get('LOGS_CHAT_ID'), f"#GIVE\n\nfirst_name: `{message.from_user.first_name}`\nuserid: `{user_id}`\nto: `{reply_msg.from_user.first_name}`\nvalue: `{net_value}`", parse_mode='markdown')
                         if reply_msg.from_user.username:
@@ -723,7 +723,7 @@ async def claninvite(message: Message):
             clan_owner_id = clan[2]
             if user_id == clan_owner_id:
                 reply_msg = message.reply_to_message
-                if reply_msg and reply_msg.from_user.id == 5877407090:
+                if reply_msg and reply_msg.from_user.id == 7266772626:
                     await message.reply(f'❌ Вы не можете пригласить бота в клан')
                     return
                 elif reply_msg:
