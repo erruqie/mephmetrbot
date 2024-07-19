@@ -1,4 +1,4 @@
-from aiogram import Router, F
+from aiogram import Router
 import sqlite3
 from datetime import datetime, timedelta
 import os
@@ -324,10 +324,11 @@ async def start_command(message: Message):
 
 @router.message(Command('about'))
 async def about_command(message: Message):
-    keyboard = InlineKeyboardMarkup(resize_keyboard=True)
-    channel_button = InlineKeyboardButton('📢 Канал', url='https://t.me/mefmetrch')
-    donate_button = InlineKeyboardButton('💰 Донат', url='https://t.me/mefmetrch')
-    chat_button = InlineKeyboardButton('💬 Чат', url='https://t.me/mefmetrchat')
-    keyboard.row(channel_button, donate_button, chat_button)
-    await message.reply("🧑‍💻 Бот разработан xanaxnotforfree.t.me", reply_markup=keyboard)
+    builder = InlineKeyboardBuilder()
+    builder.row(
+        InlineKeyboardButton(text='📢 Канал', url='https://t.me/mefmetrch'),
+        InlineKeyboardButton(text='💰 Донат', url='https://t.me/mefmetrch'),
+        InlineKeyboardButton(text='💬 Чат', url='https://t.me/mefmetrchat')
+    )
+    await message.reply("🧑‍💻 Бот разработан powerplantsmoke.t.me и hateandroid.t.me", reply_markup=builder.as_markup())
 
