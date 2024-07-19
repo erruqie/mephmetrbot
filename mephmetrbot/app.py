@@ -394,7 +394,7 @@ async def give_command(message: Message, state: FSMContext, command: CommandObje
 
 @dp.message(Command('clancreate'))
 async def create_clan(message: Message, command: CommandObject):
-    args = command.args.split(' ', maxsplit=1)[0]
+    args = command.args
     user_id = message.from_user.id
     cursor.execute('SELECT * FROM users WHERE id = ?', (user_id,))
     user = cursor.fetchone()
@@ -403,6 +403,7 @@ async def create_clan(message: Message, command: CommandObject):
         await message.reply('🛑 Вы заблокированы в боте!')
     elif is_banned == 0:
         if args:
+            args = command.args.split(' ', maxsplit=1)[0]
             clan_name = args
             cursor.execute('SELECT * FROM clans WHERE clan_name = ?', (clan_name,))
             clanexist = cursor.fetchone()
@@ -414,7 +415,7 @@ async def create_clan(message: Message, command: CommandObject):
                 cursor.execute('SELECT clan_member, drug_count FROM users WHERE id = ?', (user_id,))
                 user = cursor.fetchone()
                 drug_count = user[1]
-                if user[0] != 0:
+                if user[0] is not None:
                     await message.reply(f"🛑 Вы уже состоите в клане.", parse_mode='markdown')
                 else:
                     if drug_count >= 100:
