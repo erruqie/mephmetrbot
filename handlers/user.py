@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 import os
 import random
 from aiogram.fsm.context import FSMContext
-from aiogram.types import Message, InlineKeyboardButton, InlineKeyboardMarkup
+from aiogram.types import Message, InlineKeyboardButton
 from aiogram.filters.command import Command, CommandObject
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from config import bot
@@ -14,46 +14,43 @@ router = Router()
 conn = sqlite3.connect('handlers/mephmetrbot.db')
 cursor = conn.cursor()
 
+def get_user(user_id):
+    cursor.execute('SELECT * FROM users WHERE id = ?', (user_id,))
+    return cursor.fetchone()
+
 @router.message(Command('profile'))
 async def profile_command(message: Message):
-    
-    if message.reply_to_message:
-        user_id = message.reply_to_message.from_user.id
-    elif message.from_user:
-        user_id = message.from_user.id
-    cursor.execute('SELECT * FROM users WHERE id = ?', (user_id,))
-    user = cursor.fetchone()
-    is_banned = user[4] if user else 0
-    if is_banned == 1:
-            await message.reply('🛑 Вы заблокированы в боте!')
-    elif is_banned == 0:
-        if user:
-            drug_count = user[1]
-            is_admin = user[3]
-            clan_member = user[7]
-            if clan_member:
-                cursor.execute('SELECT clan_name FROM clans WHERE clan_id = ?', (clan_member,))
-                clan = cursor.fetchone()
-                clan_name = clan[0] if clan else 0
-            if user_id == message.from_user.id:
-                username = message.from_user.username if message.from_user.username else None
-                full_name = message.from_user.full_name
-            else:
-                username = message.reply_to_message.from_user.username if message.reply_to_message.from_user.username else None
-                full_name = message.reply_to_message.from_user.full_name
+    user_id = message.reply_to_message.from_user.id if message.reply_to_message else message.from_user.id
+    user = get_user(user_id)
+    if not user:
+        await message.reply('❌ Профиль не найден')
+        return
 
-            if is_admin == 1:
-                if clan_member:
-                    await message.reply(f"👑 *Администратор*\n👤 *Имя:* _{full_name}_\n👥 *Клан:* *{clan_name}*\n👥 *Username пользователя:* @{username}\n🆔 *ID пользователя:* `{user_id}`\n🌿 *Снюхано* _{drug_count}_ грамм.", parse_mode='markdown')
-                else:
-                    await message.reply(f"👑 *Администратор*\n👤 *Имя:* _{full_name}_\n👥 *Username пользователя:* @{username}\n🆔 *ID пользователя:* `{user_id}`\n🌿 *Снюхано* _{drug_count}_ грамм.", parse_mode='markdown')
-            else:
-                if clan_member:
-                    await message.reply(f"👤 *Имя:* _{full_name}_\n👥 *Клан:* *{clan_name}*\n👥 *Username пользователя:* @{username}\n🆔 *ID пользователя:* `{user_id}`\n🌿 *Снюхано* _{drug_count}_ грамм.", parse_mode='markdown')
-                else:
-                    await message.reply(f"👤 *Имя:* _{full_name}_\n👥 *Username пользователя:* @{username}\n🆔 *ID пользователя: * `{user_id}`\n🌿 *Снюхано* _{drug_count}_ грамм.", parse_mode='markdown')
-        else:
-            await message.reply('❌ Профиль не найден')
+    is_banned = user[4]
+    if is_banned:
+        await message.reply('🛑 Вы заблокированы в боте!')
+        return
+
+    drug_count, is_admin, clan_member = user[1], user[3], user[7]
+    clan_name = None
+    if clan_member:
+        cursor.execute('SELECT clan_name FROM clans WHERE clan_id = ?', (clan_member,))
+        clan = cursor.fetchone()
+        clan_name = clan[0] if clan else None
+
+    username = message.from_user.username if user_id == message.from_user.id else message.reply_to_message.from_user.username
+    full_name = message.from_user.full_name if user_id == message.from_user.id else message.reply_to_message.from_user.full_name
+
+    profile_info = f"👤 *Имя:* _{full_name}_\n👥 *Username пользователя:* @{username}\n🆔 *ID пользователя:* `{user_id}`\n🌿 *Снюхано* _{drug_count}_ грамм."
+    if is_admin:
+        profile_info = f"👑 *Администратор*\n{profile_info}"
+    if clan_name:
+        profile_info = f"{profile_info}\n👥 *Клан:* *{clan_name}*"
+    if user_id == 7266772626 or user_id == 7005935644:
+        profile_info = f"🤖 *Это Бот*\n🌿 *Баланс бота:* _{drug_count}_ грамм."
+        
+
+    await message.reply(profile_info, parse_mode='markdown')
 
 
 @router.message(Command('give'))
