@@ -52,22 +52,17 @@ async def casino(message: Message, command: CommandObject):
     drug_count = user.drug_count
     last_casino = user.last_casino
 
-    # Проверка кулдауна
     if last_casino is not None:
-        # Преобразование `last_casino` в offset-naive datetime, если необходимо
         if last_casino.tzinfo is not None:
             last_casino = last_casino.replace(tzinfo=None)
 
-        # Текущая дата и время (offset-naive)
         now = datetime.now()
 
-        # Проверка кулдауна
         if (now - last_casino) < timedelta(seconds=10):
             await message.reply('⏳ Ты только что *крутил казик*, солевая обезьяна, *подожди 10 секунд по братски.*', parse_mode='markdown')
             return
 
-    # Обновляем время последнего действия после успешной проверки
-    user.last_casino = datetime.now()  # Текущая дата и время (offset-naive)
+    user.last_casino = datetime.now()
     await user.save()
     if bet > drug_count:
         await message.reply("🛑 Твоя ставка больше твоего баланса!", parse_mode='markdown')
