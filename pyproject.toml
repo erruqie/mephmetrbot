@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "mephmetrbot"
+version = "0.2.0"
+description = ""
+authors = ["imm4d3 <135858911+imm4d3@users.noreply.github.com>"]
+license = "GNU"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+aiogram = "^3.10.0"
+tortoise-orm = "^0.21.5"
+python-dotenv = "^1.0.1"
+aiomysql = "^0.2.0"
+
+[tool.poetry.scripts]
+poetry = 'poetry.console:run'
+app = 'mephmetrbot.app:main'
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
