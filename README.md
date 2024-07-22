@@ -7,5 +7,5 @@ poetry install
 ```
 2. run
 ```bash
-poetry run app
+poetry run python app.py
 ```
