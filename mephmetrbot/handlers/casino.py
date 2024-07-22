@@ -1,12 +1,12 @@
 from aiogram import Router
 from aiogram.types import Message
 from aiogram.filters.command import Command, CommandObject
-from mephmetrbot.models import Users
+from mephmetrbot.handlers.models import Users
 from tortoise.models import Model
 from tortoise import fields
 from datetime import datetime, timedelta
 import asyncio
-from config import bot
+from mephmetrbot.config import bot
 import os
 
 router = Router()

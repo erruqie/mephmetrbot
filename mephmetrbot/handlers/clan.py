@@ -5,8 +5,8 @@ from aiogram.types import Message
 from aiogram.filters.command import Command
 import os
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
-from config import bot
-from mephmetrbot.models import Users, Clans
+from mephmetrbot.config import bot
+from mephmetrbot.handlers.models import Users, Clans
 from tortoise.models import Model
 from tortoise import fields
 from tortoise.exceptions import IntegrityError, DoesNotExist

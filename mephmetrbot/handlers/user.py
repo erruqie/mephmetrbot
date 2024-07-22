@@ -7,8 +7,8 @@ from aiogram.filters.command import Command, CommandObject
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from tortoise.models import Model
 from tortoise import fields
-from mephmetrbot.models import Users, Clans
-from config import bot
+from mephmetrbot.handlers.models import Users, Clans
+from mephmetrbot.config import bot
 from datetime import datetime, timedelta
 import asyncio
 from aiogram.exceptions import TelegramBadRequest

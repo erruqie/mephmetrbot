@@ -1,10 +1,10 @@
 import os
-from config import bot
+from mephmetrbot.config import bot
 from aiogram import Router, F
 from aiogram.types import Message, ChatMemberUpdated
 from aiogram.filters.command import Command, CommandObject
 from aiogram.filters.chat_member_updated import ChatMemberUpdatedFilter, IS_NOT_MEMBER, MEMBER
-from mephmetrbot.models import Users, Chats
+from mephmetrbot.handlers.models import Users, Chats
 from tortoise.models import Model
 from tortoise import fields
 from tortoise.exceptions import DoesNotExist
