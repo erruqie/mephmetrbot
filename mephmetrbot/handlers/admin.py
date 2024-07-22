@@ -1,15 +1,13 @@
-from aiogram import Router
-from aiogram.types import Message
 import os
-import sys
 from config import bot
 from aiogram import Router, F
 from aiogram.types import Message, ChatMemberUpdated
 from aiogram.filters.command import Command, CommandObject
 from aiogram.filters.chat_member_updated import ChatMemberUpdatedFilter, IS_NOT_MEMBER, MEMBER
-from handlers.models import Users, Chats
+from mephmetrbot.models import Users, Chats
 from tortoise.models import Model
 from tortoise import fields
+from tortoise.exceptions import DoesNotExist
 
 router = Router()
 
@@ -46,7 +44,7 @@ async def banuser_command(message: Message, command: CommandObject):
     if user.is_admin:
         ban_user = await get_user(ban_user_id)
         if ban_user:
-            if ban_user.is_banned == 0:
+            if ban_user.is_banned == 1:
                 await message.reply(f"🔍 Пользователь с ID: `{ban_user_id}` уже заблокирован.", parse_mode='markdown')
                 return
             ban_user.is_banned = 1
@@ -100,6 +98,7 @@ async def unbanuser_command(message: Message, command: CommandObject):
     else:
         await message.reply('🚨 У вас нет прав для выполнения этой команды.')
 
+
 @router.message(Command('setdrugs'))
 async def setdrugs_command(message: Message, command: CommandObject):
     user_id = message.from_user.id
@@ -107,23 +106,40 @@ async def setdrugs_command(message: Message, command: CommandObject):
 
     if user and user.is_admin:
         target_id = None
+        drug_count = None
         args = command.args.split(' ', maxsplit=1)
 
         if message.reply_to_message:
             target_id = message.reply_to_message.from_user.id
-            drug_count = args[0]
+            if args:
+                drug_count = args[0]
         elif len(args) == 2:
             target_id, drug_count = args[0], args[1]
 
-        if target_id and drug_count.isdigit():
+        if drug_count and drug_count.isdigit():
             drug_count = int(drug_count)
-            target_user = await Users.get(id=target_id)
-            target_user.drug_count = drug_count
-            await target_user.save()
-            await message.reply('✅')
-            await bot.send_message(os.environ.get('LOGS_CHAT_ID'), f"<b>#SETDRUGS</b>\n\nuser_id_receiver: <code>{target_id}</code>\nuser_id_sender: <code>{user_id}</code>\ndrug_count: <code>{drug_count}</code>\n\n<a href='tg://user?id={user_id}'>mention sender</a>\n<a href='tg://user?id={target_id}'>mention receiver</a>", parse_mode='HTML')
+
+            # Определите ID бота
+            bot_id = 1
+            # Проверьте, если target_id это ID бота в Telegram
+            if str(target_id) == '7005935644':
+                target_id = bot_id
+
+            try:
+                target_user = await Users.get(id=target_id)
+                target_user.drug_count = drug_count
+                await target_user.save()
+                await message.reply('✅')
+                await bot.send_message(
+                    os.environ.get('LOGS_CHAT_ID'),
+                    f"<b>#SETDRUGS</b>\n\nuser_id_receiver: <code>{target_id}</code>\nuser_id_sender: <code>{user_id}</code>\ndrug_count: <code>{drug_count}</code>\n\n<a href='tg://user?id={user_id}'>mention sender</a>\n<a href='tg://user?id={target_id}'>mention receiver</a>",
+                    parse_mode='HTML'
+                )
+            except DoesNotExist:
+                await message.reply(f'❌ Пользователь с ID {target_id} не найден.')
         else:
-            await message.reply('❌ Неверный формат команды. Используйте /setdrugs [число] или используйте в ответ на сообщение.')
+            await message.reply(
+                '❌ Неверный формат команды. Используйте /setdrugs [число] или используйте в ответ на сообщение.')
     else:
         await message.reply('🚨 У вас нет прав для выполнения этой команды.')
 

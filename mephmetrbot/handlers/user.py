@@ -7,9 +7,11 @@ from aiogram.filters.command import Command, CommandObject
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from tortoise.models import Model
 from tortoise import fields
-from handlers.models import Users, Clans
+from mephmetrbot.models import Users, Clans
 from config import bot
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
+import asyncio
+from aiogram.exceptions import TelegramBadRequest
 
 router = Router()
 
@@ -39,17 +41,22 @@ async def profile_command(message: Message):
     username = message.from_user.username if user_id == message.from_user.id else message.reply_to_message.from_user.username
     full_name = message.from_user.full_name if user_id == message.from_user.id else message.reply_to_message.from_user.full_name
 
-    profile_info = f"👤 *Имя:* _{full_name}_\n👥 *Username пользователя:* @{username}\n🆔 *ID пользователя:* `{user_id}`\n🌿 *Снюхано* _{user.drug_count}_ грамм."
+    profile_info = (
+        f"👤 *Имя:* _{full_name}_\n"
+        f"👥 *Username пользователя:* @{username}\n"
+        f"🆔 *ID пользователя:* `{user_id}`\n"
+        f"🌿 *Снюхано* _{user.drug_count}_ грамм."
+    )
     if user.is_admin:
         profile_info = f"👑 *Администратор*\n{profile_info}"
     if clan_name:
         profile_info = f"{profile_info}\n👥 *Клан:* *{clan_name}*"
 
-
     await message.reply(profile_info, parse_mode='markdown')
 
-@router.message(Command('bot_profile'))
-async def bot_profile(message: Message, command: CommandObject):
+
+@router.message(Command('botprofile'))
+async def botprofile(message: Message, command: CommandObject):
     bot_user = await get_user(1)
     await message.reply(f"🤖 *Это Бот*\n🌿 *Баланс бота:* _{bot_user.drug_count}_ грамм.", parse_mode='markdown')
 
@@ -58,49 +65,62 @@ async def give_command(message: Message, state: FSMContext, command: CommandObje
     user_id = message.from_user.id
     user = await get_user(user_id)
     args = command.args.split(' ', maxsplit=1)
+
     try:
         value = int(args[0])
     except ValueError:
         await message.reply('❌ Введи целое число')
         return
+
     recipient_id = message.reply_to_message.from_user.id if message.reply_to_message else None
     if recipient_id == 7266772626:
         await message.reply('❌ Вы не можете передать средства боту')
         return
+
     recipient = await get_user(recipient_id)
     if not recipient:
         await message.reply('❌ Пользователь не найден')
         return
+
     if value <= 0:
         await message.reply('❌ Значение должно быть положительным и больше нуля')
         return
+
     if user.drug_count < value:
         await message.reply('❌ Недостаточно граммов мефа для передачи')
         return
+
     commission = round(value * 0.10)
     net_value = value - commission
     bot_user = await get_user(7266772626)
     if not bot_user:
         bot_user = await Users.create(id=7266772626, drug_count=0)
+
     recipient.drug_count += net_value
     user.drug_count -= value
     bot_user.drug_count += commission
 
     await recipient.save()
     await user.save()
+    await bot_user.save()
 
     await bot.send_message(
         os.environ.get('LOGS_CHAT_ID'),
-        f"<b>#GIVE</b>\n\nfirst_name: <code>{message.from_user.first_name}</code>\nuser_id: <code>{recipient_id}</code>\nvalue: <code>{net_value}</code>\nCommission: <code>{commission}</code>\n\n<a href='tg://user?id={recipient_id}'>mention</a>",
+        f"<b>#GIVE</b>\n\nfirst_name: <code>{message.from_user.first_name}</code>\n"
+        f"user_id: <code>{recipient_id}</code>\nvalue: <code>{net_value}</code>\n"
+        f"Commission: <code>{commission}</code>\n\n<a href='tg://user?id={recipient_id}'>mention</a>",
         parse_mode='HTML'
     )
-    recipient_username = message.reply_to_message.from_user.username if message.reply_to_message else ""
+
     recipient_full_name = message.reply_to_message.from_user.full_name if message.reply_to_message else ""
 
     await message.reply(
-        f"✅ [{message.from_user.first_name}](tg://user?id={message.from_user.id}) _подарил(-а) {value} гр. мефа_ [{recipient_full_name}](tg://user?id={recipient_id})!\nКомиссия: `{commission}` гр. мефа\nПолучено `{net_value}` гр. мефа.",
+        f"✅ [{message.from_user.first_name}](tg://user?id={message.from_user.id}) _подарил(-а) {value} гр. мефа_ "
+        f"[{recipient_full_name}](tg://user?id={recipient_id})!\nКомиссия: `{commission}` гр. мефа\n"
+        f"Получено `{net_value}` гр. мефа.",
         parse_mode='markdown'
     )
+
 @router.message(Command('find'))
 async def find_command(message: Message, state: FSMContext):
     user_id = message.from_user.id
@@ -141,16 +161,41 @@ async def find_command(message: Message, state: FSMContext):
 
 @router.message(Command('top'))
 async def top_command(message: Message):
-    user = await get_user(message.from_user.id)
+    user_id = message.from_user.id
+    user = await get_user(user_id)
+
     top_users = await Users.all().order_by('-drug_count').limit(10)
+
     if top_users:
-        response = "🔝ТОП 10 ЛЮТЫХ МЕФЕДРОНЩИКОВ В МИРЕ🔝:\n"
+        response = "🔝ТОП 10 ЛЮТЫХ МЕФЕДРОНЩИКОВ В МИРЕ🔝:\n\n"
+        valid_user_ids = {user.id for user in top_users if user.id != 1}
+
+        async def fetch_user_info(user_id):
+            try:
+                return (user_id, await bot.get_chat(user_id))
+            except TelegramBadRequest:
+                return (user_id, None)
+
+        user_infos = await asyncio.gather(
+            *[fetch_user_info(valid_user_id) for valid_user_id in valid_user_ids]
+        )
+
+        user_info_dict = {info_id: info for info_id, info in user_infos if info}
+
         counter = 1
-        for top_user in top_users:
-            user_info = await bot.get_chat(top_user.id)
-            response += f"{counter}) *{user_info.full_name}*: `{top_user.drug_count} гр. мефа`\n"
-            counter += 1
-        await message.reply(response, parse_mode='markdown')
+        for user in top_users:
+            if user.id == 1:
+                continue
+            drug_count = user.drug_count
+            user_info = user_info_dict.get(user.id, None)
+            if user_info:
+                response += f"{counter}) *{user_info.full_name}*: `{drug_count} гр. мефа`\n"
+                counter += 1
+
+        if counter == 1:
+            await message.reply('Никто еще не принимал меф.')
+        else:
+            await message.reply(response, parse_mode='markdown')
     else:
         await message.reply('Никто еще не принимал меф.')
 

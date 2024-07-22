@@ -6,7 +6,7 @@ from aiogram.filters.command import Command
 import os
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 from config import bot
-from handlers.models import Clans, Users
+from mephmetrbot.models import Users, Clans
 from tortoise.models import Model
 from tortoise import fields
 from tortoise.exceptions import IntegrityError, DoesNotExist
@@ -126,6 +126,66 @@ async def deposit(message: Message, command: Command):
             f"<b>#DEPOSIT</b>\nclanname: <code>{clan.clan_name}</code>\namount: <code>{cost}</code>\nuserid: <code>{user_id}</code>\nfirstname: {message.from_user.first_name}\n<a href='tg://user?id={user_id}'>mention</a>",
             parse_mode='HTML'
         )
+
+@router.message(Command('withdraw'))
+async def withdraw(message: Message, command: Command):
+        args = command.args if command.args else None
+
+        if args is None:
+            await message.reply("🛑 Вы не указали сумму. Пример:\n`/withdraw 100`", parse_mode='markdown')
+            return
+
+
+        args = args.split(' ', maxsplit=1)[0]
+        user_id = message.from_user.id
+        user = await get_user(user_id)
+
+        try:
+            cost = int(args)
+        except ValueError:
+            await message.reply('❌ Введи целое число')
+            return
+
+        user_balance = user.drug_count
+        clan_id = user.clan_member
+
+        clan = await Clans.filter(id=clan_id).first()
+        clan_owner_id = clan.clan_owner_id
+
+        if clan is None:
+            await message.reply("🛑 Клан не найден", parse_mode='markdown')
+            return
+
+        if user_id != clan_owner_id:
+            await message.reply(f"🛑 Приглашать в клан может только создатель", parse_mode='markdown')
+
+        if cost < 0:
+            await message.reply('❌ Значение не может быть отрицательным')
+            return
+        elif cost == 0:
+            await message.reply('❌ Значение не может быть равным нулю')
+            return
+        elif cost > clan.clan_balance:
+            await message.reply(f"🛑 Недостаточно средств на балансе клана. Баланс клана: `{clan.clan_balance}` гр.",
+                        parse_mode='markdown')
+            return
+
+        clan.clan_balance -= cost
+        user.drug_count += cost
+        await clan.save()
+        await user.save()
+
+        await message.reply(
+            f"✅ Вы успешно вывели `{cost}` гр. с баланса клана `{clan.clan_name}.`",
+            parse_mode='markdown'
+        )
+
+        await bot.send_message(
+            os.environ.get('LOGS_CHAT_ID'),
+            f"<b>#DEPOSIT</b>\nclanname: <code>{clan.clan_name}</code>\namount: <code>{cost}</code>\nuserid: <code>{user_id}</code>\nfirstname: {message.from_user.first_name}\n<a href='tg://user?id={user_id}'>mention</a>",
+            parse_mode='HTML'
+        )
+
 
 @router.message(Command('clantop'))
 async def clan_top(message: Message):
