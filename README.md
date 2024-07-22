@@ -7,5 +7,5 @@ poetry install
 ```
 2. run
 ```bash
-poetry run python mephmetrbot/app.py
+poetry run python app.py
 ```
