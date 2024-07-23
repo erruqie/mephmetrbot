@@ -9,3 +9,5 @@ poetry install
 ```bash
 poetry run app
 ```
+
+## [gnu general public license](LICENSE)
