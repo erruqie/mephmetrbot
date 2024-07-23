@@ -3,12 +3,9 @@ import sys
 from aiogram import Router, F
 from aiogram.types import Message
 from aiogram.filters.command import Command
-import os
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 from mephmetrbot.config import bot, LOGS_CHAT_ID
 from mephmetrbot.handlers.models import Users, Clans
-from tortoise.models import Model
-from tortoise import fields
 from tortoise.exceptions import IntegrityError, DoesNotExist
 
 router = Router()
@@ -234,8 +231,8 @@ async def clan_owner(message: Message):
         await Clans.filter(id=clan_id).update(clan_owner_id=new_owner_id)
         await message.reply(f"✅ *Вы передали владельца клана!*", parse_mode='markdown')
 
-clan_wars = {}
-
+# clan_wars = {}
+#
 # # @router.message(Command('clanwar'))
 # async def clanwar(message: Message):
 #     user_id = message.from_user.id

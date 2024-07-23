@@ -1,12 +1,10 @@
 import os
 from mephmetrbot.config import bot, ADMINS, RESTART_COMMAND, LOGS_CHAT_ID
-from aiogram import Router, F
+from aiogram import Router
 from aiogram.types import Message, ChatMemberUpdated
 from aiogram.filters.command import Command, CommandObject
 from aiogram.filters.chat_member_updated import ChatMemberUpdatedFilter, IS_NOT_MEMBER, MEMBER
 from mephmetrbot.handlers.models import Users, Chats
-from tortoise.models import Model
-from tortoise import fields
 from tortoise.exceptions import DoesNotExist
 
 router = Router()

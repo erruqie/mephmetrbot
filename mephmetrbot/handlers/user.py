@@ -1,12 +1,9 @@
 from aiogram import Router
-import os
 import random
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, InlineKeyboardButton
 from aiogram.filters.command import Command, CommandObject
 from aiogram.utils.keyboard import InlineKeyboardBuilder
-from tortoise.models import Model
-from tortoise import fields
 from mephmetrbot.handlers.models import Users, Clans
 from mephmetrbot.config import bot, LOGS_CHAT_ID
 from datetime import datetime, timedelta

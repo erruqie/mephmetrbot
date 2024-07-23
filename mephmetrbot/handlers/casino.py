@@ -2,8 +2,6 @@ from aiogram import Router
 from aiogram.types import Message
 from aiogram.filters.command import Command, CommandObject
 from mephmetrbot.handlers.models import Users
-from tortoise.models import Model
-from tortoise import fields
 from datetime import datetime, timedelta
 import asyncio
 from mephmetrbot.config import bot, LOGS_CHAT_ID
