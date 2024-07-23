@@ -165,7 +165,7 @@ async def top_command(message: Message):
 
     if top_users:
         response = "🔝ТОП 10 ЛЮТЫХ МЕФЕДРОНЩИКОВ В МИРЕ🔝:\n\n"
-        valid_user_ids = {user.id for user in top_users if user.id != 1}
+        valid_user_ids = {user.id for user in top_users if user.id != 1 and user.drug_count > 0}
 
         async def fetch_user_info(user_id):
             try:
