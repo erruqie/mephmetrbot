@@ -1,5 +1,5 @@
 from tortoise import Tortoise
-from mephmetrbot.config import BOT_TOKEN, DATABASE_URL
+from mephmetrbot.config import BOT_TOKEN, DATABASE_URL, LOGS_CHAT_ID
 from typing import Callable, Dict, Awaitable, Any
 from aiogram import Bot, Dispatcher, BaseMiddleware
 from mephmetrbot.handlers import user, admin, clan, casino
@@ -37,8 +37,9 @@ async def init_tortoise():
     )
     await Tortoise.generate_schemas(safe=True)
 
-async def on_startup():
+async def on_startup(bot):
     await init_tortoise()
+    await bot.send_message(LOGS_CHAT_ID, f'🤖 Бот был запущен!', parse_mode='markdown')
 
 async def on_shutdown():
     await Tortoise.close_connections()

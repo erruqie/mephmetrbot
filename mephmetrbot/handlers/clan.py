@@ -5,7 +5,7 @@ from aiogram.types import Message
 from aiogram.filters.command import Command
 import os
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
-from mephmetrbot.config import bot
+from mephmetrbot.config import bot, LOGS_CHAT_ID
 from mephmetrbot.handlers.models import Users, Clans
 from tortoise.models import Model
 from tortoise import fields
@@ -53,7 +53,7 @@ async def create_clan(message: Message, command: Command):
                         await user.save()
 
                         await bot.send_message(
-                            os.environ.get('LOGS_CHAT_ID'),
+                            LOGS_CHAT_ID,
                             f"<b>#NEWCLAN</b> clanid: <code>{clan_id}</code> clanname: <code>{clan_name}</code> clanownerid: <code>{user_id}</code>",
                             parse_mode='HTML'
                         )
@@ -122,7 +122,7 @@ async def deposit(message: Message, command: Command):
         )
 
         await bot.send_message(
-            os.environ.get('LOGS_CHAT_ID'),
+            LOGS_CHAT_ID,
             f"<b>#DEPOSIT</b>\nclanname: <code>{clan.clan_name}</code>\namount: <code>{cost}</code>\nuserid: <code>{user_id}</code>\nfirstname: {message.from_user.first_name}\n<a href='tg://user?id={user_id}'>mention</a>",
             parse_mode='HTML'
         )
@@ -181,7 +181,7 @@ async def withdraw(message: Message, command: Command):
         )
 
         await bot.send_message(
-            os.environ.get('LOGS_CHAT_ID'),
+            LOGS_CHAT_ID,
             f"<b>#DEPOSIT</b>\nclanname: <code>{clan.clan_name}</code>\namount: <code>{cost}</code>\nuserid: <code>{user_id}</code>\nfirstname: {message.from_user.first_name}\n<a href='tg://user?id={user_id}'>mention</a>",
             parse_mode='HTML'
         )

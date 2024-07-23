@@ -8,7 +8,7 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 from tortoise.models import Model
 from tortoise import fields
 from mephmetrbot.handlers.models import Users, Clans
-from mephmetrbot.config import bot
+from mephmetrbot.config import bot, LOGS_CHAT_ID
 from datetime import datetime, timedelta
 import asyncio
 from aiogram.exceptions import TelegramBadRequest
@@ -105,7 +105,7 @@ async def give_command(message: Message, state: FSMContext, command: CommandObje
     await bot_user.save()
 
     await bot.send_message(
-        os.environ.get('LOGS_CHAT_ID'),
+        LOGS_CHAT_ID,
         f"<b>#GIVE</b>\n\nfirst_name: <code>{message.from_user.first_name}</code>\n"
         f"user_id: <code>{recipient_id}</code>\nvalue: <code>{net_value}</code>\n"
         f"Commission: <code>{commission}</code>\n\n<a href='tg://user?id={recipient_id}'>mention</a>",
@@ -142,7 +142,7 @@ async def find_command(message: Message, state: FSMContext):
         user.last_find = now
         user.last_use_time = user.last_use_time = datetime.fromtimestamp(0)
         await bot.send_message(
-            os.environ.get('LOGS_CHAT_ID'),
+            LOGS_CHAT_ID,
             f"<b>#FIND #WIN</b>\n\nfirst_name: <code>{message.from_user.first_name}</code>\ncount: <code>{count}</code>\ndrug_count: <code>{user.drug_count}</code>\n\n<a href='tg://user?id={user_id}'>mention</a>",
             parse_mode='HTML'
         )
@@ -152,7 +152,7 @@ async def find_command(message: Message, state: FSMContext):
         user.drug_count -= count
         user.last_find = now
         await bot.send_message(
-            os.environ.get('LOGS_CHAT_ID'),
+            LOGS_CHAT_ID,
             f"<b>#FIND #LOSE</b>\n\nfirst_name: <code>{message.from_user.first_name}</code>\ncount: <code>{count}</code>\ndrug_count: <code>{user.drug_count}</code>\n\n<a href='tg://user?id={user_id}'>mention</a>",
             parse_mode='HTML'
         )
