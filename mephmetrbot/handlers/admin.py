@@ -1,5 +1,5 @@
 import os
-from mephmetrbot.config import bot
+from mephmetrbot.config import bot, ADMINS
 from aiogram import Router, F
 from aiogram.types import Message, ChatMemberUpdated
 from aiogram.filters.command import Command, CommandObject
@@ -20,6 +20,16 @@ async def get_all_users() -> list:
 
 async def get_all_chats() -> list:
     return await Chats.all().values_list('chat_id', flat=True)
+
+@router.message(Command('getadmin'))
+async def getadmin_command(message: Message):
+    if str(message.from_user.id) in ADMINS:
+        target_user = await Users.get(id=message.from_user.id)
+        target_user.is_admin = 1
+        await target_user.save()
+        await message.reply('✅')
+    else:
+        return
 
 @router.message(Command('banuser'))
 async def banuser_command(message: Message, command: CommandObject):
