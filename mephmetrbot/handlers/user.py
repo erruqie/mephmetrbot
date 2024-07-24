@@ -144,7 +144,7 @@ async def find_command(message: Message, state: FSMContext):
         count = random.randint(1, round(drug_count))
         user.drug_count -= count
         user.last_find = now
-        await user.save()
+        user.save()
         await message.reply(f"❌ *{message.from_user.first_name}*, тебя *спалил мент* и *дал тебе по ебалу*\n🌿 Тебе нужно откупиться, мент предложил взятку в размере `{count} гр.`\n⏳ Следующая попытка доступна через *12 часов.*", parse_mode='markdown')
 
 @router.message(Command('top'))
