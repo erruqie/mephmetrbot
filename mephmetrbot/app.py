@@ -1,15 +1,17 @@
+import os
+import sys
+import logging
+
 from tortoise import Tortoise
-from mephmetrbot.config import BOT_TOKEN, DATABASE_URL, LOGS_CHAT_ID
+from aiogram.types import Message
 from typing import Callable, Dict, Awaitable, Any
 from aiogram import Bot, Dispatcher, BaseMiddleware
-from mephmetrbot.handlers import user, admin, clan, casino, error
+
 from mephmetrbot.handlers.models import Users
-import sys
-from aiogram.types import Message
-import os
+from mephmetrbot.handlers import user, admin, clan, casino, error
+from mephmetrbot.config import BOT_TOKEN, DATABASE_URL, LOGS_CHAT_ID
 
-sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
-
+logging.basicConfig(level=logging.INFO)
 
 class BannedMiddleware(BaseMiddleware):
     def __init__(self) -> None:
@@ -48,11 +50,11 @@ def main():
     bot = Bot(token=BOT_TOKEN)
     dp = Dispatcher()
     dp.message.middleware(BannedMiddleware())
+    dp.include_router(error.router)
     dp.include_router(user.router)
     dp.include_router(admin.router)
     dp.include_router(clan.router)
-    dp.include_router(casino.router)
-    dp.include_router(error.router)
+    #dp.include_router(casino.router)
 
     dp.startup.register(on_startup)
     dp.shutdown.register(on_shutdown)

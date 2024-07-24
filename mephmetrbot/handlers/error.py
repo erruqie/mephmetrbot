@@ -4,7 +4,6 @@ from mephmetrbot.config import bot, LOGS_CHAT_ID
 
 router = Router()
 
-
 @router.error()
 async def error_handler(event: ErrorEvent):
     exception = event.exception
