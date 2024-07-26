@@ -22,13 +22,13 @@ async def casino(message: Message, command: CommandObject):
     bot_balance = bot_user.drug_count
 
     if not args:
-        await message.reply("🛑 Укажи ставку и коэффицент автостопа ракетки! Пример:\n`/casino 100 2`", parse_mode='markdown')
+        await message.reply("🛑 Укажи ставку и коэффицент автостопа ракетки! Пример:\n`/casino 10 2`", parse_mode='markdown')
         return
 
     parts = args.split()
 
     if len(parts) < 2:
-        await message.reply("🛑 Укажи ставку и коэффицент автостопа ракетки! Пример:\n`/casino 100 2`", parse_mode='markdown')
+        await message.reply("🛑 Укажи ставку и коэффицент автостопа ракетки! Пример:\n`/casino 10 2`", parse_mode='markdown')
         return
 
     try:
