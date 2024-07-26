@@ -195,7 +195,7 @@ async def clan_top(message: Message):
         for clan in top_clans:
             clan_name = clan['clan_name']
             clan_balance = clan['clan_balance']
-            response += f"{counter}) *{clan_name}*  `{clan_balance} гр. мефа`\n"
+            response += f"{counter}) *{clan_name}*: `{clan_balance} гр. мефа`\n"
             counter += 1
 
         await message.reply(response, parse_mode='markdown')
