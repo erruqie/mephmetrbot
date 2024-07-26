@@ -84,13 +84,15 @@ async def casino(message: Message, command: CommandObject):
         random_multiplier = round(random.uniform(1, 1.9), 2)
     else:
         random_multiplier = round(random.uniform(2, 5), 2)
-    animation = min(int(random_multiplier * 10), 30)
 
-    for i in range(1, animation + 1):
-        multiplier = round(1 + i * (random_multiplier - 1) / animation, 2)
-        await dice_message.edit_text(f"🚀 *Коэффициент*: `{multiplier}`", parse_mode='markdown')
-        await asyncio.sleep(3)
+    current_multiplier = 1.0
 
+    while current_multiplier < random_multiplier:
+        current_multiplier = round(current_multiplier + 0.5, 2)
+        if current_multiplier > random_multiplier:
+            current_multiplier = random_multiplier
+        await dice_message.edit_text(f"🚀 *Коэффициент*: `{current_multiplier}`", parse_mode='markdown')
+        await asyncio.sleep(1)
     result_message = f"🚀 Итоговый коэффициент: `{random_multiplier}`. "
 
     if random_multiplier >= target_multiplier:
