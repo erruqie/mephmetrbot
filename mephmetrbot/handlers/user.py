@@ -129,8 +129,8 @@ async def find_command(message: Message, state: FSMContext):
     if last_used:
         last_used = last_used.replace(tzinfo=None)
 
-    if last_used and (now - last_used).total_seconds() < 43200:
-        await message.reply('⏳ Ты недавно *ходил за кладом, подожди 12 часов.*', parse_mode='markdown')
+    if last_used and (now - last_used).total_seconds() < 21600:
+        await message.reply('⏳ Ты недавно *ходил за кладом, подожди 6 часов.*', parse_mode='markdown')
         return
 
     if random.randint(1, 100) > 50:
@@ -152,7 +152,7 @@ async def find_command(message: Message, state: FSMContext):
             await message.reply(f"❌ *{message.from_user.first_name}*, тебя *спалил мент* и *дал тебе по ебалу*\n🌿 Тебе нужно откупиться, мент предложил взятку в размере `{count} гр.`\n⏳ Следующая попытка доступна через *12 часов.*", parse_mode='markdown')
         else:
             await message.reply(f"❌ *{message.from_user.first_name}*, тебя *спалил мент* и *дал тебе по ебалу*\n⏳ Следующая попытка доступна через *12 часов.*", parse_mode='markdown')
-            
+
 @router.message(Command('top'))
 async def top_command(message: Message):
     user_id = message.from_user.id
