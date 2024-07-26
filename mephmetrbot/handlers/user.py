@@ -141,12 +141,18 @@ async def find_command(message: Message, state: FSMContext):
         await user.save()
         await message.reply(f"👍 {message.from_user.first_name}, ты пошёл в лес и *нашел клад*, там лежало `{count} гр.` мефчика!\n🌿 Твое время команды /drug обновлено", parse_mode='markdown')
     else:
-        count = random.randint(1, round(drug_count))
+        if drug_count > 1:
+            count = random.randint(1, round(drug_count))
+        else:
+            count = 0
         user.drug_count -= count
         user.last_find = now
         await user.save()
-        await message.reply(f"❌ *{message.from_user.first_name}*, тебя *спалил мент* и *дал тебе по ебалу*\n🌿 Тебе нужно откупиться, мент предложил взятку в размере `{count} гр.`\n⏳ Следующая попытка доступна через *12 часов.*", parse_mode='markdown')
-
+        if count != 0:
+            await message.reply(f"❌ *{message.from_user.first_name}*, тебя *спалил мент* и *дал тебе по ебалу*\n🌿 Тебе нужно откупиться, мент предложил взятку в размере `{count} гр.`\n⏳ Следующая попытка доступна через *12 часов.*", parse_mode='markdown')
+        else:
+            await message.reply(f"❌ *{message.from_user.first_name}*, тебя *спалил мент* и *дал тебе по ебалу*\n⏳ Следующая попытка доступна через *12 часов.*", parse_mode='markdown')
+            
 @router.message(Command('top'))
 async def top_command(message: Message):
     user_id = message.from_user.id
