@@ -520,17 +520,15 @@ async def clandisband(message: Message):
     user_id = message.from_user.id
     user = await get_user(user_id)
     clan_id = user.clan_member
-    clan = await Clans.get(id=clan_id)
-
-    if clan:
-        try:
-            clan_owner_id = clan.clan_owner_id
-            clan_name = clan.clan_name
-        except AttributeError:
-            await message.reply("🛑 Ошибка при получении информации о клане", parse_mode='markdown')
-            return
-    else:
+    try:
+        clan = await Clans.get(id=clan_id)
+    except:
         await message.reply("🛑 Вы не состоите в клане", parse_mode='markdown')
+    try:
+        clan_owner_id = clan.clan_owner_id
+        clan_name = clan.clan_name
+    except AttributeError:
+        await message.reply("🛑 Ошибка при получении информации о клане", parse_mode='markdown')
         return
 
     if clan_id > 0 and user_id == clan_owner_id:

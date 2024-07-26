@@ -54,7 +54,7 @@ def main():
     dp.include_router(user.router)
     dp.include_router(admin.router)
     dp.include_router(clan.router)
-    #dp.include_router(casino.router)
+    dp.include_router(casino.router)
 
     dp.startup.register(on_startup)
     dp.shutdown.register(on_shutdown)
