@@ -25,7 +25,7 @@ async def create_clan(message: Message, command: Command):
     user = await get_user(user_id)
 
     if args:
-        clan_name = args.split(' ', maxsplit=1)[0]
+        clan_name = args
         clan_exist = await Clans.filter(clan_name=clan_name).exists()
 
         if clan_exist:
