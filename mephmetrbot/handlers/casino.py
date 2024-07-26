@@ -22,13 +22,13 @@ async def casino(message: Message, command: CommandObject):
     bot_balance = bot_user.drug_count
 
     if not args:
-        await message.reply("🛑 Укажи ставку и коэффицент! Пример:\n`/casino 100 2`", parse_mode='markdown')
+        await message.reply("🛑 Укажи ставку и коэффицент автостопа ракетки! Пример:\n`/casino 100 2`", parse_mode='markdown')
         return
 
     parts = args.split()
 
     if len(parts) < 2:
-        await message.reply("🛑 Укажи ставку и коэффицент! Пример:\n`/casino 100 2`", parse_mode='markdown')
+        await message.reply("🛑 Укажи ставку и коэффицент автостопа ракетки! Пример:\n`/casino 100 2`", parse_mode='markdown')
         return
 
     try:
@@ -89,7 +89,7 @@ async def casino(message: Message, command: CommandObject):
     for i in range(1, animation + 1):
         multiplier = round(1 + i * (random_multiplier - 1) / animation, 2)
         await dice_message.edit_text(f"🚀 *Коэффициент*: `{multiplier}`", parse_mode='markdown')
-        await asyncio.sleep(1.5)
+        await asyncio.sleep(3)
 
     result_message = f"🚀 Итоговый коэффициент: `{random_multiplier}`. "
 
