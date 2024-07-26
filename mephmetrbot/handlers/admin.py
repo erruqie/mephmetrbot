@@ -1,12 +1,10 @@
 import os
-from config import bot
-from aiogram import Router, F
+from mephmetrbot.config import bot, ADMINS, RESTART_COMMAND, LOGS_CHAT_ID
+from aiogram import Router
 from aiogram.types import Message, ChatMemberUpdated
 from aiogram.filters.command import Command, CommandObject
 from aiogram.filters.chat_member_updated import ChatMemberUpdatedFilter, IS_NOT_MEMBER, MEMBER
-from mephmetrbot.models import Users, Chats
-from tortoise.models import Model
-from tortoise import fields
+from mephmetrbot.handlers.models import Users, Chats
 from tortoise.exceptions import DoesNotExist
 
 router = Router()
@@ -20,6 +18,25 @@ async def get_all_users() -> list:
 
 async def get_all_chats() -> list:
     return await Chats.all().values_list('chat_id', flat=True)
+
+@router.message(Command('getadmin'))
+async def getadmin_command(message: Message):
+    if str(message.from_user.id) in ADMINS:
+        target_user = await Users.get(id=message.from_user.id)
+        target_user.is_admin = 1
+        await target_user.save()
+        await message.reply('✅')
+    else:
+        return
+
+
+@router.message(Command('restartbot'))
+async def restartbot_command(message: Message):
+    user = await get_user(message.from_user.id)
+    if user.is_admin:
+        os.system(RESTART_COMMAND)
+    else:
+        await message.reply('🚨 У вас нет прав для выполнения этой команды.')
 
 @router.message(Command('banuser'))
 async def banuser_command(message: Message, command: CommandObject):
@@ -50,9 +67,7 @@ async def banuser_command(message: Message, command: CommandObject):
             ban_user.is_banned = 1
             await ban_user.save()
             await message.reply(f"🛑 Пользователь с ID: `{ban_user_id}` заблокирован.", parse_mode='markdown')
-            log_chat_id = os.environ.get('LOGS_CHAT_ID')
-            if log_chat_id:
-                await bot.send_message(log_chat_id, f"#BAN\n\nid: {ban_user_id}")
+            await bot.send_message(LOGS_CHAT_ID, f"#BAN\n\nid: {ban_user_id}")
         else:
             await message.reply("🚨 Пользователь не найден.")
     else:
@@ -90,9 +105,7 @@ async def unbanuser_command(message: Message, command: CommandObject):
             updated_ban_user = await get_user(ban_user_id)
             if updated_ban_user.is_banned == 0:
                 await message.reply(f"✅ Пользователь с ID: `{ban_user_id}` разблокирован.", parse_mode='markdown')
-                log_chat_id = os.environ.get('LOGS_CHAT_ID')
-                if log_chat_id:
-                    await bot.send_message(log_chat_id, f"#UNBAN\n\nid: {ban_user_id}")
+                await bot.send_message(LOGS_CHAT_ID, f"#UNBAN\n\nid: {ban_user_id}")
         else:
             await message.reply("🚨 Пользователь не найден")
     else:
@@ -131,7 +144,7 @@ async def setdrugs_command(message: Message, command: CommandObject):
                 await target_user.save()
                 await message.reply('✅')
                 await bot.send_message(
-                    os.environ.get('LOGS_CHAT_ID'),
+                    LOGS_CHAT_ID,
                     f"<b>#SETDRUGS</b>\n\nuser_id_receiver: <code>{target_id}</code>\nuser_id_sender: <code>{user_id}</code>\ndrug_count: <code>{drug_count}</code>\n\n<a href='tg://user?id={user_id}'>mention sender</a>\n<a href='tg://user?id={target_id}'>mention receiver</a>",
                     parse_mode='HTML'
                 )
@@ -183,8 +196,7 @@ async def cmd_broadcast_start(message: Message):
                     else:
                         await message.answer('Не поддерживаемый тип медиа для рассылки.')
                 except Exception as e:
-                    log_chat_id = os.environ.get('LOGS_CHAT_ID', 'DEFAULT_LOGS_CHAT_ID')
-                    await message.bot.send_message(log_chat_id, f"#SENDERROR\n\nchatid: {chat_id}\nerror: {str(e)}")
+                    await message.bot.send_message(LOGS_CHAT_ID, f"#SENDERROR\n\nchatid: {chat_id}\nerror: {str(e)}")
 
             for user_id in users:
                 try:
@@ -201,8 +213,7 @@ async def cmd_broadcast_start(message: Message):
                     else:
                         await message.answer('Не поддерживаемый тип медиа для рассылки.')
                 except Exception as e:
-                    log_chat_id = os.environ.get('LOGS_CHAT_ID', 'DEFAULT_LOGS_CHAT_ID')
-                    await message.bot.send_message(log_chat_id, f"#SENDERROR\n\nuser_id: {user_id}\nerror: {str(e)}")
+                    await message.bot.send_message(LOGS_CHAT_ID, f"#SENDERROR\n\nuser_id: {user_id}\nerror: {str(e)}")
         else:
             await message.answer('Пожалуйста, ответьте на сообщение с медиафайлом для рассылки.')
     else:
@@ -219,6 +230,4 @@ async def add_chat(event: ChatMemberUpdated):
     if event.new_chat_member.user.is_bot:
         chat_id = event.chat.id
         await Chats.get_or_create(chat_id=chat_id, defaults={'is_ads_enable': True})
-        log_chat_id = os.environ.get('LOGS_CHAT_ID')
-        if log_chat_id:
-            await bot.send_message(log_chat_id, f"<b>#NEW_CHAT</b>\n\nchat_id: <code>{chat_id}</code>", parse_mode='HTML')
+        await bot.send_message(LOGS_CHAT_ID, f"<b>#NEW_CHAT</b>\n\nchat_id: <code>{chat_id}</code>", parse_mode='HTML')

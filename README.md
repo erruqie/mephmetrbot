@@ -7,5 +7,7 @@ poetry install
 ```
 2. run
 ```bash
-poetry run python app.py
+poetry run app
 ```
+
+## [gnu general public license](LICENSE)

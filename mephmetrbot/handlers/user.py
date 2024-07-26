@@ -1,14 +1,11 @@
 from aiogram import Router
-import os
 import random
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, InlineKeyboardButton
 from aiogram.filters.command import Command, CommandObject
 from aiogram.utils.keyboard import InlineKeyboardBuilder
-from tortoise.models import Model
-from tortoise import fields
-from mephmetrbot.models import Users, Clans
-from config import bot
+from mephmetrbot.handlers.models import Users, Clans
+from mephmetrbot.config import bot, LOGS_CHAT_ID
 from datetime import datetime, timedelta
 import asyncio
 from aiogram.exceptions import TelegramBadRequest
@@ -105,7 +102,7 @@ async def give_command(message: Message, state: FSMContext, command: CommandObje
     await bot_user.save()
 
     await bot.send_message(
-        os.environ.get('LOGS_CHAT_ID'),
+        LOGS_CHAT_ID,
         f"<b>#GIVE</b>\n\nfirst_name: <code>{message.from_user.first_name}</code>\n"
         f"user_id: <code>{recipient_id}</code>\nvalue: <code>{net_value}</code>\n"
         f"Commission: <code>{commission}</code>\n\n<a href='tg://user?id={recipient_id}'>mention</a>",
@@ -137,27 +134,18 @@ async def find_command(message: Message, state: FSMContext):
         return
 
     if random.randint(1, 100) > 50:
-        count = random.randint(1, 10)
+        count = random.randint(2, 10)
         user.drug_count += count
         user.last_find = now
-        user.last_use_time = user.last_use_time = datetime.fromtimestamp(0)
-        await bot.send_message(
-            os.environ.get('LOGS_CHAT_ID'),
-            f"<b>#FIND #WIN</b>\n\nfirst_name: <code>{message.from_user.first_name}</code>\ncount: <code>{count}</code>\ndrug_count: <code>{user.drug_count}</code>\n\n<a href='tg://user?id={user_id}'>mention</a>",
-            parse_mode='HTML'
-        )
+        user.last_use_time = datetime.fromtimestamp(0)
+        await user.save()
         await message.reply(f"👍 {message.from_user.first_name}, ты пошёл в лес и *нашел клад*, там лежало `{count} гр.` мефчика!\n🌿 Твое время команды /drug обновлено", parse_mode='markdown')
     else:
         count = random.randint(1, round(drug_count))
         user.drug_count -= count
         user.last_find = now
-        await bot.send_message(
-            os.environ.get('LOGS_CHAT_ID'),
-            f"<b>#FIND #LOSE</b>\n\nfirst_name: <code>{message.from_user.first_name}</code>\ncount: <code>{count}</code>\ndrug_count: <code>{user.drug_count}</code>\n\n<a href='tg://user?id={user_id}'>mention</a>",
-            parse_mode='HTML'
-        )
-        await message.reply(f"❌ *{message.from_user.first_name}*, тебя *спалил мент* и *дал тебе по ебалу*\n🌿 Тебе нужно откупиться, мент предложил взятку в размере `{count} гр.`\n⏳ Следующая попытка доступна через *12 часов.*", parse_mode='markdown')
         await user.save()
+        await message.reply(f"❌ *{message.from_user.first_name}*, тебя *спалил мент* и *дал тебе по ебалу*\n🌿 Тебе нужно откупиться, мент предложил взятку в размере `{count} гр.`\n⏳ Следующая попытка доступна через *12 часов.*", parse_mode='markdown')
 
 @router.message(Command('top'))
 async def top_command(message: Message):
@@ -168,7 +156,7 @@ async def top_command(message: Message):
 
     if top_users:
         response = "🔝ТОП 10 ЛЮТЫХ МЕФЕДРОНЩИКОВ В МИРЕ🔝:\n\n"
-        valid_user_ids = {user.id for user in top_users if user.id != 1}
+        valid_user_ids = {user.id for user in top_users if user.id != 1 and user.drug_count > 0}
 
         async def fetch_user_info(user_id):
             try:
@@ -316,7 +304,7 @@ async def start_command(message: Message):
         InlineKeyboardButton(text='💰 Донат', url='https://t.me/mefmetrch'),
         InlineKeyboardButton(text='💬 Чат', url='https://t.me/mefmetrchat')
     )
-    await message.reply("👋 *Здарова шныр*, этот бот сделан для того, чтобы *считать* сколько *грамм мефедрончика* ты снюхал\n🧑‍💻 Бот разработан *powerplantsmoke.t.me* и *hateandroid.t.me*", reply_markup=builder.as_markup(), parse_mode='markdown')
+    await message.reply("👋 *Здарова шныр*, этот бот сделан для того, чтобы *считать* сколько *грамм мефедрончика* ты снюхал\n\n🛑 Внимание, это всего лишь игровой бот, здесь не продают меф. Не стоит писать об этом мне, ваши попытки приобрести наркотические вещества - будут переданы правохранительным органам.\n\n🧑‍💻 Бот разработан *powerplantsmoke.t.me* и *tbankhater.t.me*", reply_markup=builder.as_markup(), parse_mode='markdown')
 
 
 @router.message(Command('about'))
@@ -327,4 +315,4 @@ async def about_command(message: Message):
         InlineKeyboardButton(text='💰 Донат', url='https://t.me/mefmetrch'),
         InlineKeyboardButton(text='💬 Чат', url='https://t.me/mefmetrchat')
     )
-    await message.reply("🧑‍💻 Бот разработан powerplantsmoke.t.me и hateandroid.t.me", reply_markup=builder.as_markup())
+    await message.reply("🧑‍💻 Бот разработан powerplantsmoke.t.me и tbankhater.t.me", reply_markup=builder.as_markup())
