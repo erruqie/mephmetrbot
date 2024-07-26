@@ -231,7 +231,7 @@ async def take_command(message: Message, state: FSMContext):
                 await victim.save()
                 victim_user_id = reply_msg.from_user.id
                 victim_username = f'tg://user?id={victim_user_id}'
-                await message.reply(f"✅ [{message.from_user.first_name}](tg://user?id={message.from_user.id}) спиздил(-а) один грам мефа у [{reply_msg.from_user.first_name}]({victim_username})!", parse_mode='markdown')
+                await message.reply(f"✅ [{message.from_user.first_name}](tg://user?id={message.from_user.id}) спиздил(-а) один грамм мефа у [{reply_msg.from_user.first_name}]({victim_username})!", parse_mode='markdown')
             await state.update_data(time=datetime.now().isoformat())
             await user.save()
     else:
