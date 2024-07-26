@@ -51,7 +51,11 @@ async def create_clan(message: Message, command: Command):
 
                         await bot.send_message(
                             LOGS_CHAT_ID,
-                            f"<b>#NEWCLAN</b> clanid: <code>{clan_id}</code> clanname: <code>{clan_name}</code> clanownerid: <code>{user_id}</code>",
+                            f"<b>#NEWCLAN</b>\n\n"
+                            f"clanid: <code>{clan_id}</code>\n"
+                            f"clanname: <code>{clan_name}</code>\n"
+                            f"clanownerid: <code>{user_id}</code>"
+                            f"<a href='tg://user?id={user_id}'>clanowner mention</a>",
                             parse_mode='HTML'
                         )
                         await message.reply(
