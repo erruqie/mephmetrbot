@@ -524,6 +524,7 @@ async def clandisband(message: Message):
         clan = await Clans.get(id=clan_id)
     except:
         await message.reply("🛑 Вы не состоите в клане", parse_mode='markdown')
+        return
     try:
         clan_owner_id = clan.clan_owner_id
         clan_name = clan.clan_name
