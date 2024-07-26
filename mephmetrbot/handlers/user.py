@@ -61,7 +61,11 @@ async def botprofile(message: Message, command: CommandObject):
 async def give_command(message: Message, state: FSMContext, command: CommandObject):
     user_id = message.from_user.id
     user = await get_user(user_id)
-    args = command.args.split(' ', maxsplit=1)
+    try:
+        args = command.args.split(' ', maxsplit=1)
+    except:
+        await message.reply('❌ Не указаны аргументы, укажи сколько грамм хочешь передать челику')
+        return
 
     try:
         value = int(args[0])
