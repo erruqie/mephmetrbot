@@ -4,6 +4,9 @@
 # macos shit
 *.DS_Store
 
+# idea shit loool
+.idea/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

@@ -13,7 +13,6 @@ async def get_user(user_id):
     user, _ = await Users.get_or_create(id=user_id)
     return user
 
-
 @router.message(Command('casino'))
 async def casino(message: Message, command: CommandObject):
     args = command.args
@@ -23,13 +22,13 @@ async def casino(message: Message, command: CommandObject):
     bot_balance = bot_user.drug_count
 
     if not args:
-        await message.reply("🛑 Укажи ставку и коэффицент! Пример:\n`/casino 100 2`", parse_mode='markdown')
+        await message.reply("🛑 Укажи ставку и коэффицент автостопа ракетки! Пример:\n`/casino 100 2`", parse_mode='markdown')
         return
 
     parts = args.split()
 
     if len(parts) < 2:
-        await message.reply("🛑 Укажи ставку и коэффицент! Пример:\n`/casino 100 2`", parse_mode='markdown')
+        await message.reply("🛑 Укажи ставку и коэффицент автостопа ракетки! Пример:\n`/casino 100 2`", parse_mode='markdown')
         return
 
     try:
@@ -94,7 +93,6 @@ async def casino(message: Message, command: CommandObject):
             current_multiplier = random_multiplier
         await dice_message.edit_text(f"🚀 *Коэффициент*: `{current_multiplier}`", parse_mode='markdown')
         await asyncio.sleep(1)
-
     result_message = f"🚀 Итоговый коэффициент: `{random_multiplier}`. "
 
     if random_multiplier >= target_multiplier:
