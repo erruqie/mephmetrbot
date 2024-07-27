@@ -8,7 +8,7 @@ from typing import Callable, Dict, Awaitable, Any
 from aiogram import Bot, Dispatcher, BaseMiddleware
 
 from mephmetrbot.handlers.models import Users
-from mephmetrbot.handlers import user, admin, clan, casino, error
+from mephmetrbot.handlers import user, admin, clan, casino, error, cryptopay
 from mephmetrbot.config import BOT_TOKEN, DATABASE_URL, LOGS_CHAT_ID
 
 logging.basicConfig(level=logging.INFO)
@@ -55,7 +55,7 @@ def main():
     dp.include_router(admin.router)
     dp.include_router(clan.router)
     dp.include_router(casino.router)
-
+    dp.include_router(cryptopay.router)
     dp.startup.register(on_startup)
     dp.shutdown.register(on_shutdown)
 
