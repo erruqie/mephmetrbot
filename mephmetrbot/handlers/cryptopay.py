@@ -70,3 +70,7 @@ async def handle_paid_invoice(user_id, invoice):
         await message.bot.send_message(LOGS_CHAT_ID, f"#SENDERROR\n\nuser_id: {user_id}\nerror: {str(e)}")
 
 
+
+
+
+# GOVNOCODE
