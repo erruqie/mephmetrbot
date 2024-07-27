@@ -15,6 +15,7 @@ python = "^3.12"
 aiogram = "^3.10.0"
 python-dotenv = "^1.0.1"
 tortoise-orm = "^0.21.5"
+pycryptopayapi = "^0.1.0"
 
 [tool.poetry.scripts]
 poetry = 'poetry.console:run'

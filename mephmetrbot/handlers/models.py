@@ -20,3 +20,10 @@ class Clans(models.Model):
     clan_name = fields.CharField(max_length=255)
     clan_owner_id = fields.BigIntField()
     clan_balance = fields.IntField(default=0)
+
+class Invoices(models.Model):
+    invoice_id = fields.BigIntField(pk=True)
+    user_id = fields.BigIntField()
+    amount_ton = fields.FloatField()
+    amount_meph = fields.IntField()
+    status = fields.CharField(max_length=255)

@@ -25,7 +25,7 @@ async def create_clan(message: Message, command: Command):
     user = await get_user(user_id)
 
     if args:
-        clan_name = args.split(' ', maxsplit=1)[0]
+        clan_name = args
         clan_exist = await Clans.filter(clan_name=clan_name).exists()
 
         if clan_exist:
@@ -51,7 +51,11 @@ async def create_clan(message: Message, command: Command):
 
                         await bot.send_message(
                             LOGS_CHAT_ID,
-                            f"<b>#NEWCLAN</b> clanid: <code>{clan_id}</code> clanname: <code>{clan_name}</code> clanownerid: <code>{user_id}</code>",
+                            f"<b>#NEWCLAN</b>\n\n"
+                            f"clanid: <code>{clan_id}</code>\n"
+                            f"clanname: <code>{clan_name}</code>\n"
+                            f"clanownerid: <code>{user_id}</code>"
+                            f"<a href='tg://user?id={user_id}'>clanowner mention</a>",
                             parse_mode='HTML'
                         )
                         await message.reply(
@@ -195,7 +199,7 @@ async def clan_top(message: Message):
         for clan in top_clans:
             clan_name = clan['clan_name']
             clan_balance = clan['clan_balance']
-            response += f"{counter}) *{clan_name}*  `{clan_balance} гр. мефа`\n"
+            response += f"{counter}) *{clan_name}*: `{clan_balance} гр. мефа`\n"
             counter += 1
 
         await message.reply(response, parse_mode='markdown')

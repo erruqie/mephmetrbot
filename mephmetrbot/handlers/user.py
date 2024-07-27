@@ -4,6 +4,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, InlineKeyboardButton
 from aiogram.filters.command import Command, CommandObject
 from aiogram.utils.keyboard import InlineKeyboardBuilder
+from mephmetrbot.handlers import cryptopay
 from mephmetrbot.handlers.models import Users, Clans
 from mephmetrbot.config import bot, LOGS_CHAT_ID
 from datetime import datetime, timedelta
@@ -61,7 +62,11 @@ async def botprofile(message: Message, command: CommandObject):
 async def give_command(message: Message, state: FSMContext, command: CommandObject):
     user_id = message.from_user.id
     user = await get_user(user_id)
-    args = command.args.split(' ', maxsplit=1)
+    try:
+        args = command.args.split(' ', maxsplit=1)
+    except:
+        await message.reply('❌ Не указаны аргументы, укажи сколько грамм хочешь передать челику')
+        return
 
     try:
         value = int(args[0])
@@ -129,8 +134,8 @@ async def find_command(message: Message, state: FSMContext):
     if last_used:
         last_used = last_used.replace(tzinfo=None)
 
-    if last_used and (now - last_used).total_seconds() < 43200:
-        await message.reply('⏳ Ты недавно *ходил за кладом, подожди 12 часов.*', parse_mode='markdown')
+    if last_used and (now - last_used).total_seconds() < 21600:
+        await message.reply('⏳ Ты недавно *ходил за кладом, подожди 6 часов.*', parse_mode='markdown')
         return
 
     if random.randint(1, 100) > 50:
@@ -141,11 +146,17 @@ async def find_command(message: Message, state: FSMContext):
         await user.save()
         await message.reply(f"👍 {message.from_user.first_name}, ты пошёл в лес и *нашел клад*, там лежало `{count} гр.` мефчика!\n🌿 Твое время команды /drug обновлено", parse_mode='markdown')
     else:
-        count = random.randint(1, round(drug_count))
+        if drug_count > 1:
+            count = random.randint(1, round(drug_count))
+        else:
+            count = 0
         user.drug_count -= count
         user.last_find = now
         await user.save()
-        await message.reply(f"❌ *{message.from_user.first_name}*, тебя *спалил мент* и *дал тебе по ебалу*\n🌿 Тебе нужно откупиться, мент предложил взятку в размере `{count} гр.`\n⏳ Следующая попытка доступна через *12 часов.*", parse_mode='markdown')
+        if count != 0:
+            await message.reply(f"❌ *{message.from_user.first_name}*, тебя *спалил мент* и *дал тебе по ебалу*\n🌿 Тебе нужно откупиться, мент предложил взятку в размере `{count} гр.`\n⏳ Следующая попытка доступна через *12 часов.*", parse_mode='markdown')
+        else:
+            await message.reply(f"❌ *{message.from_user.first_name}*, тебя *спалил мент* и *дал тебе по ебалу*\n⏳ Следующая попытка доступна через *12 часов.*", parse_mode='markdown')
 
 @router.message(Command('top'))
 async def top_command(message: Message):
@@ -221,7 +232,7 @@ async def take_command(message: Message, state: FSMContext):
                 await victim.save()
                 victim_user_id = reply_msg.from_user.id
                 victim_username = f'tg://user?id={victim_user_id}'
-                await message.reply(f"✅ [{message.from_user.first_name}](tg://user?id={message.from_user.id}) спиздил(-а) один грам мефа у [{reply_msg.from_user.first_name}]({victim_username})!", parse_mode='markdown')
+                await message.reply(f"✅ [{message.from_user.first_name}](tg://user?id={message.from_user.id}) спиздил(-а) один грамм мефа у [{reply_msg.from_user.first_name}]({victim_username})!", parse_mode='markdown')
             await state.update_data(time=datetime.now().isoformat())
             await user.save()
     else:
@@ -297,14 +308,18 @@ async def start_command(message: Message):
 *Сообщить о багах вы можете администраторам* (*команда* `/about`)''', parse_mode='markdown')
 
 @router.message(Command('start'))
-async def start_command(message: Message):
-    builder = InlineKeyboardBuilder()
-    builder.row(
-        InlineKeyboardButton(text='📢 Канал', url='https://t.me/mefmetrch'),
-        InlineKeyboardButton(text='💰 Донат', url='https://t.me/mefmetrch'),
-        InlineKeyboardButton(text='💬 Чат', url='https://t.me/mefmetrchat')
-    )
-    await message.reply("👋 *Здарова шныр*, этот бот сделан для того, чтобы *считать* сколько *грамм мефедрончика* ты снюхал\n\n🛑 Внимание, это всего лишь игровой бот, здесь не продают меф. Не стоит писать об этом мне, ваши попытки приобрести наркотические вещества - будут переданы правохранительным органам.\n\n🧑‍💻 Бот разработан *powerplantsmoke.t.me* и *tbankhater.t.me*", reply_markup=builder.as_markup(), parse_mode='markdown')
+async def start_command(message: Message, command: CommandObject):
+    args = command.args.split('-',maxsplit=1)
+    if args:
+        await cryptopay.checkinvoice(args[1], message)
+    else:
+        builder = InlineKeyboardBuilder()
+        builder.row(
+            InlineKeyboardButton(text='📢 Канал', url='https://t.me/mefmetrch'),
+            InlineKeyboardButton(text='💰 Донат', url='https://t.me/mefmetrch'),
+            InlineKeyboardButton(text='💬 Чат', url='https://t.me/mefmetrchat')
+        )
+        await message.reply("👋 *Здарова шныр*, этот бот сделан для того, чтобы *считать* сколько *грамм мефедрончика* ты снюхал\n\n🛑 Внимание, это всего лишь игровой бот, здесь не продают меф. Не стоит писать об этом мне, ваши попытки приобрести наркотические вещества - будут переданы правохранительным органам.\n\n🧑‍💻 Бот разработан *powerplantsmoke.t.me* и *tbankhater.t.me*", reply_markup=builder.as_markup(), parse_mode='markdown')
 
 
 @router.message(Command('about'))
