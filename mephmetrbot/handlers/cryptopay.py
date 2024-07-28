@@ -18,7 +18,6 @@ async def get_user(user_id):
 
 @router.message(Command('buymeph'))
 async def buymef(message: Message, command: CommandObject):
-
     args = command.args
     if args:
         value = command.args.split(' ', maxsplit=1)[0]
@@ -26,6 +25,9 @@ async def buymef(message: Message, command: CommandObject):
         await message.reply(f'❌ Укажите насколько рублей,  гр. хотите купить\n'
                             f'Пример: <code>/buymeph 100</code>\n\n'
                             f'Курс: <code>1 гр. = {float(RUB_PER_MEPH)} RUB</code>', parse_mode='html')
+        return
+    if value < 10:
+        await message.reply(f'❌ Минимальная сумма для покупки: 10 гр.')
         return
     invoice_amount = int(int(value) * float(RUB_PER_MEPH))
     invoice = await crypto.create_invoice(
