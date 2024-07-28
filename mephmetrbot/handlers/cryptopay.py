@@ -22,7 +22,7 @@ async def buymef(message: Message, command: CommandObject):
     if args:
         value = command.args.split(' ', maxsplit=1)[0]
     else:
-        await message.reply(f'❌ Укажите насколько рублей,  гр. хотите купить\n'
+        await message.reply(f'❌ Укажите кол-во гр. которое хотите купить\n'
                             f'Пример: <code>/buymeph 100</code>\n\n'
                             f'Курс: <code>1 гр. = {float(RUB_PER_MEPH)} RUB</code>', parse_mode='html')
         return
