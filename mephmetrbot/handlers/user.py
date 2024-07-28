@@ -309,17 +309,13 @@ async def start_command(message: Message):
 
 @router.message(Command('start'))
 async def start_command(message: Message, command: CommandObject):
-    args = command.args.split('-',maxsplit=1)
-    if args:
-        await cryptopay.checkinvoice(args[1], message)
-    else:
-        builder = InlineKeyboardBuilder()
-        builder.row(
-            InlineKeyboardButton(text='📢 Канал', url='https://t.me/mefmetrch'),
-            InlineKeyboardButton(text='💰 Донат', url='https://t.me/mefmetrch'),
-            InlineKeyboardButton(text='💬 Чат', url='https://t.me/mefmetrchat')
-        )
-        await message.reply("👋 *Здарова шныр*, этот бот сделан для того, чтобы *считать* сколько *грамм мефедрончика* ты снюхал\n\n🛑 Внимание, это всего лишь игровой бот, здесь не продают меф. Не стоит писать об этом мне, ваши попытки приобрести наркотические вещества - будут переданы правохранительным органам.\n\n🧑‍💻 Бот разработан *powerplantsmoke.t.me* и *tbankhater.t.me*", reply_markup=builder.as_markup(), parse_mode='markdown')
+    builder = InlineKeyboardBuilder()
+    builder.row(
+        InlineKeyboardButton(text='📢 Канал', url='https://t.me/mefmetrch'),
+        InlineKeyboardButton(text='💰 Донат', url='https://t.me/mefmetrch'),
+        InlineKeyboardButton(text='💬 Чат', url='https://t.me/mefmetrchat')
+    )
+    await message.reply("👋 *Здарова шныр*, этот бот сделан для того, чтобы *считать* сколько *грамм мефедрончика* ты снюхал\n\n🛑 Внимание, это всего лишь игровой бот, здесь не продают меф. Не стоит писать об этом мне, ваши попытки приобрести наркотические вещества - будут переданы правохранительным органам.\n\n🧑‍💻 Бот разработан *powerplantsmoke.t.me* и *tbankhater.t.me*", reply_markup=builder.as_markup(), parse_mode='markdown')
 
 
 @router.message(Command('about'))
