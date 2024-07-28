@@ -23,7 +23,4 @@ class Clans(models.Model):
 
 class Invoices(models.Model):
     invoice_id = fields.BigIntField(pk=True)
-    user_id = fields.BigIntField()
-    amount_ton = fields.FloatField()
-    amount_meph = fields.IntField()
     status = fields.CharField(max_length=255)
