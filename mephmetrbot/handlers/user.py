@@ -128,14 +128,15 @@ async def find_command(message: Message, state: FSMContext):
     user_id = message.from_user.id
     user = await get_user(user_id)
 
-    drug_count, last_used = user.drug_count, user.last_find
+    drug_count, last_find = user.drug_count, user.last_find
     now = datetime.now()
 
-    if last_used:
-        last_used = last_used.replace(tzinfo=None)
+    if last_find:
+        last_find = last_find.replace(tzinfo=None)
 
-    if last_used and (now - last_used).total_seconds() < 21600:
-        await message.reply('⏳ Ты недавно *ходил за кладом, подожди 6 часов.*', parse_mode='markdown')
+    if last_find and (now - last_find).total_seconds() < 21600:
+        remaining_time = timedelta(hours=1) - (now - last_find)
+        await message.reply(f'⏳ Ты недавно *ходил за кладом, подожди {remaining_time.seconds // 60} минут.*', parse_mode='markdown')
         return
 
     if random.randint(1, 100) > 50:
