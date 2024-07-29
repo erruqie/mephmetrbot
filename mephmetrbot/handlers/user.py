@@ -62,10 +62,13 @@ async def profile_command(message: Message):
     else:
         user_info = f'{user_info}{balances}'
 
-    if user.is_admin:
+    if user.is_banned:
+        user_info = f"❌ *ЛИКВИДИРОВАН*\nПричина: `{user.ban_reason}`\n\n{user_info}"
+    elif user.is_admin:
         user_info = f"👑 *Администратор*\n\n{user_info}"
     elif user.is_tester:
         user_info = f"🧑‍💻 *Тестер*\n\n{user_info}"
+    
 
     await message.reply(user_info, parse_mode='markdown')
 
