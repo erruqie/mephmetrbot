@@ -37,8 +37,10 @@ async def casino(message: Message, command: CommandObject):
     except ValueError:
         await message.reply("🛑 Ставка должна быть целым числом, а коэффициент числом!", parse_mode='markdown')
         return
-    
-    if bet < 10 or bet < 1.1:
+    if target_multiplier < 1.1:
+        await message.reply("🛑 Минимальный коэффицент автостопа: 1.1x", parse_mode='markdown')
+        return
+    if bet < 10:
         await message.reply("🛑 Ставка должна быть больше `10` гр.", parse_mode='markdown')
         return
 
@@ -101,19 +103,22 @@ async def casino(message: Message, command: CommandObject):
             await message.reply("🛑 Бот не может выплатить выигрыш. Попробуй позже.", parse_mode='markdown')
         else:
             new_balance = round(user.drug_count + win_amount, 1)
-            new_bot_balance = round(bot_balance - win_amount, 1)
+            if user.is_admin != True or user.is_tester != True:
+                new_bot_balance = round(bot_balance - win_amount, 1)
+                bot_user.drug_count = new_bot_balance
+                await bot_user.save()
             result_message += f'🎉 Поздравляем, вы выиграли `{win_amount}` гр. Ваш новый баланс: `{new_balance}` гр.'
             user.drug_count = new_balance
-            bot_user.drug_count = new_bot_balance
             await user.save()
-            await bot_user.save()
             await bot.send_message(LOGS_CHAT_ID, f"<b>#CASINO</b> <b>#WIN</b>\n\nfirst_name: <code>{message.from_user.first_name}</code>\nuser_id: <code>{user_id}</code>\nbet: <code>{bet}</code>\nmultiplier: <code>1.2</code>\ndrug_count: <code>{new_balance}</code>\n\n<a href='tg://user?id={user_id}'>mention</a>", parse_mode='HTML')
     else:
         new_balance = round(user.drug_count, 1)
-        new_bot_balance = round(bot_balance + bet, 1)
+        await message.reply(f'is_admin: {user.is_admin}\nis_tester: {user.is_tester}')
+        if user.is_admin == False or None and user.is_tester == False or None:
+            new_bot_balance = round(bot_balance + bet, 1)
+            bot_user.drug_count = new_bot_balance
+            await bot_user.save()
         result_message += f'❌ Твоя ставка не сыграла. Повезёт в следующий раз! Твой новый баланс: `{new_balance}` гр.'
-        bot_user.drug_count = new_bot_balance
-        await bot_user.save()
         await bot.send_message(LOGS_CHAT_ID, f"<b>#CASINO</b> <b>#LOSE</b>\n\nfirst_name: <code>{message.from_user.first_name}</code>\nuser_id: <code>{user_id}</code>\nbet: <code>{bet}</code>\ntarget_multiplier: <code>{target_multiplier}</code>\nactual_multiplier: <code>{random_multiplier}</code>\ndrug_count: <code>{new_balance}</code>\n\n<a href='tg://user?id={user_id}'>mention</a>", parse_mode='HTML')
 
     await dice_message.delete()

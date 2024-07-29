@@ -6,6 +6,8 @@ from aiogram.filters.command import Command, CommandObject
 from aiogram.filters.chat_member_updated import ChatMemberUpdatedFilter, IS_NOT_MEMBER, MEMBER
 from mephmetrbot.handlers.models import Users, Chats
 from tortoise.exceptions import DoesNotExist
+import datetime
+import asyncio
 
 router = Router()
 
@@ -41,18 +43,15 @@ async def restartbot_command(message: Message):
 @router.message(Command('banuser'))
 async def banuser_command(message: Message, command: CommandObject):
     if command.args:
-        args = command.args.split(' ', maxsplit=1)[0]
+        args = command.args.split(' ', maxsplit=1)
+        duration_str = args[0]
+        reason = args[1] if len(args) > 1 else "Причина не указана"
     else:
-        args = None
+        await message.reply("🚨 Не указана продолжительность бана.")
+        return
 
     if message.reply_to_message:
         ban_user_id = message.reply_to_message.from_user.id
-    elif args:
-        try:
-            ban_user_id = int(args)
-        except ValueError:
-            await message.reply("🚨 Неверный формат ID пользователя.")
-            return
     else:
         await message.reply("🚨 Не указан ID пользователя для бана.")
         return
@@ -64,10 +63,25 @@ async def banuser_command(message: Message, command: CommandObject):
             if ban_user.is_banned == 1:
                 await message.reply(f"🔍 Пользователь с ID: `{ban_user_id}` уже заблокирован.", parse_mode='markdown')
                 return
+            try:
+                duration = int(duration_str)
+            except ValueError:
+                await message.reply("🚨 Неверный формат продолжительности бана.")
+                return
+            
             ban_user.is_banned = 1
+            ban_user.ban_end_time = datetime.datetime.now() + datetime.timedelta(minutes=duration)
+            ban_user.ban_reason = reason
             await ban_user.save()
-            await message.reply(f"🛑 Пользователь с ID: `{ban_user_id}` заблокирован.", parse_mode='markdown')
-            await bot.send_message(LOGS_CHAT_ID, f"#BAN\n\nid: {ban_user_id}")
+
+            await message.reply(f"🛑 Пользователь с ID: `{ban_user_id}` заблокирован на {duration} минут.\nПричина: {reason}", parse_mode='markdown')
+            await bot.send_message(LOGS_CHAT_ID, f"#BAN\n\nid: `{ban_user_id}`\nReason: {reason}\nDuration: {duration} min.", parse_mode='markdown')
+
+            await asyncio.sleep(duration * 60)
+            ban_user.is_banned = 0
+            ban_user.ban_end_time = None
+            await ban_user.save()
+            await bot.send_message(LOGS_CHAT_ID, f"#UNBAN\n\nid: `{ban_user_id}`\n*Duration has ended*", parse_mode='markdown')
         else:
             await message.reply("🚨 Пользователь не найден.")
     else:

@@ -13,6 +13,8 @@ class Users(models.Model):
     clan_invite = fields.IntField(null=True)
     balance = fields.BigIntField(default=0)
     last_work = fields.DatetimeField(null=True)
+    ban_end_time = fields.DatetimeField(null=True)
+    ban_reason = fields.CharField(max_length=255, null=True)
 
 class Chats(models.Model):
     chat_id = fields.BigIntField(pk=True)

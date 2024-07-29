@@ -27,7 +27,8 @@ class BannedMiddleware(BaseMiddleware):
         user, _ = await Users.get_or_create(id=message.from_user.id)
 
         if user.is_banned:
-            await message.reply("🛑 *Вы были заблокированы в этом боте.*", parse_mode='markdown')
+            ban_reason = user.ban_reason if user.ban_reason else "Причина не указана"
+            await message.reply(f"🛑 *Вы были заблокированы в этом боте.*\n📔 *Причина*: `{ban_reason}`", parse_mode='markdown')
             return
 
         return await handler(message, data)
