@@ -10,6 +10,8 @@ class Users(models.Model):
     last_find = fields.DatetimeField(null=True)
     clan_member = fields.IntField(null=True)
     clan_invite = fields.IntField(null=True)
+    balance = fields.BigIntField(default=0)
+    last_work = fields.DatetimeField(null=True)
 
 class Chats(models.Model):
     chat_id = fields.BigIntField(pk=True)

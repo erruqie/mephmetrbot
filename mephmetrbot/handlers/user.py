@@ -1,10 +1,9 @@
-from aiogram import Router
+from aiogram import Router, F
 import random
 from aiogram.fsm.context import FSMContext
-from aiogram.types import Message, InlineKeyboardButton
+from aiogram.types import Message, InlineKeyboardButton, CallbackQuery
 from aiogram.filters.command import Command, CommandObject
 from aiogram.utils.keyboard import InlineKeyboardBuilder
-from mephmetrbot.handlers import cryptopay
 from mephmetrbot.handlers.models import Users, Clans
 from mephmetrbot.config import bot, LOGS_CHAT_ID
 from datetime import datetime, timedelta
@@ -12,6 +11,12 @@ import asyncio
 from aiogram.exceptions import TelegramBadRequest
 
 router = Router()
+
+async def update_user_balance_and_drug_count(user_id: int, new_balance: int, new_drug_count: int):
+    user = await Users.get(id=user_id)
+    user.balance = new_balance
+    user.drug_count = new_drug_count
+    await user.save()
 
 async def get_user(user_id):
     user, _ = await Users.get_or_create(id=user_id)
@@ -43,7 +48,8 @@ async def profile_command(message: Message):
         f"👤 *Имя:* _{full_name}_\n"
         f"👥 *Username пользователя:* @{username}\n"
         f"🆔 *ID пользователя:* `{user_id}`\n"
-        f"🌿 *Снюхано* _{user.drug_count}_ грамм."
+        f"🌿 *Снюхано:* _{user.drug_count}_ грамм.\n"
+        f"💸 *Баланс крипты:* _{user.balance}_ *$MEF*"
     )
     if user.is_admin:
         profile_info = f"👑 *Администратор*\n{profile_info}"
@@ -58,8 +64,49 @@ async def botprofile(message: Message, command: CommandObject):
     bot_user = await get_user(1)
     await message.reply(f"🤖 *Это Бот*\n🌿 *Баланс бота:* _{bot_user.drug_count}_ грамм.", parse_mode='markdown')
 
+@router.message(Command('shop'))
+async def shop(message: Message):
+    user_id = message.from_user.id
+    user = await get_user(user_id)
+
+    builder = InlineKeyboardBuilder()
+    builder.row(
+        InlineKeyboardButton(text="🌿 10 грамм - 💸 5000 $MEF", callback_data="buy_10"),
+        InlineKeyboardButton(text="🌿 20 грамм - 💸 9000 $MEF", callback_data="buy_20"),
+        InlineKeyboardButton(text="🌿 50 грамм - 💸 20000 $MEF", callback_data="buy_50")
+    )
+
+    await message.answer(f"*🧙‍♂️ Здарова, ты попал на черный рынок, здесь ты можешь купить весь мой ассортимент.*", reply_markup=builder.as_markup(), parse_mode='markdown')
+
+
+@router.callback_query(F.data.startswith('buy_'))
+async def handle_purchase_callback(callback_query: CallbackQuery):
+    action = callback_query.data.split('_')[1]
+    user_id = callback_query.from_user.id
+
+    match action:
+        case 10:
+            await handle_purchase(callback_query, user_id, 10, 5000)
+        case 20:
+            await handle_purchase(callback_query, user_id, 20, 9000)
+        case 50:
+            await handle_purchase(callback_query, user_id, 50, 20000)
+        case _:
+            return
+
+async def handle_purchase(callback_query: CallbackQuery, user_id: int, amount: int, cost: int):
+    user = await get_user(user_id)
+
+    if user.balance >= cost:
+        new_balance = user.balance - cost
+        new_drug_count = user.drug_count + amount
+        await update_user_balance_and_drug_count(user_id, new_balance, new_drug_count)
+        await bot.answer_callback_query(callback_query.id, text=f"😈 Спасибо за покупку кентишка. Ты купил {amount} грамм за {cost} $MEF.", show_alert=True)
+    else:
+        await bot.answer_callback_query(callback_query.id, text="❌ Недостаточно крипты для покупки.", show_alert=True)
+
 @router.message(Command('give'))
-async def give_command(message: Message, state: FSMContext, command: CommandObject):
+async def give_command(message: Message, command: CommandObject):
     user_id = message.from_user.id
     user = await get_user(user_id)
     try:
@@ -123,8 +170,40 @@ async def give_command(message: Message, state: FSMContext, command: CommandObje
         parse_mode='markdown'
     )
 
+@router.message(Command('work'))
+async def work_command(message: Message):
+    user_id = message.from_user.id
+    user = await get_user(user_id)
+
+    if user.balance is None:
+        user.balance = 0
+
+    last_work = user.last_work
+    now = datetime.now()
+
+    if last_work:
+        last_work = last_work.replace(tzinfo=None)
+
+    if last_work and (now - last_work).total_seconds() < 21600:
+        remaining_time = timedelta(hours=1) - (now - last_work)
+        await message.reply(f'⏳ Ты недавно ходил прятать *закладку*, подожди {remaining_time.seconds // 60} минут.', parse_mode='markdown')
+        return
+
+    if random.randint(1, 100) > 50:
+        count = random.randint(500, 1300)
+        user.balance += count
+        user.last_work = now
+        await user.save()
+        await message.reply(f"🌿 {message.from_user.first_name}, ты пошёл в лес и *спрятал закладку*, тебя никто не спалил, ты заработал `{count} $MEF.`", parse_mode='markdown')
+    else:
+        user.last_work = now
+        await user.save()
+        await message.reply(f"❌ *{message.from_user.first_name}*, тебя *спалил мент* и *дал тебе по ебалу*\n⏳ Следующая попытка доступна через *12 часов.*", parse_mode='markdown')
+
+
+
 @router.message(Command('find'))
-async def find_command(message: Message, state: FSMContext):
+async def find_command(message: Message):
     user_id = message.from_user.id
     user = await get_user(user_id)
 
@@ -240,7 +319,7 @@ async def take_command(message: Message, state: FSMContext):
         await message.reply('❌ Ответьте на сообщение, чтобы забрать меф.')
 
 @router.message(Command('drug'))
-async def drug_command(message: Message, state: FSMContext):
+async def drug_command(message: Message):
     user = await get_user(message.from_user.id)
 
     drug_count, last_use_time = user.drug_count, user.last_use_time
