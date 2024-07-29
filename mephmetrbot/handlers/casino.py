@@ -113,7 +113,6 @@ async def casino(message: Message, command: CommandObject):
             await bot.send_message(LOGS_CHAT_ID, f"<b>#CASINO</b> <b>#WIN</b>\n\nfirst_name: <code>{message.from_user.first_name}</code>\nuser_id: <code>{user_id}</code>\nbet: <code>{bet}</code>\nmultiplier: <code>1.2</code>\ndrug_count: <code>{new_balance}</code>\n\n<a href='tg://user?id={user_id}'>mention</a>", parse_mode='HTML')
     else:
         new_balance = round(user.drug_count, 1)
-        await message.reply(f'is_admin: {user.is_admin}\nis_tester: {user.is_tester}')
         if user.is_admin == False or None and user.is_tester == False or None:
             new_bot_balance = round(bot_balance + bet, 1)
             bot_user.drug_count = new_bot_balance
