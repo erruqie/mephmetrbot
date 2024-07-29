@@ -112,12 +112,41 @@ async def unbanuser_command(message: Message, command: CommandObject):
         await message.reply('🚨 У вас нет прав для выполнения этой команды.')
 
 
+@router.message(Command('settester'))
+async def settester_command(message: Message, command: CommandObject):
+    user_id = message.from_user.id
+    user = await get_user(user_id)
+
+    if user and user.is_admin:
+        target_id = None
+
+        if message.reply_to_message:
+            target_id = message.reply_to_message.from_user.id
+            try:
+                target_user = await Users.get(id=target_id)
+                target_user.is_tester = True
+                await target_user.save()
+                await message.reply('✅')
+                await bot.send_message(
+                    LOGS_CHAT_ID,
+                    f"<b>#SETTESTER</b>\n\nuser_id_receiver: <code>{target_id}</code>\nuser_id_sender: <code>{user_id}</code>\n\n<a href='tg://user?id={user_id}'>mention sender</a>\n<a href='tg://user?id={target_id}'>mention receiver</a>",
+                    parse_mode='HTML'
+                )
+            except DoesNotExist:
+                await message.reply(f'❌ Пользователь с ID {target_id} не найден.')
+        else:
+            await message.reply(
+                '❌ Неверный формат команды. Используйте /settester в ответ на сообщение.')
+    else:
+        await message.reply('🚨 У вас нет прав для выполнения этой команды.')
+
+
 @router.message(Command('setdrugs'))
 async def setdrugs_command(message: Message, command: CommandObject):
     user_id = message.from_user.id
     user = await get_user(user_id)
 
-    if user and user.is_admin:
+    if user and user.is_admin or user.is_tester:
         target_id = None
         drug_count = None
         args = command.args.split(' ', maxsplit=1)

@@ -34,9 +34,9 @@ async def create_clan(message: Message, command: Command):
             clan_id = random.randint(100000, 999999)
             drug_count = user.drug_count
 
-            if user.clan_member is not None:
+            if user.clan_member is not None and user.clan_member > 1:
                 await message.reply("🛑 Вы уже состоите в клане.", parse_mode='markdown')
-            else:
+            elif user.clan_member is None or user.clan_member == 0:
                 if drug_count >= 100:
                     try:
                         new_clan = await Clans.create(

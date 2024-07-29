@@ -5,6 +5,7 @@ class Users(models.Model):
     drug_count = fields.BigIntField(default=0)
     last_use_time = fields.DatetimeField(null=True)
     is_admin = fields.BooleanField(default=False)
+    is_tester = fields.BooleanField(default=False)
     is_banned = fields.BooleanField(default=False)
     last_casino = fields.DatetimeField(null=True)
     last_find = fields.DatetimeField(null=True)

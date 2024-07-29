@@ -43,6 +43,9 @@ async def profile_command(message: Message):
 
     username = message.from_user.username if user_id == message.from_user.id else message.reply_to_message.from_user.username
     full_name = message.from_user.full_name if user_id == message.from_user.id else message.reply_to_message.from_user.full_name
+    
+    if user.balance is None:
+        user.balance = 0
 
     user_info = (
         f"👤 *Имя:* _{full_name}_\n"
@@ -53,10 +56,16 @@ async def profile_command(message: Message):
         f"🌿 *Снюхано:* _{user.drug_count}_ грамм.\n"
         f"💸 *Баланс крипты:* _{user.balance}_ *$MEF*"
     )
-    if user.is_admin:
-        user_info = f"👑 *Администратор*\n\n{user_info}"
+
     if clan_name:
         user_info = f"{user_info}👥 *Клан:* *{clan_name}*\n\n{balances}"
+    else:
+        user_info = f'{user_info}{balances}'
+
+    if user.is_admin:
+        user_info = f"👑 *Администратор*\n\n{user_info}"
+    elif user.is_tester:
+        user_info = f"🧑‍💻 *Тестер*\n\n{user_info}"
 
     await message.reply(user_info, parse_mode='markdown')
 
@@ -250,7 +259,7 @@ async def top_command(message: Message):
 
     if top_users:
         response = "🔝ТОП 10 ЛЮТЫХ МЕФЕДРОНЩИКОВ В МИРЕ🔝:\n\n"
-        valid_user_ids = {user.id for user in top_users if user.id != 1 and user.drug_count > 0}
+        valid_user_ids = {user.id for user in top_users if user.id != 1 and user.drug_count > 0 and user.is_tester != True and user.is_admin != True}
 
         async def fetch_user_info(user_id):
             try:
