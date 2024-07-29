@@ -158,7 +158,8 @@ async def withdraw(message: Message, command: Command):
             return
 
         if user_id != clan_owner_id:
-            await message.reply(f"🛑 Приглашать в клан может только создатель", parse_mode='markdown')
+            await message.reply(f"🛑 Выводить с клана может только создатель", parse_mode='markdown')
+            return
 
         if cost < 0:
             await message.reply('❌ Значение не может быть отрицательным')
