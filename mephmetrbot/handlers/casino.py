@@ -37,8 +37,8 @@ async def casino(message: Message, command: CommandObject):
     except ValueError:
         await message.reply("🛑 Ставка должна быть целым числом, а коэффициент числом!", parse_mode='markdown')
         return
-
-    if bet < 10:
+    
+    if bet < 10 or bet < 1.1:
         await message.reply("🛑 Ставка должна быть больше `10` гр.", parse_mode='markdown')
         return
 

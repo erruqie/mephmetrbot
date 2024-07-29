@@ -44,19 +44,21 @@ async def profile_command(message: Message):
     username = message.from_user.username if user_id == message.from_user.id else message.reply_to_message.from_user.username
     full_name = message.from_user.full_name if user_id == message.from_user.id else message.reply_to_message.from_user.full_name
 
-    profile_info = (
+    user_info = (
         f"👤 *Имя:* _{full_name}_\n"
-        f"👥 *Username пользователя:* @{username}\n"
         f"🆔 *ID пользователя:* `{user_id}`\n"
+    )
+
+    balances = (
         f"🌿 *Снюхано:* _{user.drug_count}_ грамм.\n"
         f"💸 *Баланс крипты:* _{user.balance}_ *$MEF*"
     )
     if user.is_admin:
-        profile_info = f"👑 *Администратор*\n{profile_info}"
+        user_info = f"👑 *Администратор*\n\n{user_info}"
     if clan_name:
-        profile_info = f"{profile_info}\n👥 *Клан:* *{clan_name}*"
+        user_info = f"{user_info}👥 *Клан:* *{clan_name}*\n\n{balances}"
 
-    await message.reply(profile_info, parse_mode='markdown')
+    await message.reply(user_info, parse_mode='markdown')
 
 
 @router.message(Command('botprofile'))
@@ -73,7 +75,8 @@ async def shop(message: Message):
     builder.row(
         InlineKeyboardButton(text="🌿 10 грамм - 💸 5000 $MEF", callback_data="buy_10"),
         InlineKeyboardButton(text="🌿 20 грамм - 💸 9000 $MEF", callback_data="buy_20"),
-        InlineKeyboardButton(text="🌿 50 грамм - 💸 20000 $MEF", callback_data="buy_50")
+        InlineKeyboardButton(text="🌿 50 грамм - 💸 20000 $MEF", callback_data="buy_50"),
+        width=1
     )
 
     await message.answer(f"*🧙‍♂️ Здарова, ты попал на черный рынок, здесь ты можешь купить весь мой ассортимент.*", reply_markup=builder.as_markup(), parse_mode='markdown')
@@ -83,13 +86,13 @@ async def shop(message: Message):
 async def handle_purchase_callback(callback_query: CallbackQuery):
     action = callback_query.data.split('_')[1]
     user_id = callback_query.from_user.id
-
+    print(action)
     match action:
-        case 10:
+        case '10':
             await handle_purchase(callback_query, user_id, 10, 5000)
-        case 20:
+        case '20':
             await handle_purchase(callback_query, user_id, 20, 9000)
-        case 50:
+        case '50':
             await handle_purchase(callback_query, user_id, 50, 20000)
         case _:
             return
