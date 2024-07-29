@@ -345,11 +345,11 @@ async def drug_command(message: Message):
 
     if last_use_time and (now - last_use_time).total_seconds() < 3600:
         remaining_time = timedelta(hours=1) - (now - last_use_time)
-        await message.reply(f"❌ *{message.from_user.first_name}*, _ты уже нюхал(-а)!_\n\n🌿 Всего снюхано `{drug_count} грамм` мефедрона\n\n⏳ Следующий занюх доступен через `{remaining_time.seconds // 60} минут.`", parse_mode='markdown')
+        await message.reply(f"❌ *{message.from_user.first_name}*, _ты уже нюхал(-а)!_\n🌿 Всего снюхано `{drug_count} грамм` мефедрона\n\n⏳ Следующую дорогу начертим через `{remaining_time.seconds // 60} минут.`", parse_mode='markdown')
         return
 
     if random.randint(0, 100) < 20:
-        await message.reply(f"🧂 *{message.from_user.first_name}*, _ты просыпал(-а) весь мефчик!_\n\n🌿 Всего снюхано `{drug_count}` грамм мефедрона\n\n⏳ Следующий занюх доступен через `1 час.`", parse_mode='markdown')
+        await message.reply(f"🧂 *{message.from_user.first_name}*, _ты просыпал(-а) весь мефчик!_\n🌿 Всего снюхано `{drug_count}` грамм мефедрона\n\n⏳ Следующую дорогу начертим через `1 час.`", parse_mode='markdown')
         user.last_use_time = now
         return
 
@@ -357,7 +357,7 @@ async def drug_command(message: Message):
     user.drug_count += count
     user.last_use_time = now
     await user.save()
-    await message.reply(f"👍 *{message.from_user.first_name}*, _ты занюхнул(-а) {count} грамм мефчика!_\n\n🌿 Всего снюхано `{user.drug_count}` грамм мефедрона\n\n⏳ Следующий занюх доступен через `1 час.`", parse_mode='markdown')
+    await message.reply(f"👍 *{message.from_user.first_name}*, _ты занюхнул(-а) {count} грамм мефчика!_\n🌿 Всего снюхано `{user.drug_count}` грамм мефедрона\n\n⏳ Следующую дорогу начертим через `1 час.`", parse_mode='markdown')
 
 
 @router.message(Command('help'))
