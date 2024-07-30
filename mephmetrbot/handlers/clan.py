@@ -431,7 +431,7 @@ async def claninvite(message: Message):
                         ]
                     ])
 
-                    await message.reply(f'✅ Пользователь `{reply_msg.from_user.first_name}` *приглашён в клан {clan_name}* пользователем `{message.from_user.first_name}`\nДля того чтобы принять или отказаться от приглашения, используйте кнопки ниже.', reply_markup=keyboard, parse_mode='markdown')
+                    await message.reply(f'✅ Пользователь <code>{reply_msg.from_user.first_name}</code> <b>приглашён в клан {clan_name}</b> пользователем <code>{message.from_user.first_name}</code>\nДля того чтобы принять или отказаться от приглашения, используйте кнопки ниже.', reply_markup=keyboard, parse_mode='html')
 
                 elif clan_invite > 0:
                     await message.reply(f"🛑 Этот пользователь уже имеет активное приглашение", parse_mode='markdown')
