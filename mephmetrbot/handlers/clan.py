@@ -29,13 +29,13 @@ async def create_clan(message: Message, command: Command):
         clan_exist = await Clans.filter(clan_name=clan_name).exists()
 
         if clan_exist:
-            await message.reply('🛑 Клан с таким названием уже существует')
+            await message.reply('🛑 <b>Клан с таким названием уже существует</b>', parse_mode='HTML')
         else:
             clan_id = random.randint(100000, 999999)
             drug_count = user.drug_count
 
             if user.clan_member is not None and user.clan_member > 1:
-                await message.reply("🛑 Вы уже состоите в клане.", parse_mode='markdown')
+                await message.reply("🛑 <b>Вы уже состоите в клане.</b>", parse_mode='HTML')
             elif user.clan_member is None or user.clan_member == 0:
                 if drug_count >= 100:
                     try:
@@ -59,23 +59,23 @@ async def create_clan(message: Message, command: Command):
                             parse_mode='HTML'
                         )
                         await message.reply(
-                            f"✅ Клан *{clan_name}* успешно создан.\nВаш идентификатор клана: `{clan_id}`\nС вашего баланса списано `100` гр.",
-                            parse_mode='markdown'
+                            f"✅ Клан <b>{clan_name}</b> успешно создан.\nВаш идентификатор клана: <code>{clan_id}</code>\nС вашего баланса списано <code>100</code> гр.",
+                            parse_mode='HTML'
                         )
                     except IntegrityError as e:
                         await message.reply(f"🛑 Произошла ошибка при создании клана. Пожалуйста, попробуйте снова.")
                         print(f"IntegrityError: {e}")
                 else:
-                    await message.reply("🛑 Недостаточно средств.\nСтоимость создания клана: `100` гр.", parse_mode='markdown')
+                    await message.reply("🛑 Недостаточно средств.\nСтоимость создания клана: <code>100</code> гр.", parse_mode='HTML')
     else:
-        await message.reply("🛑 Укажи название клана\nПример:`/clancreate КрУтЫе_ПеРцЫ`\nСтоимость создания клана: `100` гр.", parse_mode='markdown')
+        await message.reply("🛑 Укажи название клана\nПример:<code>/clancreate КрУтЫе_ПеРцЫ</code>\nСтоимость создания клана: `100` гр.", parse_mode='HTML')
 
 @router.message(Command('deposit'))
 async def deposit(message: Message, command: Command):
         args = command.args if command.args else None
 
         if args is None:
-            await message.reply("🛑 Вы не указали сумму. Пример:\n`/deposit 100`", parse_mode='markdown')
+            await message.reply("🛑 Вы не указали сумму. Пример:\n<code>/deposit 100</code>", parse_mode='HTML')
             return
 
         args = args.split(' ', maxsplit=1)[0]
@@ -92,13 +92,13 @@ async def deposit(message: Message, command: Command):
         clan_id = user.clan_member
 
         if clan_id is None or clan_id == 0:
-            await message.reply("🛑 Вы не состоите в клане", parse_mode='markdown')
+            await message.reply("🛑 <b>Вы не состоите в клане</b>", parse_mode='HTML')
             return
 
         clan = await Clans.filter(id=clan_id).first()
 
         if clan is None:
-            await message.reply("🛑 Клан не найден", parse_mode='markdown')
+            await message.reply("🛑 <b>Клан не найден</b>", parse_mode='HTML')
             return
 
         if cost < 0:
@@ -109,7 +109,7 @@ async def deposit(message: Message, command: Command):
             return
 
         elif cost > user_balance:
-            await message.reply(f"🛑 Недостаточно средств. Ваш баланс: `{user_balance}` гр.", parse_mode='markdown')
+            await message.reply(f"🛑 Недостаточно средств. Ваш баланс: <code>{user_balance}</code> гр.", parse_mode='HTML')
             return
 
         clan.clan_balance += cost
@@ -118,8 +118,8 @@ async def deposit(message: Message, command: Command):
         await user.save()
 
         await message.reply(
-            f"✅ Вы успешно пополнили баланс клана `{clan.clan_name}` на `{cost}` гр.",
-            parse_mode='markdown'
+            f"✅ Вы успешно пополнили баланс клана <code>{clan.clan_name}</code> на <code>{cost}</code> гр.",
+            parse_mode='HTML'
         )
 
         await bot.send_message(
@@ -133,7 +133,7 @@ async def withdraw(message: Message, command: Command):
         args = command.args if command.args else None
 
         if args is None:
-            await message.reply("🛑 Вы не указали сумму. Пример:\n`/withdraw 100`", parse_mode='markdown')
+            await message.reply("🛑 Вы не указали сумму. Пример:\n<code>/withdraw 100</code>", parse_mode='HTML')
             return
 
 
@@ -154,11 +154,11 @@ async def withdraw(message: Message, command: Command):
         clan_owner_id = clan.clan_owner_id
 
         if clan is None:
-            await message.reply("🛑 Клан не найден", parse_mode='markdown')
+            await message.reply("🛑 <b>Клан не найден</b>", parse_mode='HTML')
             return
 
         if user_id != clan_owner_id:
-            await message.reply(f"🛑 Выводить с клана может только создатель", parse_mode='markdown')
+            await message.reply(f"🛑 <b>Выводить с клана может только создатель!</b>", parse_mode='HTML')
             return
 
         if cost < 0:
@@ -168,8 +168,8 @@ async def withdraw(message: Message, command: Command):
             await message.reply('❌ Значение не может быть равным нулю')
             return
         elif cost > clan.clan_balance:
-            await message.reply(f"🛑 Недостаточно средств на балансе клана. Баланс клана: `{clan.clan_balance}` гр.",
-                        parse_mode='markdown')
+            await message.reply(f"🛑 Недостаточно средств на балансе клана. Баланс клана: <code>{clan.clan_balance}</code> гр.",
+                        parse_mode='HTML')
             return
 
         clan.clan_balance -= cost
@@ -178,8 +178,8 @@ async def withdraw(message: Message, command: Command):
         await user.save()
 
         await message.reply(
-            f"✅ Вы успешно вывели `{cost}` гр. с баланса клана `{clan.clan_name}.`",
-            parse_mode='markdown'
+            f"✅ Вы успешно вывели <code>{cost}</code> гр. с баланса клана <code>{clan.clan_name}</code>.",
+            parse_mode='HTML'
         )
 
         await bot.send_message(
@@ -200,10 +200,10 @@ async def clan_top(message: Message):
         for clan in top_clans:
             clan_name = clan['clan_name']
             clan_balance = clan['clan_balance']
-            response += f"{counter}) *{clan_name}*: `{clan_balance} гр. мефа`\n"
+            response += f"{counter}) <b>{clan_name}</b>: <code>{clan_balance} гр. мефа</code>`\n"
             counter += 1
 
-        await message.reply(response, parse_mode='markdown')
+        await message.reply(response, parse_mode='HTML')
     else:
         await message.reply('🛑 Ещё ни один клан не пополнил свой баланс.')
 
@@ -213,12 +213,12 @@ async def clan_owner(message: Message):
     user = await get_user(user_id)
     clan_id = user.clan_member
     if clan_id == 0:
-        await message.reply(f"🛑 *Вы не состоите в клане*", parse_mode='markdown')
+        await message.reply(f"🛑 <b>Вы не состоите в клане!</b>", parse_mode='HTML')
     elif clan_id > 0:
         clan = await Clans.filter(id=clan_id).first()
         current_owner_id = clan.clan_owner_id
         if user_id != current_owner_id:
-            await message.reply(f"🛑 *Вы не являетесь владельцем клана*", parse_mode='markdown')
+            await message.reply(f"🛑 <b>Вы не являетесь владельцем клана!</b>", parse_mode='HTML')
             return
 
         if message.reply_to_message:
@@ -226,15 +226,15 @@ async def clan_owner(message: Message):
         elif len(message.text.split()) >= 2:
             new_owner_id = int(message.text.split()[1])
         else:
-            await message.reply(f"🛑 *Вы не указали нового владельца клана*", parse_mode='markdown')
+            await message.reply(f"🛑 <b>Вы не указали нового владельца клана!</b>", parse_mode='HTML')
             return
         new_owner = await Users.filter(id=new_owner_id).first()
 
         if not new_owner:
-            await message.reply(f"🛑 *Не удалось найти пользователя с указанным идентификатором*", parse_mode='markdown')
+            await message.reply(f"🛑 <b>Не удалось найти пользователя с указанным идентификатором</b>", parse_mode='HTML')
             return
         await Clans.filter(id=clan_id).update(clan_owner_id=new_owner_id)
-        await message.reply(f"✅ *Вы передали владельца клана!*", parse_mode='markdown')
+        await message.reply(f"✅ <b>Вы передали владельца клана!</b>", parse_mode='HTML')
 
 # clan_wars = {}
 #
@@ -332,7 +332,7 @@ async def claninfo(message: Message):
     clan_id = user.clan_member
 
     if clan_id == 0:
-        await message.reply("🛑 Вы не состоите в клане", parse_mode='markdown')
+        await message.reply("🛑 <b>Вы не состоите в клане</b>", parse_mode='HTML')
     else:
         clan = await Clans.filter(id=clan_id).first()
         if clan:
@@ -343,11 +343,11 @@ async def claninfo(message: Message):
             clan_owner_name = clan_owner.first_name
 
             await message.reply(
-                f"👥 Клан: `{clan_name}`\n👑 Владелец клана: [{clan_owner_name}](tg://user?id={clan_owner_name})\n🌿 Баланс клана `{clan_balance}` гр.",
-                parse_mode='markdown'
+                f"👥 Клан: <code>{clan_name}</code>\n👑 Владелец клана: [{clan_owner_name}](tg://user?id={clan_owner_name})\n🌿 Баланс клана <code>{clan_balance}</code> гр.",
+                parse_mode='HTML'
             )
         else:
-            await message.reply("🛑 Клан не найден.", parse_mode='markdown')
+            await message.reply("🛑 <b>Клан не найден.</b>", parse_mode='HTML')
 
 @router.message(Command('clanmembers'))
 async def clanmembers(message: Message):
@@ -361,7 +361,7 @@ async def clanmembers(message: Message):
         clan_owner_id = clan.clan_owner_id
         if clan_id > 0:
             if clan_members:
-                response = f"👥 Список участников клана *{clan_name}*:\n"
+                response = f"👥 Список участников клана <b>{clan_name}</b>:\n"
                 counter = 1
                 clan_owner = None
                 for member in clan_members:
@@ -370,16 +370,16 @@ async def clanmembers(message: Message):
                         break
                 if clan_owner:
                     user_info = await bot.get_chat(member['id'])
-                    response += f"{counter}) *{user_info.full_name}* 👑\n"
+                    response += f"{counter}) <b>{user_info.full_name}</b> 👑\n"
                     counter += 1
                 for member in clan_members:
                     if member['id'] != clan_owner_id:
                         user_info = await bot.get_chat(member['id'])
                         response += f"{counter}) {user_info.full_name}\n"
                         counter += 1
-                await message.reply(response, parse_mode='markdown')
+                await message.reply(response, parse_mode='HTML')
     else:
-        await message.reply(f"🛑 Вы не состоите в клане", parse_mode='markdown')
+        await message.reply(f"🛑 Вы не состоите в клане", parse_mode='HTML')
 
 @router.message(Command('claninvite'))
 async def claninvite(message: Message):
@@ -434,13 +434,13 @@ async def claninvite(message: Message):
                     await message.reply(f'✅ Пользователь <code>{reply_msg.from_user.first_name}</code> <b>приглашён в клан {clan_name}</b> пользователем <code>{message.from_user.first_name}</code>\nДля того чтобы принять или отказаться от приглашения, используйте кнопки ниже.', reply_markup=keyboard, parse_mode='html')
 
                 elif clan_invite > 0:
-                    await message.reply(f"🛑 Этот пользователь уже имеет активное приглашение", parse_mode='markdown')
+                    await message.reply(f"🛑 <b>Этот пользователь уже имеет активное приглашение!</b>", parse_mode='HTML')
 
                 elif clan_member > 0:
-                    await message.reply(f"🛑 Этот пользователь уже в клане", parse_mode='markdown')
+                    await message.reply(f"🛑 <b>Этот пользователь уже состоит в клане!</b>", parse_mode='HTML')
 
             elif user_id != clan_owner_id:
-                await message.reply(f"🛑 Приглашать в клан может только создатель", parse_mode='markdown')
+                await message.reply(f"🛑 <b>Приглашать в клан может только создатель!</b>", parse_mode='HTML')
         else:
             await message.reply(f"🛑 {sys.exc_info()[0]}")
     else:
@@ -453,13 +453,13 @@ async def clankick(message: Message):
     clan_id = user.clan_member
 
     if clan_id == 0:
-        await message.reply("🛑 Вы не состоите в клане", parse_mode='markdown')
+        await message.reply("🛑 <b>Вы не состоите в клане!</b>", parse_mode='HTML')
         return
 
     try:
         clan = await Clans.get(id=clan_id)
     except Clans.DoesNotExist:
-        await message.reply("🛑 Клан не найден", parse_mode='markdown')
+        await message.reply("🛑 <b>Клан не найден!</b>", parse_mode='HTML')
         return
 
     clan_name = clan.clan_name
@@ -472,7 +472,7 @@ async def clankick(message: Message):
             kicked_user = await get_user(kicked_user_id)
 
             if not kicked_user:
-                await message.reply("🛑 Пользователь не найден", parse_mode='markdown')
+                await message.reply("🛑 <b>Пользователь не найден!</b>", parse_mode='HTML')
                 return
 
             if kicked_user.clan_member == clan_id:
@@ -480,15 +480,15 @@ async def clankick(message: Message):
                 victim_user_id = reply_msg.from_user.id
                 victim_username = f'tg://user?id={victim_user_id}'
                 await message.reply(
-                    f'✅ Пользователь [{reply_msg.from_user.first_name}]({victim_username})* исключен из клана {clan_name}* пользователем [{message.from_user.first_name}](tg://user?id={message.from_user.id})',
-                    parse_mode='markdown'
+                    f'✅ Пользователь [{reply_msg.from_user.first_name}]({victim_username})<b> исключен из клана {clan_name}</b>пользователем [{message.from_user.first_name}](tg://user?id={message.from_user.id}.)',
+                    parse_mode='HTML'
                 )
             else:
-                await message.reply("🛑 Этот пользователь не состоит в вашем клане", parse_mode='markdown')
+                await message.reply("🛑 <b>Этот пользователь не состоит в вашем клане!</b>", parse_mode='HTML')
         else:
-            await message.reply("🛑 Вы должны ответить на сообщение пользователя, которого хотите исключить", parse_mode='markdown')
+            await message.reply("🛑 <b>Вы должны ответить на сообщение пользователя, которого хотите исключить!</b>", parse_mode='HTML')
     else:
-        await message.reply("🛑 Исключать из клана может только создатель", parse_mode='markdown')
+        await message.reply("🛑 <b>Исключать из клана может только создатель!</b>", parse_mode='HTML')
 
 @router.message(Command('clanleave'))
 async def clanleave(message: Message):
@@ -497,27 +497,27 @@ async def clanleave(message: Message):
     clan_id = user.clan_member
 
     if clan_id == 0:
-        await message.reply("🛑 Вы не состоите в клане", parse_mode='markdown')
+        await message.reply("🛑 <b>Вы не состоите в клане</b>", parse_mode='HTML')
         return
 
     try:
         clan = await Clans.get(id=clan_id)
     except Clans.DoesNotExist:
-        await message.reply("🛑 Клан не найден", parse_mode='markdown')
+        await message.reply("🛑 <b>Клан не найден!</b>", parse_mode='HTML')
         return
 
     clan_name = clan.clan_name
     clan_owner_id = int(clan.clan_owner_id)
 
     if user_id == clan_owner_id:
-        await message.reply("🛑 Создатель клана не может его покинуть", parse_mode='markdown')
+        await message.reply("🛑 <b>Создатель клана не может его покинуть!</b>", parse_mode='HTML')
         return
 
     await Users.filter(id=user_id).update(clan_member=None)
 
     await message.reply(
-        f'✅ *Вы покинули* клан *{clan_name}*',
-        parse_mode='markdown'
+        f'✅ <b>Вы покинули</b> клан <code>{clan_name}</code>',
+        parse_mode='HTML'
     )
 
 @router.message(Command('clandisband'))
@@ -528,13 +528,13 @@ async def clandisband(message: Message):
     try:
         clan = await Clans.get(id=clan_id)
     except:
-        await message.reply("🛑 Вы не состоите в клане", parse_mode='markdown')
+        await message.reply("🛑 <b>Вы не состоите в клане!</b>", parse_mode='HTML')
         return
     try:
         clan_owner_id = clan.clan_owner_id
         clan_name = clan.clan_name
     except AttributeError:
-        await message.reply("🛑 Ошибка при получении информации о клане", parse_mode='markdown')
+        await message.reply("🛑 <b>Ошибка при получении информации о клане!</b>", parse_mode='HTML')
         return
 
     if clan_id > 0 and user_id == clan_owner_id:
@@ -542,9 +542,9 @@ async def clandisband(message: Message):
         await Clans.filter(id=clan_id).delete()
         await Users.filter(clan_member=clan_id).update(clan_member=None)
         await Users.filter(clan_member=clan_id).update(clan_invite=None)
-        await message.reply(f'✅ Вы распустили клан `{clan_name}`', parse_mode='markdown')
+        await message.reply(f'✅ Вы распустили клан <code>{clan_name}</code>', parse_mode='HTML')
     elif clan_id > 0 and user_id != clan_owner_id:
-        await message.reply(f"🛑 Вы не владелец клана!", parse_mode='markdown')
+        await message.reply(f"🛑 <b>Вы не владелец клана!</b>", parse_mode='HTML')
 
 @router.callback_query(F.data.startswith("clan_accept:"))
 async def clan_accept(callback_query: CallbackQuery):

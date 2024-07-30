@@ -28,7 +28,7 @@ class BannedMiddleware(BaseMiddleware):
 
         if user.is_banned:
             ban_reason = user.ban_reason if user.ban_reason else "Причина не указана"
-            await message.reply(f"🛑 *Вы были заблокированы в этом боте.*\n📔 *Причина*: `{ban_reason}`", parse_mode='markdown')
+            await message.reply(f"🛑 <b>Вы были заблокированы в этом боте.</b>\n📔 *Причина*: <code>{ban_reason}</code>", parse_mode='HTML')
             return
 
         return await handler(message, data)
@@ -42,7 +42,7 @@ async def init_tortoise():
 
 async def on_startup(bot):
     await init_tortoise()
-    await bot.send_message(LOGS_CHAT_ID, f'🤖 Бот был запущен!', parse_mode='markdown')
+    await bot.send_message(LOGS_CHAT_ID, f'🤖 <b>Бот был запущен!</b>', parse_mode='HTML')
 
 async def on_shutdown():
     await Tortoise.close_connections()

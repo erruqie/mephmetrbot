@@ -48,8 +48,8 @@ async def buymef(message: Message, command: CommandObject):
         )
 
         await message.reply(
-            f'💰 Вы можете купить {value} гр. за {invoice_amount} RUB через CryptoBot\n\n',
-            parse_mode='markdown',
+            f'💰 Вы можете купить <code>{value} гр.</code> за <code>{invoice_amount} RUB</code> через CryptoBot\n\n',
+            parse_mode='HTML',
             disable_webpage_preview=True,
             reply_markup=builder.as_markup()
         )

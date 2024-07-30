@@ -63,25 +63,24 @@ async def profile_command(message: Message):
         user_info = f'{user_info}{balances}'
 
     if user.is_banned:
-        user_info = f"❌ *ЛИКВИДИРОВАН*\nПричина: `{user.ban_reason}`\n\n{user_info}"
+        user_info = f"❌ <b>ЛИКВИДИРОВАН</b>\nПричина: <code>{user.ban_reason}</code>\n\n{user_info}"
     elif user.is_admin:
-        user_info = f"👑 *Администратор*\n\n{user_info}"
+        user_info = f"👑 <b>Администратор</b>\n\n{user_info}"
     elif user.is_tester:
-        user_info = f"🧑‍💻 *Тестер*\n\n{user_info}"
+        user_info = f"🧑‍💻 <b>Тестер</b>\n\n{user_info}"
     
 
-    await message.reply(user_info, parse_mode='markdown')
+    await message.reply(user_info, parse_mode='HTML')
 
 
 @router.message(Command('botprofile'))
-async def botprofile(message: Message, command: CommandObject):
+async def botprofile(message: Message):
     bot_user = await get_user(1)
-    await message.reply(f"🤖 *Это Бот*\n🌿 *Баланс бота:* _{bot_user.drug_count}_ грамм.", parse_mode='markdown')
+    await message.reply(f"🤖 <b>Это Бот</b>\n🌿 <b>Баланс бота:</b> <i>{bot_user.drug_count}</i> грамм.", parse_mode='HTML')
 
 @router.message(Command('shop'))
 async def shop(message: Message):
     user_id = message.from_user.id
-    user = await get_user(user_id)
 
     builder = InlineKeyboardBuilder()
     builder.row(
@@ -91,7 +90,7 @@ async def shop(message: Message):
         width=1
     )
 
-    await message.answer(f"*🧙‍♂️ Здарова, ты попал на черный рынок, здесь ты можешь купить весь мой ассортимент.*", reply_markup=builder.as_markup(), parse_mode='markdown')
+    await message.answer(f"<b>🧙‍♂️ Здарова, ты попал на черный рынок, здесь ты можешь купить весь мой ассортимент.</b>", reply_markup=builder.as_markup(), parse_mode='HTML')
 
 
 @router.callback_query(F.data.startswith('buy_'))
@@ -179,10 +178,10 @@ async def give_command(message: Message, command: CommandObject):
     recipient_full_name = message.reply_to_message.from_user.full_name if message.reply_to_message else ""
 
     await message.reply(
-        f"✅ [{message.from_user.first_name}](tg://user?id={message.from_user.id}) _подарил(-а) {value} гр. мефа_ "
-        f"[{recipient_full_name}](tg://user?id={recipient_id})!\nКомиссия: `{commission}` гр. мефа\n"
-        f"Получено `{net_value}` гр. мефа.",
-        parse_mode='markdown'
+        f"✅ [{message.from_user.first_name}](tg://user?id={message.from_user.id}) <i>подарил(-а) {value} гр. мефа</i> "
+        f"[{recipient_full_name}](tg://user?id={recipient_id})!\nКомиссия: <code>{commission}</code> гр. мефа\n"
+        f"Получено <code>{net_value}</code> гр. мефа.",
+        parse_mode='HTML'
     )
 
 @router.message(Command('work'))
@@ -201,7 +200,7 @@ async def work_command(message: Message):
 
     if last_work and (now - last_work).total_seconds() < 21600:
         remaining_time = timedelta(hours=1) - (now - last_work)
-        await message.reply(f'⏳ Ты недавно ходил прятать *закладку*, подожди {remaining_time.seconds // 60} минут.', parse_mode='markdown')
+        await message.reply(f'⏳ Ты недавно ходил прятать <b>закладку</b>, подожди {remaining_time.seconds // 60} минут.', parse_mode='HTML')
         return
 
     if random.randint(1, 100) > 50:
@@ -209,11 +208,11 @@ async def work_command(message: Message):
         user.balance += count
         user.last_work = now
         await user.save()
-        await message.reply(f"🌿 {message.from_user.first_name}, ты пошёл в лес и *спрятал закладку*, тебя никто не спалил, ты заработал `{count} $MEF.`", parse_mode='markdown')
+        await message.reply(f"🌿 {message.from_user.first_name}, ты пошёл в лес и <b>спрятал закладку</b>, тебя никто не спалил, ты заработал <code>{count} $MEF.</code>", parse_mode='HTML')
     else:
         user.last_work = now
         await user.save()
-        await message.reply(f"❌ *{message.from_user.first_name}*, тебя *спалил мент* и *дал тебе по ебалу*\n⏳ Следующая попытка доступна через *12 часов.*", parse_mode='markdown')
+        await message.reply(f"❌ <b>{message.from_user.first_name}</b>, тебя <b>спалил мент</b> и <b>дал тебе по ебалу</b>\n⏳ Следующая попытка доступна через <b>12 часов.</b>", parse_mode='РЕЬД')
 
 
 
@@ -230,7 +229,7 @@ async def find_command(message: Message):
 
     if last_find and (now - last_find).total_seconds() < 21600:
         remaining_time = timedelta(hours=1) - (now - last_find)
-        await message.reply(f'⏳ Ты недавно *ходил за кладом, подожди {remaining_time.seconds // 60} минут.*', parse_mode='markdown')
+        await message.reply(f'⏳ Ты недавно <b>ходил за кладом, подожди {remaining_time} час(-ов).</b>', parse_mode='HTML')
         return
 
     if random.randint(1, 100) > 50:
@@ -239,7 +238,7 @@ async def find_command(message: Message):
         user.last_find = now
         user.last_use_time = datetime.fromtimestamp(0)
         await user.save()
-        await message.reply(f"👍 {message.from_user.first_name}, ты пошёл в лес и *нашел клад*, там лежало `{count} гр.` мефчика!\n🌿 Твое время команды /drug обновлено", parse_mode='markdown')
+        await message.reply(f"👍 {message.from_user.first_name}, ты пошёл в лес и <b>нашел клад</b>, там лежало <code>{count} гр.</code> мефчика!\n🌿 Твое время команды /drug обновлено", parse_mode='HTML')
     else:
         if drug_count > 1:
             count = random.randint(1, round(drug_count))
@@ -249,9 +248,9 @@ async def find_command(message: Message):
         user.last_find = now
         await user.save()
         if count != 0:
-            await message.reply(f"❌ *{message.from_user.first_name}*, тебя *спалил мент* и *дал тебе по ебалу*\n🌿 Тебе нужно откупиться, мент предложил взятку в размере `{count} гр.`\n⏳ Следующая попытка доступна через *12 часов.*", parse_mode='markdown')
+            await message.reply(f"❌ <b>{message.from_user.first_name}</b>, тебя <b>спалил мент</b> и <b>дал тебе по ебалу</b>\n🌿 Тебе нужно откупиться, мент предложил взятку в размере <code>{count} гр.</code>\n⏳ Следующая попытка доступна через <b>12 часов.</b>", parse_mode='HTML')
         else:
-            await message.reply(f"❌ *{message.from_user.first_name}*, тебя *спалил мент* и *дал тебе по ебалу*\n⏳ Следующая попытка доступна через *12 часов.*", parse_mode='markdown')
+            await message.reply(f"❌ <b>{message.from_user.first_name}</b>, тебя <b>спалил мент</b> и <b>дал тебе по ебалу</b>\n⏳ Следующая попытка доступна через <b>12 часов.</b>", parse_mode='HTML')
 
 @router.message(Command('top'))
 async def top_command(message: Message):
@@ -283,13 +282,13 @@ async def top_command(message: Message):
             drug_count = user.drug_count
             user_info = user_info_dict.get(user.id, None)
             if user_info:
-                response += f"{counter}) *{user_info.full_name}*: `{drug_count} гр. мефа`\n"
+                response += f"{counter}) <b>{user_info.full_name}</b>: <code>{drug_count} гр. мефа<code>\n"
                 counter += 1
 
         if counter == 1:
             await message.reply('Никто еще не принимал меф.')
         else:
-            await message.reply(response, parse_mode='markdown')
+            await message.reply(response, parse_mode='HTML')
     else:
         await message.reply('Никто еще не принимал меф.')
 
@@ -317,17 +316,17 @@ async def take_command(message: Message, state: FSMContext):
             randomed = random.choice(variables)
             if randomed == 'noticed':
                 user.drug_count -= 1
-                await message.reply('❌ *Жертва тебя заметила*, и ты решил убежать. Спиздить меф не получилось. Пока ты бежал, *ты потерял* `1 гр.`', parse_mode='markdown')
+                await message.reply('❌ <b>Жертва тебя заметила</b>, и ты решил убежать. Спиздить меф не получилось. Пока ты бежал, <b>ты потерял</b> <code>1 гр.</code>', parse_mode='HTML')
             elif randomed == 'hit':
                 user.drug_count -= 1
-                await message.reply('❌ *Жертва тебя заметила*, и пизданула тебя бутылкой по башке. Спиздить меф не получилось. *Жертва достала из твоего кармана* `1 гр.`', parse_mode='markdown')
+                await message.reply('❌ <b>Жертва тебя заметила</b>, и пизданула тебя бутылкой по башке. Спиздить меф не получилось. <b>Жертва достала из твоего кармана<b> `1 гр.`', parse_mode='HTML')
             elif randomed == 'pass':
                 victim.drug_count -= 1
                 user.drug_count += 1
                 await victim.save()
                 victim_user_id = reply_msg.from_user.id
                 victim_username = f'tg://user?id={victim_user_id}'
-                await message.reply(f"✅ [{message.from_user.first_name}](tg://user?id={message.from_user.id}) спиздил(-а) один грамм мефа у [{reply_msg.from_user.first_name}]({victim_username})!", parse_mode='markdown')
+                await message.reply(f"✅ [{message.from_user.first_name}](tg://user?id={message.from_user.id}) <b>спиздил(-а) один грамм мефа</b> у [{reply_msg.from_user.first_name}]({victim_username})!", parse_mode='HTML')
             await state.update_data(time=datetime.now().isoformat())
             await user.save()
     else:
@@ -345,11 +344,11 @@ async def drug_command(message: Message):
 
     if last_use_time and (now - last_use_time).total_seconds() < 3600:
         remaining_time = timedelta(hours=1) - (now - last_use_time)
-        await message.reply(f"❌ *{message.from_user.first_name}*, _ты уже нюхал(-а)!_\n🌿 Всего снюхано `{drug_count} грамм` мефедрона\n\n⏳ Следующую дорогу начертим через `{remaining_time.seconds // 60} минут.`", parse_mode='markdown')
+        await message.reply(f"❌ <b>{message.from_user.first_name}</b>, <i>ты уже нюхал(-а)!</i>\n🌿 Всего снюхано <code>{drug_count} грамм</code> мефедрона\n\n⏳ Следующую дорогу начертим через <code>{remaining_time} час(-ов).</code>", parse_mode='HTML')
         return
 
     if random.randint(0, 100) < 20:
-        await message.reply(f"🧂 *{message.from_user.first_name}*, _ты просыпал(-а) весь мефчик!_\n🌿 Всего снюхано `{drug_count}` грамм мефедрона\n\n⏳ Следующую дорогу начертим через `1 час.`", parse_mode='markdown')
+        await message.reply(f"🧂 <b>{message.from_user.first_name}</b>, <i>ты просыпал(-а) весь мефчик!</i>\n🌿 Всего снюхано <code>{drug_count}</code> грамм мефедрона\n\n⏳ Следующую дорогу начертим через <code>1 час.</code>", parse_mode='HTML')
         user.last_use_time = now
         return
 
@@ -357,33 +356,33 @@ async def drug_command(message: Message):
     user.drug_count += count
     user.last_use_time = now
     await user.save()
-    await message.reply(f"👍 *{message.from_user.first_name}*, _ты занюхнул(-а) {count} грамм мефчика!_\n🌿 Всего снюхано `{user.drug_count}` грамм мефедрона\n\n⏳ Следующую дорогу начертим через `1 час.`", parse_mode='markdown')
+    await message.reply(f"👍 <b>{message.from_user.first_name}</b>, <i>ты занюхнул(-а) {count} грамм мефчика!</i>\n🌿 Всего снюхано <code>{user.drug_count}</code> грамм мефедрона\n\n⏳ Следующую дорогу начертим через <code>1 час.</code>", parse_mode='HTML')
 
 
 @router.message(Command('help'))
 async def help_command(message: Message):
     await message.reply('''Все команды бота:
 
-`/drug` - *принять мефик*
-`/top` - *топ торчей мира*
-`/take` - *спиздить мефик у ближнего*
-`/give` - *поделиться мефиком*
-`/casino` - *казино*
-`/find` - *сходить за кладом*
-`/about` - *узнать подробнее о боте*
-`/clancreate` - *создать клан*
-`/deposit` - *пополнить баланс клана*
-`/withdraw` - *вывести средства с клана*
-`/clantop` - *топ 10 кланов по состоянию баланса*
-`/clanbalance` - *баланс клана*
-`/claninfo` - *о клане*
-`/claninvite` - *пригласить в клан*
-`/clankick` - *кикнуть из клана*
-`/clanaccept` - *принять приглашение в клан*
-`/clandecline` - *отказаться от приглашения в клан*
-`/clanleave` - *добровольно выйти из клана*
-`/clandisband` - *распустить клан*
-    ''', parse_mode='markdown')
+<code>/drug</code> - <b>принять мефик</b>
+<code>/top</code> - <b>топ торчей мира</b>
+<code>/take</code> - <b>спиздить мефик у ближнего</b>
+<code>/give</code> - <b>поделиться мефиком</b>
+<code>/casino</code> - <b>казино</b>
+<code>/find</code> - <b>сходить за кладом<b>
+<code>/about</code> - <b>узнать подробнее о боте</b>
+<code>/clancreate</code> - <b>создать клан</b>
+<code>/deposit</code> - <b>пополнить баланс клана</b>
+<code>/withdraw</code> - <b>вывести средства с клана<b>
+<code>/clantop</code> - <b>топ 10 кланов по состоянию баланса</b>
+<code>/clanbalance</code> - <b>баланс клана</b>
+<code>/claninfo</code> - <b>о клане</b>
+<code>/claninvite</code> - <b>пригласить в клан</b>
+<code>/clankick</code> - <b>кикнуть из клана</b>
+<code>/clanaccept</code> - <b>принять приглашение в клан</b>
+<code>/clandecline</code> - <b>отказаться от приглашения в клан</b>
+<code>/clanleave</code> - <b>добровольно выйти из клана</b>
+<code>/clandisband</code> - <b>распустить клан</b>
+    ''', parse_mode='HTML')
 
 @router.message(Command('grach'))
 async def start_command(message: Message):
@@ -392,15 +391,15 @@ async def start_command(message: Message):
 @router.message(Command('rules'))
 async def start_command(message: Message):
     await message.reply('''Правила пользования mephmetrbot:
-*1) Мультиаккаунтинг - бан навсегда и обнуление всех аккаунтов *
-*2) Использование любых уязвимостей бота - бан до исправления и возможное обнуление*
-*3) Запрещена реклама через топ кланов и топ юзеров - выговор, после бан с обнулением*
-*4) Запрещена продажа валюты между игроками - обнуление и бан*
+<b>1) Мультиаккаунтинг - бан навсегда и обнуление всех аккаунтов
+2) Использование любых уязвимостей бота - бан до исправления и возможное обнуление
+3) Запрещена реклама через топ кланов и топ юзеров - выговор, после бан с обнулением
+4) Запрещена продажа валюты между игроками - обнуление и бан</b>
 
-*Бот не имеет никакого отношения к реальности. Все совпадения случайны.
+<b>Бот не имеет никакого отношения к реальности. Все совпадения случайны.
 Создатели не пропагандируют наркотики и против их распространения и употребления.
-Употребление, хранение и продажа является уголовно наказуемой*
-*Сообщить о багах вы можете администраторам* (*команда* `/about`)''', parse_mode='markdown')
+Употребление, хранение и продажа является уголовно наказуемой</b>
+*Сообщить о багах вы можете администраторам* (<b>команда</b> <code>/about</code>)''', parse_mode='HTML')
 
 @router.message(Command('start'))
 async def start_command(message: Message, command: CommandObject):
@@ -410,7 +409,7 @@ async def start_command(message: Message, command: CommandObject):
         InlineKeyboardButton(text='💰 Донат', url='https://t.me/mefmetrch'),
         InlineKeyboardButton(text='💬 Чат', url='https://t.me/mefmetrchat')
     )
-    await message.reply("👋 *Здарова шныр*, этот бот сделан для того, чтобы *считать* сколько *грамм мефедрончика* ты снюхал\n\n🛑 Внимание, это всего лишь игровой бот, здесь не продают меф. Не стоит писать об этом мне, ваши попытки приобрести наркотические вещества - будут переданы правохранительным органам.\n\n🧑‍💻 Бот разработан *powerplantsmoke.t.me* и *tbankhater.t.me*", reply_markup=builder.as_markup(), parse_mode='markdown')
+    await message.reply("👋 <b>Здарова шныр</b>, этот бот сделан для того, чтобы <b>считать</b> сколько <b>грамм мефедрончика</b> ты снюхал\n\n🛑 Внимание, это всего лишь игровой бот, здесь не продают меф. Не стоит писать об этом мне, ваши попытки приобрести наркотические вещества - будут переданы правохранительным органам.\n\n🧑‍💻 Бот разработан <b>powerplantsmoke.t.me</b> и <b>vccleak.t.me</b>", reply_markup=builder.as_markup(), parse_mode='HTML')
 
 
 @router.message(Command('about'))

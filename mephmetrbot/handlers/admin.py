@@ -61,7 +61,7 @@ async def banuser_command(message: Message, command: CommandObject):
         ban_user = await get_user(ban_user_id)
         if ban_user:
             if ban_user.is_banned == 1:
-                await message.reply(f"🔍 Пользователь с ID: `{ban_user_id}` уже заблокирован.", parse_mode='markdown')
+                await message.reply(f"🔍 Пользователь с ID: <code>{ban_user_id}</code> уже заблокирован.", parse_mode='HTML')
                 return
             try:
                 duration = int(duration_str)
@@ -74,14 +74,14 @@ async def banuser_command(message: Message, command: CommandObject):
             ban_user.ban_reason = reason
             await ban_user.save()
 
-            await message.reply(f"🛑 Пользователь с ID: `{ban_user_id}` заблокирован на {duration} минут.\nПричина: {reason}", parse_mode='markdown')
-            await bot.send_message(LOGS_CHAT_ID, f"#BAN\n\nid: `{ban_user_id}`\nReason: {reason}\nDuration: {duration} min.", parse_mode='markdown')
+            await message.reply(f"🛑 Пользователь с ID: <code>{ban_user_id}</code> заблокирован на <code>{duration}</code> минут.\nПричина: <code>{reason}</code>", parse_mode='HTML')
+            await bot.send_message(LOGS_CHAT_ID, f"#BAN\n\nid: <code>{ban_user_id}</code>\nReason: <code>{reason}</code>\nDuration: <code>{duration}</code> min.", parse_mode='HTML')
 
             await asyncio.sleep(duration * 60)
             ban_user.is_banned = 0
             ban_user.ban_end_time = None
             await ban_user.save()
-            await bot.send_message(LOGS_CHAT_ID, f"#UNBAN\n\nid: `{ban_user_id}`\n*Duration has ended*", parse_mode='markdown')
+            await bot.send_message(LOGS_CHAT_ID, f"#UNBAN\n\nid: <code>{ban_user_id}</code>\n*Duration has ended*", parse_mode='HTML')
         else:
             await message.reply("🚨 Пользователь не найден.")
     else:
@@ -111,15 +111,15 @@ async def unbanuser_command(message: Message, command: CommandObject):
         ban_user = await get_user(ban_user_id)
         if ban_user:
             if ban_user.is_banned == 0:
-                await message.reply(f"🔍 Пользователь с ID: `{ban_user_id}` не в бане.", parse_mode='markdown')
+                await message.reply(f"🔍 Пользователь с ID: <code>{ban_user_id}</code> не в бане.", parse_mode='HTNL')
                 return
 
             ban_user.is_banned = 0
             await ban_user.save()
             updated_ban_user = await get_user(ban_user_id)
             if updated_ban_user.is_banned == 0:
-                await message.reply(f"✅ Пользователь с ID: `{ban_user_id}` разблокирован.", parse_mode='markdown')
-                await bot.send_message(LOGS_CHAT_ID, f"#UNBAN\n\nid: {ban_user_id}")
+                await message.reply(f"✅ Пользователь с ID: <code>{ban_user_id}</code> разблокирован.", parse_mode='HTML')
+                await bot.send_message(LOGS_CHAT_ID, f"#UNBAN\n\nid: <code>{ban_user_id}</code>", parse_mode='HTML')
         else:
             await message.reply("🚨 Пользователь не найден")
     else:
@@ -175,9 +175,7 @@ async def setdrugs_command(message: Message, command: CommandObject):
         if drug_count and drug_count.isdigit():
             drug_count = int(drug_count)
 
-            # Определите ID бота
             bot_id = 1
-            # Проверьте, если target_id это ID бота в Telegram
             if str(target_id) == '7005935644':
                 target_id = bot_id
 
@@ -239,7 +237,7 @@ async def cmd_broadcast_start(message: Message):
                     else:
                         await message.answer('Не поддерживаемый тип медиа для рассылки.')
                 except Exception as e:
-                    await message.bot.send_message(LOGS_CHAT_ID, f"#SENDERROR\n\nchatid: {chat_id}\nerror: {str(e)}")
+                    await message.bot.send_message(LOGS_CHAT_ID, f"#SENDERROR\n\nchatid: <code>{chat_id}</code>\nerror: {str(e)}", parse_mode='HTML')
 
             for user_id in users:
                 try:
@@ -256,7 +254,7 @@ async def cmd_broadcast_start(message: Message):
                     else:
                         await message.answer('Не поддерживаемый тип медиа для рассылки.')
                 except Exception as e:
-                    await message.bot.send_message(LOGS_CHAT_ID, f"#SENDERROR\n\nuser_id: {user_id}\nerror: {str(e)}")
+                    await message.bot.send_message(LOGS_CHAT_ID, f"#SENDERROR\n\nuser_id: <code>{user_id}</code>\nerror: {str(e)}", parse_mode='HTML')
         else:
             await message.answer('Пожалуйста, ответьте на сообщение с медиафайлом для рассылки.')
     else:
