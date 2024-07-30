@@ -6,7 +6,7 @@ from tortoise import Tortoise
 from aiogram.types import Message
 from typing import Callable, Dict, Awaitable, Any
 from aiogram import Bot, Dispatcher, BaseMiddleware
-
+import asyncio
 from mephmetrbot.handlers.models import Users
 from mephmetrbot.handlers import user, admin, clan, casino, error, cryptopay
 from mephmetrbot.config import BOT_TOKEN, DATABASE_URL, LOGS_CHAT_ID
@@ -40,9 +40,19 @@ async def init_tortoise():
     )
     await Tortoise.generate_schemas(safe=True)
 
+async def check_invitation_expiry():
+    while True:
+        now = datetime.now()
+        expiry_time = now - timedelta(minutes=5)
+        await Users.filter(clan_invite__gt=0, invite_timestamp__lt=expiry_time).update(clan_invite=0, invite_timestamp=None)
+        await asyncio.sleep(60)
+
 async def on_startup(bot):
     await init_tortoise()
     await bot.send_message(LOGS_CHAT_ID, f'🤖 <b>Бот был запущен!</b>', parse_mode='HTML')
+    asyncio.create_task(check_invitation_expiry())
+
+
 
 async def on_shutdown():
     await Tortoise.close_connections()

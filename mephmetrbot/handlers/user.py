@@ -381,8 +381,8 @@ async def help_command(message: Message):
 <code>/claninfo</code> - <b>о клане</b>
 <code>/claninvite</code> - <b>пригласить в клан</b>
 <code>/clankick</code> - <b>кикнуть из клана</b>
-<code>/clanaccept</code> - <b>принять приглашение в клан</b>
-<code>/clandecline</code> - <b>отказаться от приглашения в клан</b>
+<code>/profile</code> - <b>посмотреть профиль игрока</b>
+<code>/botprofile</code> - <b>профиль бота</b>
 <code>/clanleave</code> - <b>добровольно выйти из клана</b>
 <code>/clandisband</code> - <b>распустить клан</b>
     ''', parse_mode='HTML')

@@ -7,6 +7,7 @@ from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQu
 from mephmetrbot.config import bot, LOGS_CHAT_ID
 from mephmetrbot.handlers.models import Users, Clans
 from tortoise.exceptions import IntegrityError, DoesNotExist
+from datetime import datetime, timedelta
 
 router = Router()
 
@@ -386,7 +387,6 @@ async def claninvite(message: Message):
     user_id = message.from_user.id
     try:
         user = await Users.get(id=user_id)
-        is_banned = user.is_banned
         clan_id = user.clan_member
     except DoesNotExist:
         await message.reply("Пользователь не найден!")
@@ -413,16 +413,18 @@ async def claninvite(message: Message):
                     invited_user = await Users.get(id=invited_user_id)
                     clan_member = invited_user.clan_member
                     clan_invite = invited_user.clan_invite
+                    invite_timestamp = invited_user.invite_timestamp
                 except DoesNotExist:
-                    await Users.create(id=invited_user_id, drug_count=0, is_admin=0, is_banned=0, clan_member=0, clan_invite=0)
+                    await Users.create(id=invited_user_id, drug_count=0, is_admin=0, is_banned=0, clan_member=0, clan_invite=0, invite_timestamp=None)
                     clan_member = 0
                     clan_invite = 0
+                    invite_timestamp = None
 
                 clan_invite = clan_invite or 0
                 clan_member = clan_member or 0
 
                 if clan_member == 0 and clan_invite == 0:
-                    await Users.filter(id=invited_user_id).update(clan_invite=clan_id)
+                    await Users.filter(id=invited_user_id).update(clan_invite=clan_id, invite_timestamp=datetime.now())
 
                     keyboard = InlineKeyboardMarkup(inline_keyboard=[
                         [

@@ -15,6 +15,7 @@ class Users(models.Model):
     last_work = fields.DatetimeField(null=True)
     ban_end_time = fields.DatetimeField(null=True)
     ban_reason = fields.CharField(max_length=255, null=True)
+    invite_timestamp = fields.DatetimeField(null=True)
 
 class Chats(models.Model):
     chat_id = fields.BigIntField(pk=True)
