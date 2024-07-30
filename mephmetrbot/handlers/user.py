@@ -36,12 +36,15 @@ async def profile_command(message: Message):
         await message.reply('❌ Профиль не найден')
         return
 
+    if user == '7266772626':
+        bot_user = await get_user(1)
+        await message.reply(f"🤖 <b>Это Бот</b>\n🌿 <b>Баланс бота:</b> <i>{bot_user.drug_count}</i> грамм.",parse_mode='HTML')
+
     clan_name = None
     if user.clan_member:
         clan = await Clans.get_or_none(id=user.clan_member)
         clan_name = clan.clan_name if clan else None
 
-    username = message.from_user.username if user_id == message.from_user.id else message.reply_to_message.from_user.username
     full_name = message.from_user.full_name if user_id == message.from_user.id else message.reply_to_message.from_user.full_name
     
     if user.balance is None:

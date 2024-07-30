@@ -176,7 +176,8 @@ async def setdrugs_command(message: Message, command: CommandObject):
             drug_count = int(drug_count)
 
             bot_id = 1
-            if str(target_id) == '7005935644':
+
+            if user == '7266772626':
                 target_id = bot_id
 
             try:
