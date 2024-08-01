@@ -108,7 +108,7 @@ async def casino(message: Message, command: CommandObject):
         if current_multiplier > random_multiplier:
             current_multiplier = random_multiplier
         await dice_message.edit_text(f"🚀 <b>Коэффициент</b>: <code>{current_multiplier}x</code>", parse_mode='HTML')
-        await asyncio.sleep(1)
+        await asyncio.sleep(1.5)
     result_message = f"🚀 Итоговый коэффициент: <code>{random_multiplier}x</code>. "
 
     if random_multiplier >= target_multiplier:
