@@ -412,7 +412,7 @@ async def start_command(message: Message, command: CommandObject):
         InlineKeyboardButton(text='💰 Донат', url='https://t.me/mefmetrch'),
         InlineKeyboardButton(text='💬 Чат', url='https://t.me/mefmetrchat')
     )
-    await message.reply("👋 <b>Здарова шныр</b>, этот бот сделан для того, чтобы <b>считать</b> сколько <b>грамм мефедрончика</b> ты снюхал\n\n🛑 Внимание, это всего лишь игровой бот, здесь не продают меф. Не стоит писать об этом мне, ваши попытки приобрести наркотические вещества - будут переданы правохранительным органам.\n\n🧑‍💻 Бот разработан <b>powerplantsmoke.t.me</b> и <b>vccleak.t.me</b>", reply_markup=builder.as_markup(), parse_mode='HTML')
+    await message.reply("👋 <b>Здарова шныр</b>, этот бот сделан для того, чтобы <b>считать</b> сколько <b>грамм мефедрончика</b> ты снюхал\n\n🛑 Внимание, это всего лишь игровой бот, здесь не продают меф. Не стоит писать об этом мне, ваши попытки приобрести наркотические вещества - будут переданы правохранительным органам.\n\n🧑‍💻 Бот разработан <b>vccuser.t.me</b> и <b>vccleak.t.me</b>", reply_markup=builder.as_markup(), parse_mode='HTML')
 
 
 @router.message(Command('about'))
@@ -423,4 +423,4 @@ async def about_command(message: Message):
         InlineKeyboardButton(text='💰 Донат', url='https://t.me/mefmetrch'),
         InlineKeyboardButton(text='💬 Чат', url='https://t.me/mefmetrchat')
     )
-    await message.reply("🧑‍💻 Бот разработан powerplantsmoke.t.me и tbankhater.t.me", reply_markup=builder.as_markup())
+    await message.reply("🧑‍💻 Бот разработан vccuser.t.me и vccleak.t.me", reply_markup=builder.as_markup())
