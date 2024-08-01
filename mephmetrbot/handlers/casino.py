@@ -80,7 +80,7 @@ async def casino(message: Message, command: CommandObject):
     dice_message = await message.reply("<b>🚀 Начинаем игру... Ракетка взлетает!</b>", parse_mode='HTML')
     await asyncio.sleep(2.5)
     random_number = random.uniform(0, 1)
-    if random_number < 0.2:
+    if random_number < 0.11:
         random_multiplier = 0
     elif random_number < 0.7:
         random_multiplier = round(random.uniform(1, 1.9), 2)
