@@ -201,7 +201,7 @@ async def clan_top(message: Message):
         for clan in top_clans:
             clan_name = clan['clan_name']
             clan_balance = clan['clan_balance']
-            response += f"{counter}) <b>{clan_name}</b>: <code>{clan_balance} гр. мефа</code>`\n"
+            response += f"{counter}) <b>{clan_name}</b>: <code>{clan_balance} гр. мефа</code>\n"
             counter += 1
 
         await message.reply(response, parse_mode='HTML')
