@@ -78,24 +78,36 @@ async def casino(message: Message, command: CommandObject):
     user.drug_count -= bet
     await user.save()
 
-    await message.answer('🚀')
-    dice_message = await message.answer(" <b>Начинаем игру... Ракетка взлетает!</b>", parse_mode='HTML')
-    await asyncio.sleep(2)
+    dice_message = await message.reply("<b>🚀 Начинаем игру... Ракетка взлетает!</b>", parse_mode='HTML')
+    await asyncio.sleep(2.5)
     random_number = random.uniform(0, 1)
-    if random_number < 0.7:
+    if random_number < 0.2:
+        random_multiplier = 0
+    elif random_number < 0.7:
         random_multiplier = round(random.uniform(1, 1.9), 2)
+    elif random_number > 0.85 and random_number < 0.90:
+        random_multiplier = round(random.uniform(6, 15.9), 2)
     else:
         random_multiplier = round(random.uniform(2, 5), 2)
 
     current_multiplier = 1.0
+    if random_multiplier > 0:
+        while current_multiplier < random_multiplier:
+            current_multiplier = round(current_multiplier + 0.5, 2)
+            if current_multiplier > random_multiplier:
+                current_multiplier = random_multiplier
+            await dice_message.edit_text(f"🚀 <b>Коэффициент</b>: <code>{current_multiplier}</code>", parse_mode='HTML')
+            await asyncio.sleep(1)
+        result_message = f"🚀 Итоговый коэффициент: <code>{random_multiplier}</code>. "
+    else:
+        new_balance = round(user.drug_count, 1)
+        if user.is_admin == False or None and user.is_tester == False or None:
+            new_bot_balance = round(bot_balance + bet, 1)
+            bot_user.drug_count = new_bot_balance
+            await bot_user.save()
+        result_message += f'❌ Твоя ставка не сыграла. Повезёт в следующий раз! Твой новый баланс: <code>{new_balance}</code> гр.'
+        await bot.send_message(LOGS_CHAT_ID, f"<b>#CASINO</b> <b>#LOSE</b>\n\nfirst_name: <code>{message.from_user.first_name}</code>\nuser_id: <code>{user_id}</code>\nbet: <code>{bet}</code>\ntarget_multiplier: <code>{target_multiplier}</code>\nactual_multiplier: <code>{random_multiplier}</code>\ndrug_count: <code>{new_balance}</code>\n\n<a href='tg://user?id={user_id}'>mention</a>", parse_mode='HTML')
 
-    while current_multiplier < random_multiplier:
-        current_multiplier = round(current_multiplier + 0.5, 2)
-        if current_multiplier > random_multiplier:
-            current_multiplier = random_multiplier
-        await dice_message.edit_text(f"🚀 <b>Коэффициент</b>: <code>{current_multiplier}</code>", parse_mode='HTML')
-        await asyncio.sleep(1)
-    result_message = f"🚀 Итоговый коэффициент: <code>{random_multiplier}</code>. "
 
     if random_multiplier >= target_multiplier:
         win_amount = round(bet * target_multiplier, 1)
