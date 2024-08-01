@@ -232,7 +232,7 @@ async def find_command(message: Message):
 
     if last_find and (now - last_find).total_seconds() < 21600:
         remaining_time = timedelta(hours=1) - (now - last_find)
-        await message.reply(f'⏳ Ты недавно <b>ходил за кладом, подожди {remaining_time} час(-ов).</b>', parse_mode='HTML')
+        await message.reply(f'⏳ Ты недавно <b>ходил за кладом, подожди {remaining_time.seconds // 60} минут.</b>', parse_mode='HTML')
         return
 
     if random.randint(1, 100) > 50:
@@ -285,13 +285,13 @@ async def top_command(message: Message):
             drug_count = user.drug_count
             user_info = user_info_dict.get(user.id, None)
             if user_info:
-                response += f"{counter}) <b>{user_info.full_name}</b>: <code>{drug_count} гр. мефа</code>\n"
+                response += f"{counter}) *{user_info.full_name}*: `{drug_count} гр. мефа`\n"
                 counter += 1
 
         if counter == 1:
             await message.reply('Никто еще не принимал меф.')
         else:
-            await message.reply(response, parse_mode='HTML')
+            await message.reply(response, parse_mode='markdown')
     else:
         await message.reply('Никто еще не принимал меф.')
 

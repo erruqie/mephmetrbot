@@ -58,15 +58,14 @@ async def casino(message: Message, command: CommandObject):
         return
 
     last_casino = user.last_casino
+    now = datetime.now()
 
-    if last_casino is not None:
-        if last_casino.tzinfo is not None:
-            last_casino = last_casino.replace(tzinfo=None)
-        now = datetime.now()
+    if last_casino:
+        last_casino = last_casino.replace(tzinfo=None)
 
-        if (now - last_casino) < timedelta(seconds=10):
-            await message.reply('⏳ Ты только что <b>крутил казик<b>, солевая обезьяна, <b>подожди 10 секунд по братски.<b>', parse_mode='HTML')
-            return
+    if last_casino and (now - last_casino).total_seconds() < 10:
+        await message.reply('⏳ Ты только что <b>крутил казик</b>, солевая обезьяна, <b>подожди 10 секунд по братски.</b>', parse_mode='HTML')
+        return
 
     if bet > drug_count:
         await message.reply("🛑 <b>Твоя ставка больше твоего баланса!</b>", parse_mode='HTML')
@@ -91,6 +90,7 @@ async def casino(message: Message, command: CommandObject):
         random_multiplier = round(random.uniform(2, 5), 2)
 
     current_multiplier = 1.0
+    result_message = ''
     if random_multiplier > 0:
         while current_multiplier < random_multiplier:
             current_multiplier = round(current_multiplier + 0.5, 2)
@@ -121,7 +121,6 @@ async def casino(message: Message, command: CommandObject):
                 await bot_user.save()
             result_message += f'🎉 Поздравляем, вы выиграли <code>{win_amount}</code> гр. Ваш новый баланс: <code>{new_balance}</code> гр.'
             user.drug_count = new_balance
-            await user.save()
             await bot.send_message(LOGS_CHAT_ID, f"<b>#CASINO</b> <b>#WIN</b>\n\nfirst_name: <code>{message.from_user.first_name}</code>\nuser_id: <code>{user_id}</code>\nbet: <code>{bet}</code>\nmultiplier: <code>1.2</code>\ndrug_count: <code>{new_balance}</code>\n\n<a href='tg://user?id={user_id}'>mention</a>", parse_mode='HTML')
     else:
         new_balance = round(user.drug_count, 1)
@@ -132,5 +131,8 @@ async def casino(message: Message, command: CommandObject):
         result_message += f'❌ Твоя ставка не сыграла. Повезёт в следующий раз! Твой новый баланс: <code>{new_balance}</code> гр.'
         await bot.send_message(LOGS_CHAT_ID, f"<b>#CASINO</b> <b>#LOSE</b>\n\nfirst_name: <code>{message.from_user.first_name}</code>\nuser_id: <code>{user_id}</code>\nbet: <code>{bet}</code>\ntarget_multiplier: <code>{target_multiplier}</code>\nactual_multiplier: <code>{random_multiplier}</code>\ndrug_count: <code>{new_balance}</code>\n\n<a href='tg://user?id={user_id}'>mention</a>", parse_mode='HTML')
 
-    await dice_message.delete()
-    await message.reply(result_message, parse_mode='HTML')
+    user.last_casino = now
+    await user.save()
+    #await dice_message.delete()
+    await dice_message.edit_text(result_message, parse_mode='HTML')
+
