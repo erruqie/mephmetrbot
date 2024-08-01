@@ -344,7 +344,7 @@ async def claninfo(message: Message):
             clan_owner_name = clan_owner.first_name
 
             await message.reply(
-                f"👥 Клан: <code>{clan_name}</code>\n👑 Владелец клана: [{clan_owner_name}](tg://user?id={clan_owner_name})\n🌿 Баланс клана <code>{clan_balance}</code> гр.",
+                f"👥 Клан: <code>{clan_name}</code>\n👑 Владелец клана: <a href='tg://user?id={clan_owner_name}'>{clan_owner_name}</a>\n🌿 Баланс клана <code>{clan_balance}</code> гр.",
                 parse_mode='HTML'
             )
         else:

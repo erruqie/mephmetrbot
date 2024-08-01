@@ -181,8 +181,8 @@ async def give_command(message: Message, command: CommandObject):
     recipient_full_name = message.reply_to_message.from_user.full_name if message.reply_to_message else ""
 
     await message.reply(
-        f"✅ [{message.from_user.first_name}](tg://user?id={message.from_user.id}) <i>подарил(-а) {value} гр. мефа</i> "
-        f"[{recipient_full_name}](tg://user?id={recipient_id})!\nКомиссия: <code>{commission}</code> гр. мефа\n"
+        f"✅ <a href='tg://user?id={message.from_user.id}'>{message.from_user.first_name}</a> <i>подарил(-а) {value} гр. мефа</i> "
+        f"<a href='tg://user?id={recipient_id}'>{recipient_full_name}</a>!\nКомиссия: <code>{commission}</code> гр. мефа\n"
         f"Получено <code>{net_value}</code> гр. мефа.",
         parse_mode='HTML'
     )
