@@ -10,6 +10,7 @@ import asyncio
 from mephmetrbot.handlers.models import Users
 from mephmetrbot.handlers import user, admin, clan, casino, error, cryptopay
 from mephmetrbot.config import BOT_TOKEN, DATABASE_URL, LOGS_CHAT_ID
+import datetime
 
 logging.basicConfig(level=logging.INFO)
 
