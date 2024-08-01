@@ -51,17 +51,17 @@ async def profile_command(message: Message):
         user.balance = 0
 
     user_info = (
-        f"👤 *Имя:* _{full_name}_\n"
-        f"🆔 *ID пользователя:* `{user_id}`\n"
+        f"👤 <b>Имя:</b> <i>{full_name}</i>\n"
+        f"🆔 <b>ID пользователя:</b> <code>{user_id}</code>\n"
     )
 
     balances = (
-        f"🌿 *Снюхано:* _{user.drug_count}_ грамм.\n"
-        f"💸 *Баланс крипты:* _{user.balance}_ *$MEF*"
+        f"🌿 <b>Снюхано:</b> <i>{user.drug_count}</i> грамм.\n"
+        f"💸 <b>Баланс крипты:</b> <i>{user.balance}</i> <b>$MEF</b>"
     )
 
     if clan_name:
-        user_info = f"{user_info}👥 *Клан:* *{clan_name}*\n\n{balances}"
+        user_info = f"{user_info}👥 <b>Клан:</b> <b>{clan_name}</b>\n\n{balances}"
     else:
         user_info = f'{user_info}{balances}'
 
@@ -347,7 +347,7 @@ async def drug_command(message: Message):
 
     if last_use_time and (now - last_use_time).total_seconds() < 3600:
         remaining_time = timedelta(hours=1) - (now - last_use_time)
-        await message.reply(f"❌ <b>{message.from_user.first_name}</b>, <i>ты уже нюхал(-а)!</i>\n🌿 Всего снюхано <code>{drug_count} грамм</code> мефедрона\n\n⏳ Следующую дорогу начертим через <code>{remaining_time} час(-ов).</code>", parse_mode='HTML')
+        await message.reply(f"❌ <b>{message.from_user.first_name}</b>, <i>ты уже нюхал(-а)!</i>\n🌿 Всего снюхано <code>{drug_count} грамм</code> мефедрона\n\n⏳ Следующую дорогу начертим через <code>{remaining_time.seconds // 60} минут.</code>", parse_mode='HTML')
         return
 
     if random.randint(0, 100) < 20:

@@ -423,7 +423,7 @@ async def claninvite(message: Message):
                 clan_invite = clan_invite or 0
                 clan_member = clan_member or 0
 
-                if clan_member == 0 and clan_invite == 0:
+                if clan_member == 0:
                     await Users.filter(id=invited_user_id).update(clan_invite=clan_id, invite_timestamp=datetime.now())
 
                     keyboard = InlineKeyboardMarkup(inline_keyboard=[
@@ -434,9 +434,6 @@ async def claninvite(message: Message):
                     ])
 
                     await message.reply(f'✅ Пользователь <code>{reply_msg.from_user.first_name}</code> <b>приглашён в клан {clan_name}</b> пользователем <code>{message.from_user.first_name}</code>\nДля того чтобы принять или отказаться от приглашения, используйте кнопки ниже.', reply_markup=keyboard, parse_mode='html')
-
-                elif clan_invite > 0:
-                    await message.reply(f"🛑 <b>Этот пользователь уже имеет активное приглашение!</b>", parse_mode='HTML')
 
                 elif clan_member > 0:
                     await message.reply(f"🛑 <b>Этот пользователь уже состоит в клане!</b>", parse_mode='HTML')
