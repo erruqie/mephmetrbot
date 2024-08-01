@@ -410,7 +410,7 @@ async def start_command(message: Message, command: CommandObject):
     builder.row(
         InlineKeyboardButton(text='📢 Канал', url='https://t.me/mefmetrch'),
         InlineKeyboardButton(text='💰 Донат', url='https://t.me/mefmetrch'),
-        InlineKeyboardButton(text='💬 Чат', url='https://t.me/mefmetrchat')
+        InlineKeyboardButton(text='💬 Чат', url='https://t.me/mephmetrchat')
     )
     await message.reply("👋 <b>Здарова шныр</b>, этот бот сделан для того, чтобы <b>считать</b> сколько <b>грамм мефедрончика</b> ты снюхал\n\n🛑 Внимание, это всего лишь игровой бот, здесь не продают меф. Не стоит писать об этом мне, ваши попытки приобрести наркотические вещества - будут переданы правохранительным органам.\n\n🧑‍💻 Бот разработан <b>vccuser.t.me</b> и <b>vccleak.t.me</b>", reply_markup=builder.as_markup(), parse_mode='HTML')
 
@@ -421,6 +421,6 @@ async def about_command(message: Message):
     builder.row(
         InlineKeyboardButton(text='📢 Канал', url='https://t.me/mefmetrch'),
         InlineKeyboardButton(text='💰 Донат', url='https://t.me/mefmetrch'),
-        InlineKeyboardButton(text='💬 Чат', url='https://t.me/mefmetrchat')
+        InlineKeyboardButton(text='💬 Чат', url='https://t.me/mephmetrchat')
     )
     await message.reply("🧑‍💻 Бот разработан vccuser.t.me и vccleak.t.me", reply_markup=builder.as_markup())
