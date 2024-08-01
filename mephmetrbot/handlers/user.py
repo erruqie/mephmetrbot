@@ -285,7 +285,7 @@ async def top_command(message: Message):
             drug_count = user.drug_count
             user_info = user_info_dict.get(user.id, None)
             if user_info:
-                response += f"{counter}) <b>{user_info.full_name}</b>: <code>{drug_count} гр. мефа<code>\n"
+                response += f"{counter}) <b>{user_info.full_name}</b>: <code>{drug_count} гр. мефа</code>\n"
                 counter += 1
 
         if counter == 1:
