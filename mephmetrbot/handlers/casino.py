@@ -85,7 +85,7 @@ async def casino(message: Message, command: CommandObject):
     elif random_number < 0.5:
         random_multiplier = round(random.uniform(1, 1.9), 2)
     elif random_number > 0.5 and random_number < 0.7:
-        random_multiplier = round(random.uniform(6, 15.9), 2)
+        random_multiplier = round(random.uniform(6, 7), 2)
     else:
         random_multiplier = round(random.uniform(2, 5), 2)
 
