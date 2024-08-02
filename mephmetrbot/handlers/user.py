@@ -260,7 +260,7 @@ async def top_command(message: Message):
     user_id = message.from_user.id
     user = await get_user(user_id)
 
-    top_users = await Users.all().order_by('-drug_count').limit(10)
+    top_users = await Users.all().order_by('-drug_count')
 
     if top_users:
         response = "🔝ТОП 10 ЛЮТЫХ МЕФЕДРОНЩИКОВ В МИРЕ🔝:\n\n"
@@ -285,8 +285,13 @@ async def top_command(message: Message):
             drug_count = user.drug_count
             user_info = user_info_dict.get(user.id, None)
             if user_info:
-                response += f"{counter}) *{user_info.full_name}*: `{drug_count} гр. мефа`\n"
-                counter += 1
+                if user_info.full_name == 'Group' or user_info.full_name == 'Channel':
+                    continue
+                if counter == 11:
+                    break
+                else:
+                    response += f"{counter}) *{user_info.full_name}*: `{drug_count} гр. мефа`\n"
+                    counter += 1
 
         if counter == 1:
             await message.reply('Никто еще не принимал меф.')
