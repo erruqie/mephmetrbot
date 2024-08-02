@@ -158,9 +158,9 @@ async def give_command(message: Message, command: CommandObject):
 
     commission = round(value * 0.10)
     net_value = value - commission
-    bot_user = await get_user(7266772626)
+    bot_user = await get_user(1)
     if not bot_user:
-        bot_user = await Users.create(id=7266772626, drug_count=0)
+        bot_user = await Users.create(id=1, drug_count=0)
 
     recipient.drug_count += net_value
     user.drug_count -= value
