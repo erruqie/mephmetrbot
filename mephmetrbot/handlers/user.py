@@ -215,7 +215,7 @@ async def work_command(message: Message):
     else:
         user.last_work = now
         await user.save()
-        await message.reply(f"❌ <b>{message.from_user.first_name}</b>, тебя <b>спалил мент</b> и <b>дал тебе по ебалу</b>\n⏳ Следующая попытка доступна через <b>12 часов.</b>", parse_mode='РЕЬД')
+        await message.reply(f"❌ <b>{message.from_user.first_name}</b>, тебя <b>спалил мент</b> и <b>дал тебе по ебалу</b>\n⏳ Следующая попытка доступна через <b>12 часов.</b>", parse_mode='HTML')
 
 
 
