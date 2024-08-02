@@ -16,7 +16,7 @@ async def get_user(user_id):
 @router.message(Command('casino'))
 async def casino(message: Message, command: CommandObject):
     args = command.args
-    user_id = message.reply_to_message.from_user.id if message.reply_to_message else message.from_user.id
+    user_id = message.from_user.id
     user = await get_user(user_id)
     bot_user = await get_user(1)
     bot_balance = bot_user.drug_count
