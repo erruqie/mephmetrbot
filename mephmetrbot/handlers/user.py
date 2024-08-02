@@ -334,7 +334,7 @@ async def take_command(message: Message, state: FSMContext):
                 await victim.save()
                 victim_user_id = reply_msg.from_user.id
                 victim_username = f'tg://user?id={victim_user_id}'
-                await message.reply(f"✅ [{message.from_user.first_name}](tg://user?id={message.from_user.id}) <b>спиздил(-а) один грамм мефа</b> у [{reply_msg.from_user.first_name}]({victim_username})!", parse_mode='HTML')
+                await message.reply(f"✅ <a href='tg://user?id={message.from_user.id}'>{message.from_user.first_name}</a> <b>спиздил(-а) один грамм мефа</b> у <a href='tg://user?id={victim_user_id}'>{reply_msg.from_user.first_name}</a>!", parse_mode='HTML')
             await state.update_data(time=datetime.now().isoformat())
             await user.save()
     else:
