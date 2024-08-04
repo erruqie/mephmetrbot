@@ -327,7 +327,7 @@ async def take_command(message: Message, state: FSMContext):
                 await message.reply('❌ <b>Жертва тебя заметила</b>, и ты решил убежать. Спиздить меф не получилось. Пока ты бежал, <b>ты потерял</b> <code>1 гр.</code>', parse_mode='HTML')
             elif randomed == 'hit':
                 user.drug_count -= 1
-                await message.reply('❌ <b>Жертва тебя заметила</b>, и пизданула тебя бутылкой по башке. Спиздить меф не получилось. <b>Жертва достала из твоего кармана<b> `1 гр.`', parse_mode='HTML')
+                await message.reply('❌ <b>Жертва тебя заметила</b>, и пизданула тебя бутылкой по башке. Спиздить меф не получилось. <b>Жертва достала из твоего кармана</b> `1 гр.`', parse_mode='HTML')
             elif randomed == 'pass':
                 victim.drug_count -= 1
                 user.drug_count += 1
