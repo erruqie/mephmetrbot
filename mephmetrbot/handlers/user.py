@@ -363,7 +363,8 @@ async def drug_command(message: Message):
         return
     elif random.randint(0, 100) < 40:
         await message.reply(f"🧂 <b>{message.from_user.first_name}</b>, <i>ты просыпал(-а) весь мефчик!</i>\n🌿 Всего снюхано <code>{drug_count}</code> грамм мефедрона\n\n⏳ Следующую дорогу начертим через <code>1 час.</code>", parse_mode='HTML')
-        user.last_use_time = now
+        user.last_use_time = now    
+        await user.save()
         return
     else:
         count = random.randint(1, 10)
