@@ -6,7 +6,7 @@ from aiogram.filters.command import Command, CommandObject
 from aiogram.filters.chat_member_updated import ChatMemberUpdatedFilter, IS_NOT_MEMBER, MEMBER
 from mephmetrbot.handlers.models import Users, Chats
 from tortoise.exceptions import DoesNotExist
-import datetime
+from datetime import datetime, timedelta
 import asyncio
 
 router = Router()
