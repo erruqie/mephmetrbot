@@ -1,11 +1,11 @@
 from aiogram import Router
-from aiogram.types import ErrorEvent
+from aiogram.types import ErrorEvent, Message
 from mephmetrbot.config import bot, LOGS_CHAT_ID
 
 router = Router()
 
 @router.error()
-async def error_handler(event: ErrorEvent):
+async def error_handler(event: ErrorEvent, message: Message):
     exception = event.exception
     user_id = event.update.message.from_user.id
     first_name = event.update.message.from_user.first_name
@@ -21,3 +21,4 @@ async def error_handler(event: ErrorEvent):
         f"exception: <code>{exception}</code>\n\n",
         parse_mode='HTML'
     )
+    await message.reply('💀 Произошла непредвиденная ошибка, пожалуйста обратитесь к разработчику бота: @vccuser')
