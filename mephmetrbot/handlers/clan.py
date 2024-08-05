@@ -437,11 +437,8 @@ async def claninvite(message: Message):
 
                 elif clan_member > 0:
                     await message.reply(f"🛑 <b>Этот пользователь уже состоит в клане!</b>", parse_mode='HTML')
-
-            elif user_id != clan_owner_id:
-                await message.reply(f"🛑 <b>Приглашать в клан может только создатель!</b>", parse_mode='HTML')
         else:
-            await message.reply(f"🛑 {sys.exc_info()[0]}")
+            await message.reply(f"🛑 <b>Приглашать в клан может только создатель!</b>", parse_mode='HTML')
     else:
         await message.reply(f"🛑 {sys.exc_info()[0]}")
 
