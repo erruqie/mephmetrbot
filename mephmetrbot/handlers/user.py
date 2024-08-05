@@ -355,16 +355,24 @@ async def drug_command(message: Message):
         await message.reply(f"❌ <b>{message.from_user.first_name}</b>, <i>ты уже нюхал(-а)!</i>\n🌿 Всего снюхано <code>{drug_count} грамм</code> мефедрона\n\n⏳ Следующую дорогу начертим через <code>{remaining_time.seconds // 60} минут.</code>", parse_mode='HTML')
         return
 
-    if random.randint(0, 100) < 20:
+    if random.randint(0, 100) < 10:
+        await message.reply(f"💀 <b>{message.from_user.first_name}</b>, <i>ты поймал(-а) передоз!</i>\n🚑 <i>Тебя отвезли в рехаб,</i> весь твой баланс <b>был сброшен</b>\n\n⏳ Тебя отпустят через <code>1 час.</code>", parse_mode='HTML')
+        user.last_use_time = now
+        user.drug_count = 0
+        await user.save()
+        return
+    elif random.randint(0, 100) < 40:
         await message.reply(f"🧂 <b>{message.from_user.first_name}</b>, <i>ты просыпал(-а) весь мефчик!</i>\n🌿 Всего снюхано <code>{drug_count}</code> грамм мефедрона\n\n⏳ Следующую дорогу начертим через <code>1 час.</code>", parse_mode='HTML')
         user.last_use_time = now
         return
+    else:
+        count = random.randint(1, 10)
+        user.drug_count += count
+        user.last_use_time = now
+        await user.save()
+        await message.reply(f"👍 <b>{message.from_user.first_name}</b>, <i>ты занюхнул(-а) {count} грамм мефчика!</i>\n🌿 Всего снюхано <code>{user.drug_count}</code> грамм мефедрона\n\n⏳ Следующую дорогу начертим через <code>1 час.</code>", parse_mode='HTML')
 
-    count = random.randint(1, 10)
-    user.drug_count += count
-    user.last_use_time = now
-    await user.save()
-    await message.reply(f"👍 <b>{message.from_user.first_name}</b>, <i>ты занюхнул(-а) {count} грамм мефчика!</i>\n🌿 Всего снюхано <code>{user.drug_count}</code> грамм мефедрона\n\n⏳ Следующую дорогу начертим через <code>1 час.</code>", parse_mode='HTML')
+
 
 
 @router.message(Command('help'))
