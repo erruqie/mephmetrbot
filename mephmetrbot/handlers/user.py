@@ -103,7 +103,7 @@ async def handle_purchase_callback(callback_query: CallbackQuery):
     print(action)
     match action:
         case '25':
-            await handle_purchase(callback_query, user_id, 25, 200)
+            await handle_purchase(callback_query, user_id, 25, 2000)
         case '50':
             await handle_purchase(callback_query, user_id, 50, 3500)
         case '100':
