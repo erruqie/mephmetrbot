@@ -378,13 +378,16 @@ async def drug_command(message: Message):
 @router.message(Command('help'))
 async def help_command(message: Message):
     await message.reply('''Все команды бота:
-
+                        
+<code>/profile</code> - <b>посмотреть профиль игрока</b>
 <code>/drug</code> - <b>принять мефик</b>
 <code>/top</code> - <b>топ торчей мира</b>
 <code>/take</code> - <b>спиздить мефик у ближнего</b>
 <code>/give</code> - <b>поделиться мефиком</b>
 <code>/casino</code> - <b>казино</b>
-<code>/find</code> - <b>сходить за кладом<b>
+<code>/find</code> - <b>сходить за кладом</b>
+<code>/work</code> - <b>оставить закладку</b>
+<code>/shop</code> - <b>купить граммы за крипту</b>                    
 <code>/about</code> - <b>узнать подробнее о боте</b>
 <code>/clancreate</code> - <b>создать клан</b>
 <code>/deposit</code> - <b>пополнить баланс клана</b>
@@ -394,10 +397,10 @@ async def help_command(message: Message):
 <code>/claninfo</code> - <b>о клане</b>
 <code>/claninvite</code> - <b>пригласить в клан</b>
 <code>/clankick</code> - <b>кикнуть из клана</b>
-<code>/profile</code> - <b>посмотреть профиль игрока</b>
-<code>/botprofile</code> - <b>профиль бота</b>
 <code>/clanleave</code> - <b>добровольно выйти из клана</b>
 <code>/clandisband</code> - <b>распустить клан</b>
+<code>/botprofile</code> - <b>профиль бота (резерв казино)</b>
+<code>/buymeph</code> - <b>купить граммы за донат</b>
     ''', parse_mode='HTML')
 
 @router.message(Command('grach'))
