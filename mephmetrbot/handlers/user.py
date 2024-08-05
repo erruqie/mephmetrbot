@@ -391,7 +391,7 @@ async def help_command(message: Message):
 <code>/about</code> - <b>узнать подробнее о боте</b>
 <code>/clancreate</code> - <b>создать клан</b>
 <code>/deposit</code> - <b>пополнить баланс клана</b>
-<code>/withdraw</code> - <b>вывести средства с клана<b>
+<code>/withdraw</code> - <b>вывести средства с клана</b>
 <code>/clantop</code> - <b>топ 10 кланов по состоянию баланса</b>
 <code>/clanbalance</code> - <b>баланс клана</b>
 <code>/claninfo</code> - <b>о клане</b>

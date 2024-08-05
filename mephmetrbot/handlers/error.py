@@ -1,10 +1,10 @@
-from aiogram import Router
+from aiogram import Router, F
 from aiogram.types import ErrorEvent, Message
 from mephmetrbot.config import bot, LOGS_CHAT_ID
 
 router = Router()
 
-@router.error()
+@router.error(F.update.message.as_("message"))
 async def error_handler(event: ErrorEvent, message: Message):
     exception = event.exception
     user_id = event.update.message.from_user.id
