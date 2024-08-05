@@ -55,7 +55,7 @@ async def create_clan(message: Message, command: Command):
                             f"<b>#NEWCLAN</b>\n\n"
                             f"clanid: <code>{clan_id}</code>\n"
                             f"clanname: <code>{clan_name}</code>\n"
-                            f"clanownerid: <code>{user_id}</code>"
+                            f"clanownerid: <code>{user_id}</code>\n\n"
                             f"<a href='tg://user?id={user_id}'>clanowner mention</a>",
                             parse_mode='HTML'
                         )
