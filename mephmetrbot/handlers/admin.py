@@ -208,6 +208,23 @@ async def usercount(message: Message):
     else:
         await message.reply('🚨 У вас нет прав для выполнения этой команды.')
 
+
+@router.message(Command('timereset'))
+async def timereset_command(message: Message):
+    user = await get_user(message.from_user.id)
+    if user and user.is_admin:
+        users = await get_all_users()
+        for user_id in users:
+            target_user = await Users.get(id=user_id)
+            target_user.last_casino = datetime.fromtimestamp(0)
+            target_user.last_find = datetime.fromtimestamp(0)
+            target_user.last_use_time = datetime.fromtimestamp(0)
+            target_user.last_work = datetime.fromtimestamp(0)
+            await target_user.save()
+        await message.reply('Таймеры сброшены для всех пользователей')
+    else:
+        await message.reply('🚨 У вас нет прав для выполнения этой команды.')
+
 @router.message(Command('broadcast'))
 async def cmd_broadcast_start(message: Message):
     user_id = message.from_user.id

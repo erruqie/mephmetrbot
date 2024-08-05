@@ -87,9 +87,9 @@ async def shop(message: Message):
 
     builder = InlineKeyboardBuilder()
     builder.row(
-        InlineKeyboardButton(text="🌿 10 грамм - 💸 5000 $MEF", callback_data="buy_10"),
-        InlineKeyboardButton(text="🌿 20 грамм - 💸 9000 $MEF", callback_data="buy_20"),
-        InlineKeyboardButton(text="🌿 50 грамм - 💸 20000 $MEF", callback_data="buy_50"),
+        InlineKeyboardButton(text="🌿 25 грамм - 💸 2000 $MEF", callback_data="buy_25"),
+        InlineKeyboardButton(text="🌿 50 грамм - 💸 3500 $MEF", callback_data="buy_50"),
+        InlineKeyboardButton(text="🌿 100 грамм - 💸 6500 $MEF", callback_data="buy_100"),
         width=1
     )
 
@@ -102,12 +102,12 @@ async def handle_purchase_callback(callback_query: CallbackQuery):
     user_id = callback_query.from_user.id
     print(action)
     match action:
-        case '10':
-            await handle_purchase(callback_query, user_id, 10, 5000)
-        case '20':
-            await handle_purchase(callback_query, user_id, 20, 9000)
+        case '25':
+            await handle_purchase(callback_query, user_id, 25, 200)
         case '50':
-            await handle_purchase(callback_query, user_id, 50, 20000)
+            await handle_purchase(callback_query, user_id, 50, 3500)
+        case '100':
+            await handle_purchase(callback_query, user_id, 100, 6500)
         case _:
             return
 
@@ -209,11 +209,11 @@ async def work_command(message: Message):
     if random.randint(1, 100) > 50:
         count = random.randint(500, 1300)
         user.balance += count
-        user.last_work = now
+        user.last_work = datetime.now()
         await user.save()
         await message.reply(f"🌿 {message.from_user.first_name}, ты пошёл в лес и <b>спрятал закладку</b>, тебя никто не спалил, ты заработал <code>{count} $MEF.</code>", parse_mode='HTML')
     else:
-        user.last_work = now
+        user.last_work = datetime.now()
         await user.save()
         await message.reply(f"❌ <b>{message.from_user.first_name}</b>, тебя <b>спалил мент</b> и <b>дал тебе по ебалу</b>\n⏳ Следующая попытка доступна через <b>12 часов.</b>", parse_mode='HTML')
 
@@ -238,7 +238,7 @@ async def find_command(message: Message):
     if random.randint(1, 100) > 50:
         count = random.randint(2, 10)
         user.drug_count += count
-        user.last_find = now
+        user.last_find = datetime.now()
         user.last_use_time = datetime.fromtimestamp(0)
         await user.save()
         await message.reply(f"👍 {message.from_user.first_name}, ты пошёл в лес и <b>нашел клад</b>, там лежало <code>{count} гр.</code> мефчика!\n🌿 Твое время команды /drug обновлено", parse_mode='HTML')
@@ -248,12 +248,12 @@ async def find_command(message: Message):
         else:
             count = 0
         user.drug_count -= count
-        user.last_find = now
+        user.last_find = datetime.now()
         await user.save()
         if count != 0:
-            await message.reply(f"❌ <b>{message.from_user.first_name}</b>, тебя <b>спалил мент</b> и <b>дал тебе по ебалу</b>\n🌿 Тебе нужно откупиться, мент предложил взятку в размере <code>{count} гр.</code>\n⏳ Следующая попытка доступна через <b>12 часов.</b>", parse_mode='HTML')
+            await message.reply(f"❌ <b>{message.from_user.first_name}</b>, тебя <b>спалил мент</b> и <b>дал тебе по ебалу</b>\n🌿 Тебе нужно откупиться, мент предложил взятку в размере <code>{count} гр.</code>\n⏳ Следующая попытка доступна через <b>6 часов.</b>", parse_mode='HTML')
         else:
-            await message.reply(f"❌ <b>{message.from_user.first_name}</b>, тебя <b>спалил мент</b> и <b>дал тебе по ебалу</b>\n⏳ Следующая попытка доступна через <b>12 часов.</b>", parse_mode='HTML')
+            await message.reply(f"❌ <b>{message.from_user.first_name}</b>, тебя <b>спалил мент</b> и <b>дал тебе по ебалу</b>\n⏳ Следующая попытка доступна через <b>6 часов.</b>", parse_mode='HTML')
 
 @router.message(Command('top'))
 async def top_command(message: Message):
