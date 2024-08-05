@@ -355,7 +355,7 @@ async def drug_command(message: Message):
         await message.reply(f"❌ <b>{message.from_user.first_name}</b>, <i>ты уже нюхал(-а)!</i>\n🌿 Всего снюхано <code>{drug_count} грамм</code> мефедрона\n\n⏳ Следующую дорогу начертим через <code>{remaining_time.seconds // 60} минут.</code>", parse_mode='HTML')
         return
 
-    if random.randint(0, 100) < 10:
+    if random.randint(0, 100) < 5:
         await message.reply(f"💀 <b>{message.from_user.first_name}</b>, <i>ты поймал(-а) передоз!</i>\n🚑 <i>Тебя отвезли в рехаб,</i> весь твой баланс <b>был сброшен</b>\n\n⏳ Тебя отпустят через <code>1 час.</code>", parse_mode='HTML')
         user.last_use_time = now
         user.drug_count = 0
