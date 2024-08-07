@@ -333,12 +333,49 @@ async def take_command(message: Message, state: FSMContext):
                 user.drug_count += 1
                 await victim.save()
                 victim_user_id = reply_msg.from_user.id
-                victim_username = f'tg://user?id={victim_user_id}'
                 await message.reply(f"✅ <a href='tg://user?id={message.from_user.id}'>{message.from_user.first_name}</a> <b>спиздил(-а) один грамм мефа</b> у <a href='tg://user?id={victim_user_id}'>{reply_msg.from_user.first_name}</a>!", parse_mode='HTML')
             await state.update_data(time=datetime.now().isoformat())
             await user.save()
     else:
         await message.reply('❌ Ответьте на сообщение, чтобы забрать меф.')
+
+
+@router.message(Command('bonus'))
+async def bonus_command(message: Message):
+    user = await get_user(message.from_user.id)
+
+    if user.bonus:
+        await message.reply("<b>🛑 Вы уже получали свой стартовый бонус!</b>", parse_mode='HTML')
+        return
+
+    user.drug_count += 20
+    user.bonus = True
+    await user.save()
+
+    await message.reply(
+        f"🎉 <b>Ты получил стартовый бонус в размере 20 грамм! Твой новый баланс:</b> <code>{user.drug_count} грамм.</code>")
+
+
+@router.message(Command('vipbonus'))
+async def vipbonus_command(message: Message):
+    user = await get_user(message.from_user.id)
+
+    if user.vip == 0:
+        await message.reply("<b>🛑 Вы не имеете VIP-статуса!</b>")
+        return
+
+    now = datetime.now()
+    today = now.date()
+
+    if user.vip_bonus != today:
+        user.drug_count += 50
+        user.vip_bonus = today
+
+    await user.save()
+    await message.reply(
+        f"🎉 <b>Ты получил бонус в размере 50 грамм! Твой новый баланс:</b> <code>{user.drug_count} грамм.</code>")
+
+
 
 @router.message(Command('drug'))
 async def drug_command(message: Message):
@@ -372,8 +409,6 @@ async def drug_command(message: Message):
         user.last_use_time = now
         await user.save()
         await message.reply(f"👍 <b>{message.from_user.first_name}</b>, <i>ты занюхнул(-а) {count} грамм мефчика!</i>\n🌿 Всего снюхано <code>{user.drug_count}</code> грамм мефедрона\n\n⏳ Следующую дорогу начертим через <code>1 час.</code>", parse_mode='HTML')
-
-
 
 
 @router.message(Command('help'))

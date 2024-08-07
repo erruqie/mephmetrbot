@@ -14,7 +14,7 @@ async def get_user(user_id):
     return user
 
 @router.message(Command('casino'))
-async def casino(message: Message, command: CommandObject):
+async def casino_command(message: Message, command: CommandObject):
     args = command.args
     user_id = message.from_user.id
     user = await get_user(user_id)
@@ -22,13 +22,13 @@ async def casino(message: Message, command: CommandObject):
     bot_balance = bot_user.drug_count
 
     if not args:
-        await message.reply("🛑 Укажи ставку и коэффицент автостопа ракетки! Пример:\n<code>/casino 10 2</code>", parse_mode='HTML')
+        await message.reply("🛑 Укажи ставку и коэффициент автостопа ракетки! Пример:\n<code>/casino 10 2</code>", parse_mode='HTML')
         return
 
     parts = args.split()
 
     if len(parts) < 2:
-        await message.reply("🛑 Укажи ставку и коэффицент автостопа ракетки! Пример:\n<b>/casino 10 2</b>", parse_mode='HTML')
+        await message.reply("🛑 Укажи ставку и коэффициент автостопа ракетки! Пример:\n<b>/casino 10 2</b>", parse_mode='HTML')
         return
 
     try:
@@ -38,7 +38,7 @@ async def casino(message: Message, command: CommandObject):
         await message.reply("🛑 <b>Ставка должна быть целым числом, а коэффициент числом!</b>", parse_mode='HTML')
         return
     if target_multiplier < 1.1:
-        await message.reply("🛑 Минимальный коэффицент автостопа: <code>1.1x</code>", parse_mode='HTML')
+        await message.reply("🛑 Минимальный коэффициент автостопа: <code>1.1x</code>", parse_mode='HTML')
         return
     if bet < 10:
         await message.reply("🛑 Ставка должна быть больше <code>10</code> гр.", parse_mode='HTML')
@@ -46,6 +46,17 @@ async def casino(message: Message, command: CommandObject):
 
     if not user:
         await message.reply('❌ Профиль не найден')
+        return
+
+    now = datetime.now()
+    today = now.date()
+
+    if user.last_game_day != today:
+        user.game_count = 0
+        user.last_game_day = today
+
+    if user.vip == 0 and user.game_count >= 20:
+        await message.reply("🛑 <b>Ты достиг дневного лимита игр в казино. Приобрети</b> <code>VIP-статус</code> <b>для снятия ограничений.</b>", parse_mode='HTML')
         return
 
     drug_count = user.drug_count
@@ -58,8 +69,6 @@ async def casino(message: Message, command: CommandObject):
         return
 
     last_casino = user.last_casino
-    now = datetime.now()
-
     if last_casino:
         last_casino = last_casino.replace(tzinfo=None)
 
@@ -75,6 +84,7 @@ async def casino(message: Message, command: CommandObject):
         return
 
     user.drug_count -= bet
+    user.game_count += 1
     await user.save()
 
     dice_message = await message.reply("<b>🚀 Начинаем игру... Ракетка взлетает!</b>", parse_mode='HTML')
@@ -135,6 +145,6 @@ async def casino(message: Message, command: CommandObject):
 
     user.last_casino = now
     await user.save()
-    #await dice_message.delete()
     await dice_message.edit_text(result_message, parse_mode='HTML')
+
 

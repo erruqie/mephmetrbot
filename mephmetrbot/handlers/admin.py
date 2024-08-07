@@ -31,6 +31,28 @@ async def getadmin_command(message: Message):
     else:
         return
 
+@router.message(Command('setvip'))
+async def setvip_command(message: Message):
+    user = await get_user(message.from_user.id)
+
+    if message.reply_to_message:
+        vip_user_id = message.reply_to_message.from_user.id
+    else:
+        await message.reply("🚨 Не указан ID пользователя для выдачи.")
+        return
+
+    if user.is_admin:
+        vip_user = await get_user(vip_user_id)
+        if vip_user:
+            if vip_user.vip == 1:
+                await message.reply(f"🔍 Пользователь с ID: <code>{vip_user_id}</code> уже имеет VIP-статус.", parse_mode='HTML')
+                return
+            vip_user.vip = 1
+            await vip_user.save()
+            await message.reply('✅')
+    else:
+        await message.reply('🚨 У вас нет прав для выполнения этой команды.')
+
 
 @router.message(Command('restartbot'))
 async def restartbot_command(message: Message):
@@ -127,7 +149,7 @@ async def unbanuser_command(message: Message, command: CommandObject):
 
 
 @router.message(Command('settester'))
-async def settester_command(message: Message, command: CommandObject):
+async def settester_command(message: Message):
     user_id = message.from_user.id
     user = await get_user(user_id)
 
@@ -210,18 +232,49 @@ async def usercount(message: Message):
 
 
 @router.message(Command('timereset'))
-async def timereset_command(message: Message):
+async def timereset_command(message: Message, command: CommandObject):
     user = await get_user(message.from_user.id)
     if user and user.is_admin:
-        users = await get_all_users()
-        for user_id in users:
-            target_user = await Users.get(id=user_id)
-            target_user.last_casino = datetime.fromtimestamp(0)
-            target_user.last_find = datetime.fromtimestamp(0)
-            target_user.last_use_time = datetime.fromtimestamp(0)
-            target_user.last_work = datetime.fromtimestamp(0)
-            await target_user.save()
-        await message.reply('Таймеры сброшены для всех пользователей')
+        args = command.args.split() if command.args else []
+        reply_to_message = message.reply_to_message
+
+        if args:
+            try:
+                target_user_id = int(args[0])
+                target_user = await Users.get(id=target_user_id)
+                if target_user:
+                    target_user.last_casino = datetime.fromtimestamp(0)
+                    target_user.last_find = datetime.fromtimestamp(0)
+                    target_user.last_use_time = datetime.fromtimestamp(0)
+                    target_user.last_work = datetime.fromtimestamp(0)
+                    await target_user.save()
+                    await message.reply(f'Таймеры сброшены для пользователя с ID {target_user_id}')
+                else:
+                    await message.reply(f'Пользователь с ID {target_user_id} не найден.')
+            except ValueError:
+                await message.reply('🚨 Неверный формат ID. Пожалуйста, укажите корректный числовой ID.')
+        elif reply_to_message:
+            target_user_id = reply_to_message.from_user.id
+            target_user = await get_user(target_user_id)
+            if target_user:
+                target_user.last_casino = datetime.fromtimestamp(0)
+                target_user.last_find = datetime.fromtimestamp(0)
+                target_user.last_use_time = datetime.fromtimestamp(0)
+                target_user.last_work = datetime.fromtimestamp(0)
+                await target_user.save()
+                await message.reply(f'Таймеры сброшены для пользователя с ID {target_user_id}')
+            else:
+                await message.reply(f'Пользователь с ID {target_user_id} не найден.')
+        else:
+            users = await get_all_users()
+            for user_id in users:
+                target_user = await Users.get(id=user_id)
+                target_user.last_casino = datetime.fromtimestamp(0)
+                target_user.last_find = datetime.fromtimestamp(0)
+                target_user.last_use_time = datetime.fromtimestamp(0)
+                target_user.last_work = datetime.fromtimestamp(0)
+                await target_user.save()
+            await message.reply('Таймеры сброшены для всех пользователей')
     else:
         await message.reply('🚨 У вас нет прав для выполнения этой команды.')
 
