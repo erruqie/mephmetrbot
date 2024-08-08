@@ -55,7 +55,7 @@ async def casino_command(message: Message, command: CommandObject):
         user.game_count = 0
         user.last_game_day = today
 
-    if (user.vip == 0 and user.game_count >= 20) and (user.admin == 0 and user.is_tester == 0):
+    if (user.vip == 0 and user.game_count >= 20) and (user.is_admin == 0 and user.is_tester == 0):
         await message.reply("🛑 <b>Ты достиг дневного лимита игр в казино. Приобрети</b> <code>VIP-статус</code> <b>для снятия ограничений.</b>",parse_mode='HTML')
         return
 
