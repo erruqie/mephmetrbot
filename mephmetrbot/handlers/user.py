@@ -71,9 +71,9 @@ async def profile_command(message: Message):
         user_info = f"🛡️ <b>Администратор</b>\n\n{user_info}"
     elif user.is_tester == 1:
         user_info = f"💻 <b>Тестер</b>\n\n{user_info}"
-    elif user.vip == 1:
-        user_info = f"👑 <b>VIP-статус</b>\n\n{user_info}"
     
+    if user.vip == 1:
+        user_info = f"👑 <b>VIP-статус</b>\n\n{user_info}"
 
     await message.reply(user_info, parse_mode='HTML')
 
