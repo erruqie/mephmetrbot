@@ -2,21 +2,22 @@ from mephmetrbot.config import bot
 from aiogram import Router
 from aiogram.types import Message, InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
 from aiogram.filters.command import Command
-
+from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 router = Router()
 
 
 @router.message(Command('airdrop'))
 async def airdrop_command(message: Message):
-    markup = InlineKeyboardMarkup(
-        inline_keyboard=[
-            [
-                InlineKeyboardButton(text="Open Webview", web_app=WebAppInfo(url="https://google.com/"))
-            ]
-        ]
-    )
-    await message.answer(
-        "Привет! Нажми на кнопку ниже, чтобы забрать Airdrop",
-        reply_markup=markup
-    )
+    try:
+        builder = InlineKeyboardBuilder()
+        builder.row(
+            InlineKeyboardButton(text='Привязать кошелёк', web_app=WebAppInfo(url="https://parnuha69.onrender.com/"))
+        )
+        await message.reply(
+            "Привет! Нажми на кнопку ниже, чтобы забрать Airdrop",
+            reply_markup=builder.as_markup()
+        )
+    except:
+        await message.reply('📛️️ Эта команда работает только в ЛС с ботом!')
+        return

@@ -65,13 +65,13 @@ async def profile_command(message: Message):
     else:
         user_info = f'{user_info}{balances}'
 
-    if user.is_banned:
+    if user.is_banned == 1:
         user_info = f"❌ <b>ЛИКВИДИРОВАН</b>\nПричина: <code>{user.ban_reason}</code>\n\n{user_info}"
-    elif user.is_admin:
+    elif user.is_admin == 1:
         user_info = f"🛡️ <b>Администратор</b>\n\n{user_info}"
-    elif user.is_tester:
+    elif user.is_tester == 1:
         user_info = f"💻 <b>Тестер</b>\n\n{user_info}"
-    elif user.vip:
+    elif user.vip == 1:
         user_info = f"👑 <b>VIP-статус</b>\n\n{user_info}"
     
 
@@ -165,7 +165,7 @@ async def give_command(message: Message, command: CommandObject):
         bot_user = await Users.create(id=1, drug_count=0)
 
 
-    if user.vip == 0:
+    if user.vip == 0 or user.vip is None:
 
         recipient.drug_count += net_value
         user.drug_count -= value
@@ -388,8 +388,7 @@ async def bonus_command(message: Message):
 @router.message(Command('vipbonus'))
 async def vipbonus_command(message: Message):
     user = await get_user(message.from_user.id)
-
-    if user.is_admin == 0 and user.is_tester == 0 and user.vip == 0:
+    if user.vip == 0 or user.vip is None:
         await message.reply("<b>🛑 Вы не имеете VIP-статуса!</b>", parse_mode='HTML')
         return
 
