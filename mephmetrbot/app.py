@@ -9,7 +9,7 @@ from typing import Callable, Dict, Awaitable, Any
 from aiogram import Bot, Dispatcher, BaseMiddleware
 import asyncio
 from mephmetrbot.handlers.models import Users
-from mephmetrbot.handlers import user, admin, clan, casino, error, cryptopay
+from mephmetrbot.handlers import user, admin, clan, casino, error, cryptopay, webapp
 from mephmetrbot.config import BOT_TOKEN, DATABASE_URL, LOGS_CHAT_ID
 from datetime import datetime, timedelta
 
@@ -18,21 +18,22 @@ logging.basicConfig(level=logging.INFO)
 
 class SubscribeMiddleware(BaseMiddleware):
     async def __call__(
-        self,
-        handler: Callable[[Message, Dict[str, Any]], Awaitable[Any]],
-        message: Message,
-        data: Dict[str, Any]
+            self,
+            handler: Callable[[Message, Dict[str, Any]], Awaitable[Any]],
+            message: Message,
+            data: Dict[str, Any]
     ) -> Any:
         status = await get_subscribe_status(bot, message.from_user.id)
         builder = InlineKeyboardBuilder()
         builder.row(InlineKeyboardButton(
             text="Подписаться", url="https://t.me/mefmetrch")
         )
-    
+
         if status == 'left':
-            await message.reply('🛑 Для начала подпишись на наш канал',reply_markup=builder.as_markup())
+            await message.reply('🛑 Для начала подпишись на наш канал', reply_markup=builder.as_markup())
             return
         return await handler(message, data)
+
 
 class BannedMiddleware(BaseMiddleware):
     def __init__(self) -> None:
@@ -54,10 +55,6 @@ class BannedMiddleware(BaseMiddleware):
 
         return await handler(message, data)
 
-async def get_subscribe_status(bot, user_id):
-    user, _ = await Users.get_or_create(id=user_id)
-    user_channel_status = await bot.get_chat_member(chat_id='-1002177701917', user_id=user_id)
-    return user_channel_status.status
 
 async def init_tortoise():
     await Tortoise.init(
@@ -65,6 +62,12 @@ async def init_tortoise():
         modules={'models': ['mephmetrbot.handlers.models']}
     )
     await Tortoise.generate_schemas(safe=True)
+
+
+async def get_subscribe_status(bot, user_id):
+    user, _ = await Users.get_or_create(id=user_id)
+    user_channel_status = await bot.get_chat_member(chat_id='-1002177701917', user_id=user_id)
+    return user_channel_status.status
 
 async def check_invitation_expiry():
     while True:
@@ -87,11 +90,12 @@ def main():
     global bot
     bot = Bot(token=BOT_TOKEN)
     dp = Dispatcher()
-    dp.message.middleware(SubscribeMiddleware())
     dp.message.middleware(BannedMiddleware())
-    dp.include_router(error.router)
     dp.include_router(user.router)
     dp.include_router(admin.router)
+    dp.include_router(error.router)
+    dp.include_router(webapp.router)
+    dp.message.middleware(SubscribeMiddleware())
     dp.include_router(clan.router)
     dp.include_router(casino.router)
     dp.include_router(cryptopay.router)
