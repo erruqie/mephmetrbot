@@ -199,7 +199,7 @@ async def setdrugs_command(message: Message, command: CommandObject):
 
             bot_id = 1
 
-            if user == '7266772626':
+            if target_id == '7266772626':
                 target_id = bot_id
 
             try:
