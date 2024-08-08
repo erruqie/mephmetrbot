@@ -21,6 +21,9 @@ async def casino_command(message: Message, command: CommandObject):
     bot_user = await get_user(1)
     bot_balance = bot_user.drug_count
 
+    now = datetime.now()
+    today = now.date()
+
     if not args:
         await message.reply("🛑 Укажи ставку и коэффициент автостопа ракетки! Пример:\n<code>/casino 10 2</code>", parse_mode='HTML')
         return
@@ -48,15 +51,12 @@ async def casino_command(message: Message, command: CommandObject):
         await message.reply('❌ Профиль не найден')
         return
 
-    now = datetime.now()
-    today = now.date()
-
     if user.last_game_day != today:
         user.game_count = 0
         user.last_game_day = today
 
-    if user.vip == 0 and user.game_count >= 20:
-        await message.reply("🛑 <b>Ты достиг дневного лимита игр в казино. Приобрети</b> <code>VIP-статус</code> <b>для снятия ограничений.</b>", parse_mode='HTML')
+    if (user.vip == 0 and user.game_count >= 20) and (user.admin == 0 and user.is_tester == 0):
+        await message.reply("🛑 <b>Ты достиг дневного лимита игр в казино. Приобрети</b> <code>VIP-статус</code> <b>для снятия ограничений.</b>",parse_mode='HTML')
         return
 
     drug_count = user.drug_count
@@ -72,7 +72,7 @@ async def casino_command(message: Message, command: CommandObject):
     if last_casino:
         last_casino = last_casino.replace(tzinfo=None)
 
-    if last_casino and (now - last_casino).total_seconds() < 10:
+    if last_casino and (now - last_casino).total_seconds() < 20:
         await message.reply('⏳ Ты только что <b>крутил казик</b>, солевая обезьяна, <b>подожди 10 секунд по братски.</b>', parse_mode='HTML')
         return
 

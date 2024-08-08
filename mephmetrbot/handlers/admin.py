@@ -248,11 +248,11 @@ async def timereset_command(message: Message, command: CommandObject):
                     target_user.last_use_time = datetime.fromtimestamp(0)
                     target_user.last_work = datetime.fromtimestamp(0)
                     await target_user.save()
-                    await message.reply(f'Таймеры сброшены для пользователя с ID {target_user_id}')
+                    await message.reply(f'<b>Таймеры сброшены для пользователя с ID:</b> <code>{target_user_id}</code>', parse_mode='HTML')
                 else:
-                    await message.reply(f'Пользователь с ID {target_user_id} не найден.')
+                    await message.reply(f'<b>Пользователь с ID</b> <code>{target_user_id}</code> <b>не найден.</b>', parse_mode='HTML')
             except ValueError:
-                await message.reply('🚨 Неверный формат ID. Пожалуйста, укажите корректный числовой ID.')
+                await message.reply('🚨 <b>Неверный формат ID. Пожалуйста, укажите корректный числовой ID.</b>', parse_mode='HTML')
         elif reply_to_message:
             target_user_id = reply_to_message.from_user.id
             target_user = await get_user(target_user_id)
@@ -262,9 +262,9 @@ async def timereset_command(message: Message, command: CommandObject):
                 target_user.last_use_time = datetime.fromtimestamp(0)
                 target_user.last_work = datetime.fromtimestamp(0)
                 await target_user.save()
-                await message.reply(f'Таймеры сброшены для пользователя с ID {target_user_id}')
+                await message.reply(f'<b>Таймеры сброшены для пользователя с ID</b> <code>{target_user_id}</code>', parse_mode='HTML')
             else:
-                await message.reply(f'Пользователь с ID {target_user_id} не найден.')
+                await message.reply(f'<b>Пользователь с ID</b> <code>{target_user_id}</code> <b>не найден.</b>', parse_mode='HTML')
         else:
             users = await get_all_users()
             for user_id in users:
@@ -274,7 +274,7 @@ async def timereset_command(message: Message, command: CommandObject):
                 target_user.last_use_time = datetime.fromtimestamp(0)
                 target_user.last_work = datetime.fromtimestamp(0)
                 await target_user.save()
-            await message.reply('Таймеры сброшены для всех пользователей')
+            await message.reply('<b>Таймеры сброшены для всех пользователей</b>', parse_mode='HTML')
     else:
         await message.reply('🚨 У вас нет прав для выполнения этой команды.')
 

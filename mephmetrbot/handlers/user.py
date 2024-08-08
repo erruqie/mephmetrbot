@@ -68,9 +68,11 @@ async def profile_command(message: Message):
     if user.is_banned:
         user_info = f"❌ <b>ЛИКВИДИРОВАН</b>\nПричина: <code>{user.ban_reason}</code>\n\n{user_info}"
     elif user.is_admin:
-        user_info = f"👑 <b>Администратор</b>\n\n{user_info}"
+        user_info = f"🛡️ <b>Администратор</b>\n\n{user_info}"
     elif user.is_tester:
-        user_info = f"🧑‍💻 <b>Тестер</b>\n\n{user_info}"
+        user_info = f"💻 <b>Тестер</b>\n\n{user_info}"
+    elif user.vip:
+        user_info = f"👑 <b>VIP-статус</b>\n\n{user_info}"
     
 
     await message.reply(user_info, parse_mode='HTML')
@@ -162,30 +164,57 @@ async def give_command(message: Message, command: CommandObject):
     if not bot_user:
         bot_user = await Users.create(id=1, drug_count=0)
 
-    recipient.drug_count += net_value
-    user.drug_count -= value
-    bot_user.drug_count += commission
 
-    await recipient.save()
-    await user.save()
-    await bot_user.save()
+    if user.vip == 0:
 
-    await bot.send_message(
-        LOGS_CHAT_ID,
-        f"<b>#GIVE</b>\n\nfirst_name: <code>{message.from_user.first_name}</code>\n"
-        f"user_id: <code>{recipient_id}</code>\nvalue: <code>{net_value}</code>\n"
-        f"Commission: <code>{commission}</code>\n\n<a href='tg://user?id={recipient_id}'>mention</a>",
-        parse_mode='HTML'
-    )
+        recipient.drug_count += net_value
+        user.drug_count -= value
+        bot_user.drug_count += commission
 
-    recipient_full_name = message.reply_to_message.from_user.full_name if message.reply_to_message else ""
+        await recipient.save()
+        await user.save()
+        await bot_user.save()
 
-    await message.reply(
-        f"✅ <a href='tg://user?id={message.from_user.id}'>{message.from_user.first_name}</a> <i>подарил(-а) {value} гр. мефа</i> "
-        f"<a href='tg://user?id={recipient_id}'>{recipient_full_name}</a>!\nКомиссия: <code>{commission}</code> гр. мефа\n"
-        f"Получено <code>{net_value}</code> гр. мефа.",
-        parse_mode='HTML'
-    )
+        await bot.send_message(
+            LOGS_CHAT_ID,
+            f"<b>#GIVE</b>\n\nfirst_name: <code>{message.from_user.first_name}</code>\n"
+            f"user_id: <code>{recipient_id}</code>\nvalue: <code>{net_value}</code>\n"
+            f"Commission: <code>{commission}</code>\n\n<a href='tg://user?id={recipient_id}'>mention</a>",
+            parse_mode='HTML'
+        )
+
+        recipient_full_name = message.reply_to_message.from_user.full_name if message.reply_to_message else ""
+
+        await message.reply(
+            f"✅ <a href='tg://user?id={message.from_user.id}'>{message.from_user.first_name}</a> <i>подарил(-а) {value} гр. мефа</i> "
+            f"<a href='tg://user?id={recipient_id}'>{recipient_full_name}</a>!\nКомиссия: <code>{commission}</code> гр. мефа\n"
+            f"Получено <code>{net_value}</code> гр. мефа.",
+            parse_mode='HTML'
+        )
+
+    else:
+        recipient.drug_count += value
+        user.drug_count -= value
+
+        await recipient.save()
+        await user.save()
+        await bot_user.save()
+
+        await bot.send_message(
+            LOGS_CHAT_ID,
+            f"<b>#GIVE</b>\n\nfirst_name: <code>{message.from_user.first_name}</code>\n"
+            f"user_id: <code>{recipient_id}</code>\nvalue: <code>{value}</code>\n",
+            parse_mode='HTML'
+        )
+
+        recipient_full_name = message.reply_to_message.from_user.full_name if message.reply_to_message else ""
+
+        await message.reply(
+            f"✅ <a href='tg://user?id={message.from_user.id}'>{message.from_user.first_name}</a> <i>подарил(-а) {value} гр. мефа</i> "
+            f"<a href='tg://user?id={recipient_id}'>{recipient_full_name}</a>!\n"
+            f"Получено <code>{value}</code> гр. мефа.",
+            parse_mode='HTML'
+        )
 
 @router.message(Command('work'))
 async def work_command(message: Message):
@@ -353,15 +382,15 @@ async def bonus_command(message: Message):
     await user.save()
 
     await message.reply(
-        f"🎉 <b>Ты получил стартовый бонус в размере 20 грамм! Твой новый баланс:</b> <code>{user.drug_count} грамм.</code>")
+        f"🎉 <b>Ты получил стартовый бонус в размере 20 грамм! Твой новый баланс:</b> <code>{user.drug_count} грамм.</code>", parse_mode='HTML')
 
 
 @router.message(Command('vipbonus'))
 async def vipbonus_command(message: Message):
     user = await get_user(message.from_user.id)
 
-    if user.vip == 0:
-        await message.reply("<b>🛑 Вы не имеете VIP-статуса!</b>")
+    if user.is_admin == 0 and user.is_tester == 0 and user.vip == 0:
+        await message.reply("<b>🛑 Вы не имеете VIP-статуса!</b>", parse_mode='HTML')
         return
 
     now = datetime.now()
@@ -371,9 +400,13 @@ async def vipbonus_command(message: Message):
         user.drug_count += 50
         user.vip_bonus = today
 
-    await user.save()
-    await message.reply(
-        f"🎉 <b>Ты получил бонус в размере 50 грамм! Твой новый баланс:</b> <code>{user.drug_count} грамм.</code>")
+        await user.save()
+        await message.reply(
+            f"🎉 <b>Ты получил бонус в размере 50 грамм! Твой новый баланс:</b> <code>{user.drug_count} грамм.</code>", parse_mode='HTML')
+
+    else:
+        await message.reply("<b>🛑 Вы уже получали сегодня бонус!</b>", parse_mode='HTML')
+
 
 
 
@@ -437,6 +470,9 @@ async def help_command(message: Message):
 <code>/clandisband</code> - <b>распустить клан</b>
 <code>/botprofile</code> - <b>профиль бота (резерв казино)</b>
 <code>/buymeph</code> - <b>купить граммы за донат</b>
+<code>/buyvip</code> - <b>покупка VIP-статуса</b>
+<code>/bonus</code> - <b>бонус для каждого игрока</b>
+<code>/vipbonus</code> - <b>бонус для каждого VIP-игрока</b>
     ''', parse_mode='HTML')
 
 @router.message(Command('grach'))

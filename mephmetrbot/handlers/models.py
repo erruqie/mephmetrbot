@@ -10,7 +10,7 @@ class Users(models.Model):
     is_banned = fields.BooleanField(default=False)
     last_casino = fields.DatetimeField(null=True)
     bonus = fields.BooleanField(default=False)
-    vip_bonus = fileds.DateField(null=True)
+    vip_bonus = fields.DateField(null=True)
     last_find = fields.DatetimeField(null=True)
     clan_member = fields.IntField(null=True)
     game_count = fields.IntField(default=0)
