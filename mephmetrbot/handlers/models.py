@@ -15,6 +15,7 @@ class Users(models.Model):
     clan_member = fields.IntField(null=True)
     game_count = fields.IntField(default=0)
     last_game_day = fields.DateField(null=True)
+    last_play = fields.DatetimeField(null=True)
     clan_invite = fields.IntField(null=True)
     balance = fields.BigIntField(default=0)
     last_work = fields.DatetimeField(null=True)

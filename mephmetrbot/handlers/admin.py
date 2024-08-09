@@ -247,6 +247,9 @@ async def timereset_command(message: Message, command: CommandObject):
                     target_user.last_find = datetime.fromtimestamp(0)
                     target_user.last_use_time = datetime.fromtimestamp(0)
                     target_user.last_work = datetime.fromtimestamp(0)
+                    target_user.last_play = datetime.fromtimestamp(0)
+                    target_user.vip_bonus = datetime.fromtimestamp(0)
+                    target_user.last_game_day = datetime.fromtimestamp(0)
                     await target_user.save()
                     await message.reply(f'<b>Таймеры сброшены для пользователя с ID:</b> <code>{target_user_id}</code>', parse_mode='HTML')
                 else:
@@ -261,6 +264,9 @@ async def timereset_command(message: Message, command: CommandObject):
                 target_user.last_find = datetime.fromtimestamp(0)
                 target_user.last_use_time = datetime.fromtimestamp(0)
                 target_user.last_work = datetime.fromtimestamp(0)
+                target_user.last_play = datetime.fromtimestamp(0)
+                target_user.vip_bonus = datetime.fromtimestamp(0)
+                target_user.last_game_day = datetime.fromtimestamp(0)
                 await target_user.save()
                 await message.reply(f'<b>Таймеры сброшены для пользователя с ID</b> <code>{target_user_id}</code>', parse_mode='HTML')
             else:
@@ -273,6 +279,9 @@ async def timereset_command(message: Message, command: CommandObject):
                 target_user.last_find = datetime.fromtimestamp(0)
                 target_user.last_use_time = datetime.fromtimestamp(0)
                 target_user.last_work = datetime.fromtimestamp(0)
+                target_user.last_play = datetime.fromtimestamp(0)
+                target_user.vip_bonus = datetime.fromtimestamp(0)
+                target_user.last_game_day = datetime.fromtimestamp(0)
                 await target_user.save()
             await message.reply('<b>Таймеры сброшены для всех пользователей</b>', parse_mode='HTML')
     else:

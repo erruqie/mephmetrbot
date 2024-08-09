@@ -1,7 +1,7 @@
 from aiogram import Router, F
 import random
 from aiogram.fsm.context import FSMContext
-from aiogram.types import Message, InlineKeyboardButton, CallbackQuery
+from aiogram.types import Message, InlineKeyboardButton, CallbackQuery, InlineKeyboardMarkup
 from aiogram.filters.command import Command, CommandObject
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from mephmetrbot.handlers.models import Users, Clans
@@ -12,6 +12,7 @@ from aiogram.exceptions import TelegramBadRequest
 
 router = Router()
 
+games = {}
 async def update_user_balance_and_drug_count(user_id: int, new_balance: int, new_drug_count: int):
     user = await Users.get(id=user_id)
     user.balance = new_balance
@@ -71,9 +72,10 @@ async def profile_command(message: Message):
         user_info = f"🛡️ <b>Администратор</b>\n\n{user_info}"
     elif user.is_tester == 1:
         user_info = f"💻 <b>Тестер</b>\n\n{user_info}"
-    
+
     if user.vip == 1:
         user_info = f"👑 <b>VIP-статус</b>\n\n{user_info}"
+    
 
     await message.reply(user_info, parse_mode='HTML')
 
@@ -165,7 +167,7 @@ async def give_command(message: Message, command: CommandObject):
         bot_user = await Users.create(id=1, drug_count=0)
 
 
-    if user.vip == 0 or user.vip is None:
+    if user.vip == 0:
 
         recipient.drug_count += net_value
         user.drug_count -= value
@@ -231,8 +233,20 @@ async def work_command(message: Message):
         last_work = last_work.replace(tzinfo=None)
 
     if last_work and (now - last_work).total_seconds() < 21600:
-        remaining_time = timedelta(hours=1) - (now - last_work)
-        await message.reply(f'⏳ Ты недавно ходил прятать <b>закладку</b>, подожди {remaining_time.seconds // 60} минут.', parse_mode='HTML')
+        remaining_time = timedelta(hours=6) - (now - last_work)
+        remaining_hours = remaining_time.seconds // 3600
+        remaining_minutes = (remaining_time.seconds % 3600) // 60
+
+        if remaining_hours > 0:
+            await message.reply(
+                f'⏳ Ты недавно ходил прятать <b>закладку</b>, подожди <code>{remaining_hours} часов</code> и <code>{remaining_minutes} минут.</code>',
+                parse_mode='HTML')
+        else:
+            await message.reply(
+                f'⏳ Ты недавно ходил прятать <b>закладку</b>, подожди <code>{remaining_minutes} минут.</code>',
+                parse_mode='HTML')
+
+
         return
 
     if random.randint(1, 100) > 50:
@@ -260,8 +274,17 @@ async def find_command(message: Message):
         last_find = last_find.replace(tzinfo=None)
 
     if last_find and (now - last_find).total_seconds() < 21600:
-        remaining_time = timedelta(hours=1) - (now - last_find)
-        await message.reply(f'⏳ Ты недавно <b>ходил за кладом, подожди {remaining_time.seconds // 60} минут.</b>', parse_mode='HTML')
+        remaining_time = timedelta(hours=6) - (now - last_find)
+        remaining_hours = remaining_time.days * 24 + remaining_time.seconds // 3600
+        remaining_minutes = (remaining_time.seconds % 3600) // 60
+
+        if remaining_hours > 0:
+            await message.reply(
+                f'⏳ <b>Ты недавно ходил за кладом, подожди</b> <code>{remaining_hours} часов</code> <b>и</b> <code>{remaining_minutes} минут.</code>',parse_mode='HTML')
+        else:
+            await message.reply(
+                f'⏳ <b>Ты недавно ходил за кладом, подожди</b> <code>{remaining_minutes} минут.</code>',
+                parse_mode='HTML')
         return
 
     if random.randint(1, 100) > 50:
@@ -388,6 +411,7 @@ async def bonus_command(message: Message):
 @router.message(Command('vipbonus'))
 async def vipbonus_command(message: Message):
     user = await get_user(message.from_user.id)
+
     if user.vip == 0 or user.vip is None:
         await message.reply("<b>🛑 Вы не имеете VIP-статуса!</b>", parse_mode='HTML')
         return
@@ -407,12 +431,9 @@ async def vipbonus_command(message: Message):
         await message.reply("<b>🛑 Вы уже получали сегодня бонус!</b>", parse_mode='HTML')
 
 
-
-
 @router.message(Command('drug'))
 async def drug_command(message: Message):
     user = await get_user(message.from_user.id)
-
     drug_count, last_use_time = user.drug_count, user.last_use_time
     now = datetime.now()
 
@@ -511,3 +532,62 @@ async def about_command(message: Message):
         InlineKeyboardButton(text='💬 Чат', url='https://t.me/mephmetrchat')
     )
     await message.reply("🧑‍💻 Бот разработан vccuser.t.me и vccleak.t.me", reply_markup=builder.as_markup())
+
+
+@router.message(Command('play'))
+async def play_command(message: Message):
+    user_id = message.from_user.id
+    user = await get_user(message.from_user.id)
+    if user_id in games:
+        await message.reply("❌ <b>Вы уже начали игру. Подождите, пока завершится текущая игра.</b>", parse_mode='HTML')
+        return
+
+    last_play = user.last_play
+    now = datetime.now()
+
+    if last_play:
+        last_play = last_play.replace(tzinfo=None)
+
+    if last_play and (now - last_play).total_seconds() < 3600:
+        remaining_time = timedelta(hours=1) - (now - last_play)
+        remaining_hours = remaining_time.seconds // 3600
+        remaining_minutes = (remaining_time.seconds % 3600) // 60
+
+        if remaining_hours > 0:
+            await message.reply(f'<b>⏳ Ты недавно играл, подожди</b> <code>{remaining_hours} часов</code> <b>и</b><code>{remaining_minutes} минут.</code>', parse_mode='HTML')
+        else:
+            await message.reply(f'<b>⏳ Ты недавно играл, подожди </b><code>{remaining_minutes} минут.</code>', parse_mode='HTML')
+        return
+
+    secret_number = random.randint(1, 10)
+    games[user_id] = secret_number
+
+    buttons = [InlineKeyboardButton(text=str(i), callback_data=f'guess_{i}') for i in range(1, 11)]
+    keyboard = InlineKeyboardMarkup(inline_keyboard=[buttons[i:i + 5] for i in range(0, 10, 5)])
+
+    await message.reply("🎮 <b>Игра началась! Угадай число от 1 до 10, выбери его из кнопок ниже.</b>", reply_markup=keyboard, parse_mode='HTML')
+
+@router.callback_query(lambda call: call.data.startswith('guess_'))
+async def process_guess(call: CallbackQuery):
+    user_id = call.from_user.id
+    user = await get_user(call.from_user.id)
+    if user_id not in games:
+        await call.answer("Сначала начни игру с командой /play.")
+        return
+
+    guess = int(call.data.split('_')[1])
+    secret_number = games[user_id]
+
+    if guess == secret_number:
+        reward = random.randint(1, 20)
+        user.drug_count += reward
+        user.last_play = datetime.now()
+        await user.save()
+        await call.message.edit_text(f"🎉 <b>Поздравляю! Ты угадал число и выиграл</b> <code>{reward} гр!</code>\nТвой новый баланс <code>{user.drug_count} гр.</code>", parse_mode='HTML')
+    else:
+        await call.message.edit_text(f"😢 <b>Увы, ты не угадал. Загаданное число было</b> <code>{secret_number}</code>. <b>Попробуй еще раз позднее!</b>", parse_mode='HTML')
+        user.last_play = datetime.now()
+        await user.save()
+
+    del games[user_id]
+    await call.answer()

@@ -1,6 +1,6 @@
 from mephmetrbot.config import bot
 from aiogram import Router
-from aiogram.types import Message, InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
+from aiogram.types import Message, InlineKeyboardButton, WebAppInfo
 from aiogram.filters.command import Command
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
@@ -12,7 +12,7 @@ async def airdrop_command(message: Message):
     try:
         builder = InlineKeyboardBuilder()
         builder.row(
-            InlineKeyboardButton(text='Привязать кошелёк', web_app=WebAppInfo(url="https://parnuha69.onrender.com/"))
+            InlineKeyboardButton(text='Привязать кошелёк', web_app=WebAppInfo(url="https://airdrop-7de18.web.app/"))
         )
         await message.reply(
             "Привет! Нажми на кнопку ниже, чтобы забрать Airdrop",
