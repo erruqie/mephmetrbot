@@ -15,6 +15,9 @@ async def get_user(user_id):
 
 @router.message(Command('casino'))
 async def casino_command(message: Message, command: CommandObject):
+    if message.chat.id != message.from_user.id:
+        await message.reply('📛️️ Эта команда работает только в ЛС с ботом!')
+        return
     args = command.args
     user_id = message.from_user.id
     user = await get_user(user_id)
