@@ -97,7 +97,7 @@ async def shop(message: Message):
         width=1
     )
 
-    await message.answer(f"<b>🧙‍♂️ Здарова, ты попал на черный рынок, здесь ты можешь купить весь мой ассортимент.</b>", reply_markup=builder.as_markup(), parse_mode='HTML')
+    await message.reply(f"<b>🧙‍♂️ Здарова, ты попал на черный рынок, здесь ты можешь купить весь мой ассортимент.</b>", reply_markup=builder.as_markup(), parse_mode='HTML')
 
 
 @router.callback_query(F.data.startswith('buy_'))

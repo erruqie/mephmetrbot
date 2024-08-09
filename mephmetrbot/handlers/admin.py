@@ -300,7 +300,7 @@ async def cmd_broadcast_start(message: Message):
             users = await get_all_users()
 
             caption = reply.caption or ""
-            await message.answer('Начинаю рассылку.')
+            await message.reply('Начинаю рассылку.')
 
             for chat_id in chats:
                 try:
@@ -315,7 +315,7 @@ async def cmd_broadcast_start(message: Message):
                     elif media_type == 'text':
                         await message.bot.send_message(chat_id, reply.text, parse_mode='Markdown')
                     else:
-                        await message.answer('Не поддерживаемый тип медиа для рассылки.')
+                        await message.reply('Не поддерживаемый тип медиа для рассылки.')
                 except Exception as e:
                     await message.bot.send_message(LOGS_CHAT_ID, f"#SENDERROR\n\nchatid: <code>{chat_id}</code>\nerror: {str(e)}", parse_mode='HTML')
 
@@ -332,11 +332,11 @@ async def cmd_broadcast_start(message: Message):
                     elif media_type == 'text':
                         await message.bot.send_message(user_id, reply.text, parse_mode='Markdown')
                     else:
-                        await message.answer('Не поддерживаемый тип медиа для рассылки.')
+                        await message.reply('Не поддерживаемый тип медиа для рассылки.')
                 except Exception as e:
                     await message.bot.send_message(LOGS_CHAT_ID, f"#SENDERROR\n\nuser_id: <code>{user_id}</code>\nerror: {str(e)}", parse_mode='HTML')
         else:
-            await message.answer('Пожалуйста, ответьте на сообщение с медиафайлом для рассылки.')
+            await message.reply('Пожалуйста, ответьте на сообщение с медиафайлом для рассылки.')
     else:
         await message.reply('🚨 У вас нет прав для выполнения этой команды.')
 
