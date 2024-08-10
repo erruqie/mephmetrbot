@@ -92,15 +92,27 @@ async def casino_command(message: Message, command: CommandObject):
 
     dice_message = await message.reply("<b>🚀 Начинаем игру... Ракетка взлетает!</b>", parse_mode='HTML')
     await asyncio.sleep(2.5)
-    random_number = random.uniform(0, 1)
-    if random_number < 0.11:
-        random_multiplier = 0
-    elif random_number < 0.55:
-        random_multiplier = round(random.uniform(1, 1.9), 2)
-    elif random_number > 0.55 and random_number < 0.65:
-        random_multiplier = round(random.uniform(4, 6), 2)
+
+    if not user.vip:
+        random_number = random.uniform(0, 1)
+        if random_number < 0.11:
+            random_multiplier = 0
+        elif random_number < 0.55:
+            random_multiplier = round(random.uniform(1, 1.9), 2)
+        elif random_number > 0.55 and random_number < 0.65:
+            random_multiplier = round(random.uniform(4, 6), 2)
+        else:
+            random_multiplier = round(random.uniform(2, 5), 2)
     else:
-        random_multiplier = round(random.uniform(2, 5), 2)
+        random_number = random.uniform(0, 1)
+        if random_number < 0.143:
+            random_multiplier = 0
+        elif random_number < 0.715:
+            random_multiplier = round(random.uniform(1, 1.9), 2)
+        elif random_number < 0.78:
+            random_multiplier = round(random.uniform(4, 6), 2)
+        else:
+            random_multiplier = round(random.uniform(2, 5), 2)
 
     current_multiplier = 0
     result_message = ''
@@ -145,10 +157,10 @@ async def casino_command(message: Message, command: CommandObject):
             else:
                 result_message += f'🎉 Поздравляем, вы выиграли <code>{win_amount}</code> гр. Ваш новый баланс: <code>{new_balance}</code> гр.'
             user.drug_count = new_balance
-            await bot.send_message(LOGS_CHAT_ID, f"<b>#CASINO</b> <b>#WIN</b>\n\nfirst_name: <code>{message.from_user.first_name}</code>\nuser_id: <code>{user_id}</code>\nbet: <code>{bet}</code>\nmultiplier: <code>1.2</code>\ndrug_count: <code>{new_balance}</code>\n\n<a href='tg://user?id={user_id}'>mention</a>", parse_mode='HTML')
+            await bot.send_message(LOGS_CHAT_ID, f"<b>#CASINO</b> <b>#WIN</b>\n\nfirst_name: <code>{message.from_user.first_name}</code>\nuser_id: <code>{user_id}</code>\nbet: <code>{bet}</code>\nmultiplier: <code>{random_multiplier}</code>\ndrug_count: <code>{new_balance}</code>\n\n<a href='tg://user?id={user_id}'>mention</a>", parse_mode='HTML')
     else:
         new_balance = round(user.drug_count, 1)
-        if user.is_admin == False or None and user.is_tester == False or None:
+        if user.is_admin == False or None or user.is_tester == False or None:
             new_bot_balance = round(bot_balance + bet, 1)
             bot_user.drug_count = new_bot_balance
             await bot_user.save()
