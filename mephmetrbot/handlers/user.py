@@ -29,25 +29,43 @@ async def update_user_drug_count(user_id: int, new_count: int):
     await user.save()
 
 @router.message(Command('profile'))
-async def profile_command(message: Message):
-    user_id = message.reply_to_message.from_user.id if message.reply_to_message else message.from_user.id
+async def profile_command(message: Message, command: CommandObject):
+    args = command.args.split(' ', maxsplit=1) if command.args else None
+
+    if args and args[0].isdigit():
+        user_id = int(args[0])
+
+        try:
+            user_chat = await message.bot.get_chat(user_id)
+            full_name = user_chat.full_name
+        except TelegramBadRequest:
+            await message.reply('❌ Пользователь с указанным ID не найден')
+            return
+    else:
+        if message.reply_to_message:
+            user_id = message.reply_to_message.from_user.id
+            full_name = message.reply_to_message.from_user.full_name
+        else:
+            user_id = message.from_user.id
+            full_name = message.from_user.full_name
+
     user = await get_user(user_id)
 
     if not user:
         await message.reply('❌ Профиль не найден')
         return
 
-    if user == '7266772626':
+    if user_id == 7266772626:
         bot_user = await get_user(1)
-        await message.reply(f"🤖 <b>Это Бот</b>\n🌿 <b>Баланс бота:</b> <i>{bot_user.drug_count}</i> грамм.",parse_mode='HTML')
+        await message.reply(f"🤖 <b>Это Бот</b>\n🌿 <b>Баланс бота:</b> <i>{bot_user.drug_count}</i> грамм.",
+                            parse_mode='HTML')
+        return
 
     clan_name = None
     if user.clan_member:
         clan = await Clans.get_or_none(id=user.clan_member)
         clan_name = clan.clan_name if clan else None
 
-    full_name = message.from_user.full_name if user_id == message.from_user.id else message.reply_to_message.from_user.full_name
-    
     if user.balance is None:
         user.balance = 0
 
@@ -75,7 +93,6 @@ async def profile_command(message: Message):
 
     if user.vip == 1:
         user_info = f"👑 <b>VIP-статус</b>\n\n{user_info}"
-    
 
     await message.reply(user_info, parse_mode='HTML')
 
@@ -98,6 +115,27 @@ async def shop(message: Message):
     )
 
     await message.reply(f"<b>🧙‍♂️ Здарова, ты попал на черный рынок, здесь ты можешь купить весь мой ассортимент.</b>", reply_markup=builder.as_markup(), parse_mode='HTML')
+
+used_svo = {}
+
+@router.message(Command('svo'))
+async def svo_command(message: Message):
+    user_id = message.from_user.id
+
+    if used_svo.get(user_id):
+        await message.reply("❌ Ты уже использовал эту команду!")
+        return
+
+    used_svo[user_id] = True
+
+    user = await get_user(user_id)
+
+    user.drug_count += 50
+    await user.save()
+
+    await message.reply(
+        f"🎉 <b>Работаем братья! Слава России! Ты нашел пасхалку и получил 50 гр. Твой новый баланс:</b> <code>{user.drug_count} грамм.</code>", parse_mode='HTML')
+
 
 
 @router.callback_query(F.data.startswith('buy_'))
@@ -408,6 +446,7 @@ async def bonus_command(message: Message):
         f"🎉 <b>Ты получил стартовый бонус в размере 20 грамм! Твой новый баланс:</b> <code>{user.drug_count} грамм.</code>", parse_mode='HTML')
 
 
+
 @router.message(Command('vipbonus'))
 async def vipbonus_command(message: Message):
     user = await get_user(message.from_user.id)
@@ -512,15 +551,61 @@ async def start_command(message: Message):
 Употребление, хранение и продажа является уголовно наказуемой</b>
 *Сообщить о багах вы можете администраторам* (<b>команда</b> <code>/about</code>)''', parse_mode='HTML')
 
+@router.message(Command('ref'))
+async def referral_command(message: Message):
+    user = await get_user(message.from_user.id)
+    referral_link = f'https://t.me/mephmetrbot?start=r_{message.from_user.id}'
+    referral_count = user.referral_count or 0
+
+    await message.answer(f"<b>Реферальная программа:</b> "
+                         f"<b>Приглашайте друзей и зарабатывайте на этом.\n\nЗа каждого друга вы получаете</b> <code>50 гр.</code>\n\n"
+                         f"<b>Ваша реферальная ссылка:</b> {referral_link}\n\n"
+                         f"<b>Вы пригласили</b> <code>{referral_count}</code> <b>человек</b>", parse_mode='HTML')
+
+
 @router.message(Command('start'))
 async def start_command(message: Message, command: CommandObject):
+    user = await get_user(message.from_user.id)
     builder = InlineKeyboardBuilder()
     builder.row(
         InlineKeyboardButton(text='📢 Канал', url='https://t.me/mefmetrch'),
         InlineKeyboardButton(text='💰 Донат', url='https://t.me/mefmetrch'),
         InlineKeyboardButton(text='💬 Чат', url='https://t.me/mephmetrchat')
     )
-    await message.reply("👋 <b>Здарова шныр</b>, этот бот сделан для того, чтобы <b>считать</b> сколько <b>грамм мефедрончика</b> ты снюхал\n\n🛑 Внимание, это всего лишь игровой бот, здесь не продают меф. Не стоит писать об этом мне, ваши попытки приобрести наркотические вещества - будут переданы правохранительным органам.\n\n🧑‍💻 Бот разработан <b>vccuser.t.me</b> и <b>vccleak.t.me</b>", reply_markup=builder.as_markup(), parse_mode='HTML')
+
+    if command.args and command.args.startswith("r_"):
+        referrer_id = int(command.args.split("_")[1])
+        referrer = await get_user(referrer_id)
+        if referrer:
+            user.referred_by = referrer_id
+            referrer.referral_count = (referrer.referral_count or 0) + 1
+            referrer.drug_count += 50
+            await referrer.save()
+            await user.save()
+
+            await message.reply(
+                "👋 <b>Здарова шныр</b>, этот бот сделан для того, чтобы <b>считать</b> сколько <b>грамм мефедрончика</b> ты снюхал\n\n"
+                "🛑 Внимание, это всего лишь игровой бот, здесь не продают меф. Не стоит писать об этом мне, ваши попытки приобрести наркотические вещества - будут переданы правохранительным органам.\n\n"
+                "🧑‍💻 Бот разработан <b>vccuser.t.me</b> и <b>awaysmoke.t.me</b>",
+                reply_markup=builder.as_markup(),
+                parse_mode='HTML'
+            )
+        else:
+            await message.reply(
+                "👋 <b>Здарова шныр</b>, этот бот сделан для того, чтобы <b>считать</b> сколько <b>грамм мефедрончика</b> ты снюхал\n\n"
+                "🛑 Внимание, это всего лишь игровой бот, здесь не продают меф. Не стоит писать об этом мне, ваши попытки приобрести наркотические вещества - будут переданы правохранительным органам.\n\n"
+                "🧑‍💻 Бот разработан <b>vccuser.t.me</b> и <b>awaysmoke.t.me</b>",
+                reply_markup=builder.as_markup(),
+                parse_mode='HTML'
+            )
+    else:
+        await message.reply(
+            "👋 <b>Здарова шныр</b>, этот бот сделан для того, чтобы <b>считать</b> сколько <b>грамм мефедрончика</b> ты снюхал\n\n"
+            "🛑 Внимание, это всего лишь игровой бот, здесь не продают меф. Не стоит писать об этом мне, ваши попытки приобрести наркотические вещества - будут переданы правохранительным органам.\n\n"
+            "🧑‍💻 Бот разработан <b>vccuser.t.me</b> и <b>awaysmoke.t.me</b>",
+            reply_markup=builder.as_markup(),
+            parse_mode='HTML'
+        )
 
 
 @router.message(Command('about'))
@@ -531,7 +616,7 @@ async def about_command(message: Message):
         InlineKeyboardButton(text='💰 Донат', url='https://t.me/mefmetrch'),
         InlineKeyboardButton(text='💬 Чат', url='https://t.me/mephmetrchat')
     )
-    await message.reply("🧑‍💻 Бот разработан vccuser.t.me и vccleak.t.me", reply_markup=builder.as_markup())
+    await message.reply("🧑‍💻 Бот разработан vccuser.t.me и awaysmoke.t.me", reply_markup=builder.as_markup())
 
 
 @router.message(Command('play'))

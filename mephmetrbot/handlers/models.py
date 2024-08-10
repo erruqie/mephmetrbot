@@ -20,6 +20,8 @@ class Users(models.Model):
     balance = fields.BigIntField(default=0)
     last_work = fields.DatetimeField(null=True)
     ban_end_time = fields.DatetimeField(null=True)
+    referred_by = fields.BigIntField(default=0)
+    referral_count = fields.IntField(null=True)
     ban_reason = fields.CharField(max_length=255, null=True)
     invite_timestamp = fields.DatetimeField(null=True)
 
