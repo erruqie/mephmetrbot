@@ -13,12 +13,12 @@ async def error_handler(event: ErrorEvent, message: Message):
     text = event.update.message.text
     await bot.send_message(
         LOGS_CHAT_ID,
-        f"<b>#ERROR</b>\n\n"
-        f"first_name: <a href='tg://user?id={user_id}'>{first_name}</a>\n"
-        f"user_id: <code>{user_id}</code>\n"
-        f"chat_id: <code>{chat_id}</code>\n"
-        f"text: <code>{text}</code>\n\n"
-        f"exception: <code>{exception}</code>\n\n",
+        f"❗ <b>#ERROR</b>\n\n"
+        f"👤 <b>First Name:</b> <a href='tg://user?id={user_id}'>{first_name}</a>\n"
+        f"🆔 <b>User ID:</b> <code>{user_id}</code>\n"
+        f"💬 <b>Chat ID:</b> <code>{chat_id}</code>\n"
+        f"📝 <b>Text:</b> <code>{text}</code>\n\n"
+        f"⚠️ <b>Exception:</b> <code>{exception}</code>\n\n",
         parse_mode='HTML'
     )
     await message.reply('💀 Произошла непредвиденная ошибка, пожалуйста обратитесь к разработчику бота: @vccuser')

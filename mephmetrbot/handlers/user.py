@@ -92,7 +92,7 @@ async def profile_command(message: Message, command: CommandObject):
         user_info = f"💻 <b>Тестер</b>\n\n{user_info}"
 
     if user.vip == 1:
-        user_info = f"👑 <b>VIP-статус</b>\n\n{user_info}"
+        user_info = f"🌟 <b>VIP-статус</b>\n\n{user_info}"
 
     await message.reply(user_info, parse_mode='HTML')
 
@@ -217,9 +217,12 @@ async def give_command(message: Message, command: CommandObject):
 
         await bot.send_message(
             LOGS_CHAT_ID,
-            f"<b>#GIVE</b>\n\nfirst_name: <code>{message.from_user.first_name}</code>\n"
-            f"user_id: <code>{recipient_id}</code>\nvalue: <code>{net_value}</code>\n"
-            f"Commission: <code>{commission}</code>\n\n<a href='tg://user?id={recipient_id}'>mention</a>",
+            f"🎁 <b>#GIVE</b>\n\n"
+            f"👤 <b>First Name:</b> <code>{message.from_user.first_name}</code>\n"
+            f"🆔 <b>Recipient ID:</b> <code>{recipient_id}</code>\n"
+            f"💸 <b>Value:</b> <code>{net_value}</code>\n"
+            f"💼 <b>Commission:</b> <code>{commission}</code>\n\n"
+            f"<a href='tg://user?id={recipient_id}'>🔗 Mention Recipient</a>",
             parse_mode='HTML'
         )
 
@@ -242,8 +245,11 @@ async def give_command(message: Message, command: CommandObject):
 
         await bot.send_message(
             LOGS_CHAT_ID,
-            f"<b>#GIVE</b>\n\nfirst_name: <code>{message.from_user.first_name}</code>\n"
-            f"user_id: <code>{recipient_id}</code>\nvalue: <code>{value}</code>\n",
+            f"🎁 <b>#GIVE</b>\n\n"
+            f"👤 <b>First Name:</b> <code>{message.from_user.first_name}</code>\n"
+            f"🆔 <b>Recipient ID:</b> <code>{recipient_id}</code>\n"
+            f"💸 <b>Value:</b> <code>{net_value}</code>\n"
+            f"<a href='tg://user?id={recipient_id}'>🔗 Mention Recipient</a>",
             parse_mode='HTML'
         )
 

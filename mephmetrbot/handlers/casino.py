@@ -128,7 +128,19 @@ async def casino_command(message: Message, command: CommandObject):
             result_message += f'❌ Твоя ставка не сыграла. Повезёт в следующий раз! Твой новый баланс: <code>{new_balance}</code> гр.\nОставшееся количество спинов: <code>{20 - int(user.game_count)}</code>'
         else:
             result_message += f'❌ Твоя ставка не сыграла. Повезёт в следующий раз! Твой новый баланс: <code>{new_balance}</code> гр.'
-        await bot.send_message(LOGS_CHAT_ID, f"<b>#CASINO</b> <b>#LOSE</b>\n\nfirst_name: <code>{message.from_user.first_name}</code>\nuser_id: <code>{user_id}</code>\nbet: <code>{bet}</code>\ntarget_multiplier: <code>{target_multiplier}</code>\nactual_multiplier: <code>{random_multiplier}</code>\ndrug_count: <code>{new_balance}</code>\n\n<a href='tg://user?id={user_id}'>mention</a>", parse_mode='HTML')
+        await bot.send_message(
+            LOGS_CHAT_ID,
+            f"<b>🎰 #CASINO - #LOSE</b>\n\n"
+            f"<b>👤 User:</b> <code>{message.from_user.first_name}</code>\n"
+            f"<b>🆔 ID:</b> <code>{user_id}</code>\n"
+            f"<b>💸 Bet:</b> <code>{bet}</code>\n"
+            f"<b>🎯 Target Multiplier:</b> <code>{target_multiplier}</code>\n"
+            f"<b>📉 Actual Multiplier:</b> <code>{random_multiplier}</code>\n"
+            f"<b>💊 Drug Count:</b> <code>{new_balance}</code>\n\n"
+            f"<a href='tg://user?id={user_id}'>🔗 Mention</a>",
+            parse_mode='HTML'
+        )
+
         user.last_casino = now
         await user.save()
         await dice_message.edit_text(result_message, parse_mode='HTML')
@@ -157,7 +169,18 @@ async def casino_command(message: Message, command: CommandObject):
             else:
                 result_message += f'🎉 Поздравляем, вы выиграли <code>{win_amount}</code> гр. Ваш новый баланс: <code>{new_balance}</code> гр.'
             user.drug_count = new_balance
-            await bot.send_message(LOGS_CHAT_ID, f"<b>#CASINO</b> <b>#WIN</b>\n\nfirst_name: <code>{message.from_user.first_name}</code>\nuser_id: <code>{user_id}</code>\nbet: <code>{bet}</code>\nmultiplier: <code>{random_multiplier}</code>\ndrug_count: <code>{new_balance}</code>\n\n<a href='tg://user?id={user_id}'>mention</a>", parse_mode='HTML')
+            await bot.send_message(
+                LOGS_CHAT_ID,
+                f"<b>🎰 #CASINO - #WIN</b>\n\n"
+                f"<b>👤 User:</b> <code>{message.from_user.first_name}</code>\n"
+                f"<b>🆔 ID:</b> <code>{user_id}</code>\n"
+                f"<b>💸 Bet:</b> <code>{bet}</code>\n"
+                f"<b>🔢 Multiplier:</b> <code>{random_multiplier}</code>\n"
+                f"<b>💊 Drug Count:</b> <code>{new_balance}</code>\n\n"
+                f"<a href='tg://user?id={user_id}'>🔗 Mention</a>",
+                parse_mode='HTML'
+            )
+
     else:
         new_balance = round(user.drug_count, 1)
         if user.is_admin == False or None or user.is_tester == False or None:
@@ -168,7 +191,18 @@ async def casino_command(message: Message, command: CommandObject):
             result_message += f'❌ Твоя ставка не сыграла. Повезёт в следующий раз! Твой новый баланс: <code>{new_balance}</code> гр.\nОставшееся количество спинов: <code>{20 - int(user.game_count)}</code>'
         else:
             result_message += f'❌ Твоя ставка не сыграла. Повезёт в следующий раз! Твой новый баланс: <code>{new_balance}</code> гр.'
-        await bot.send_message(LOGS_CHAT_ID, f"<b>#CASINO</b> <b>#LOSE</b>\n\nfirst_name: <code>{message.from_user.first_name}</code>\nuser_id: <code>{user_id}</code>\nbet: <code>{bet}</code>\ntarget_multiplier: <code>{target_multiplier}</code>\nactual_multiplier: <code>{random_multiplier}</code>\ndrug_count: <code>{new_balance}</code>\n\n<a href='tg://user?id={user_id}'>mention</a>", parse_mode='HTML')
+        await bot.send_message(
+            LOGS_CHAT_ID,
+            f"<b>🎰 #CASINO - #LOSE</b>\n\n"
+            f"<b>👤 User:</b> <code>{message.from_user.first_name}</code>\n"
+            f"<b>🆔 ID:</b> <code>{user_id}</code>\n"
+            f"<b>💸 Bet:</b> <code>{bet}</code>\n"
+            f"<b>🎯 Target Multiplier:</b> <code>{target_multiplier}</code>\n"
+            f"<b>📉 Actual Multiplier:</b> <code>{random_multiplier}</code>\n"
+            f"<b>💊 Drug Count:</b> <code>{new_balance}</code>\n\n"
+            f"<a href='tg://user?id={user_id}'>🔗 Mention</a>",
+            parse_mode='HTML'
+        )
 
     user.last_casino = now
     await user.save()

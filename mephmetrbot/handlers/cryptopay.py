@@ -37,7 +37,7 @@ async def buy_vip(message: Message):
 
     await message.reply(
         f'💰 Вы можете купить <code>VIP-статус</code> за <code>149 RUB</code> через CryptoBot\n\n'
-        f'<b>VIP-статус снимает лимиты на вращение казино, убирает комиссию и позволяет раз в день забирать бонус.</b>',
+        f'<b>🌟 VIP-статус снимает лимиты на вращение казино, повышает шансы в казино, убирает комиссию и позволяет раз в день забирать бонус.</b>',
         parse_mode='HTML',
         disable_webpage_preview=True,
         reply_markup=builder.as_markup()
@@ -104,12 +104,16 @@ async def checkinvoice_callback(callback: CallbackQuery):
                                     f"✅ Ты крут бро ты получил {value} грам грамм мефа, спасибо за поддержку!")
             await Invoices.create(invoice_id=invoice_id, status='paid')
             await callback.answer()
-            await bot.send_message(LOGS_CHAT_ID, 
-                                   f'#BUYMEPH\n\n'
-                                   f'userid: <code>{userid}</code>\n'
-                                   f'amount: {value}\n'
-                                   f'invoice_id: #IV{invoice_id}\n\n'
-                                   f'<a href="tg://user?id={userid}">mention user</a>', parse_mode='html')
+            await bot.send_message(
+                LOGS_CHAT_ID,
+                f"🛒 <b>#BUYMEPH</b>\n\n"
+                f"🆔 <b>User ID:</b> <code>{userid}</code>\n"
+                f"💰 <b>Amount:</b> {value}\n"
+                f"🧾 <b>Invoice ID:</b> <code>#IV{invoice_id}</code>\n\n"
+                f"<a href='tg://user?id={userid}'>🔗 Mention User</a>",
+                parse_mode='HTML'
+            )
+
         else:
             await callback.answer('❌ Оплата не найдена!')
         return
@@ -139,11 +143,15 @@ async def invoicecheck_callback(callback: CallbackQuery):
                                     f"✅ Ты крут бро ты получил VIP-статус, спасибо за поддержку!")
             await Invoices.create(invoice_id=invoice_id, status='paid')
             await callback.answer()
-            await bot.send_message(LOGS_CHAT_ID,
-                                   f'#BUYVIP\n\n'
-                                   f'userid: <code>{userid}</code>\n'
-                                   f'invoice_id: #IV{invoice_id}\n\n'
-                                   f'<a href="tg://user?id={userid}">mention user</a>', parse_mode='html')
+            await bot.send_message(
+                LOGS_CHAT_ID,
+                f"🌟 <b>#BUYVIP</b>\n\n"
+                f"🆔 <b>User ID:</b> <code>{userid}</code>\n"
+                f"🧾 <b>Invoice ID:</b> <code>#IV{invoice_id}</code>\n\n"
+                f"<a href='tg://user?id={userid}'>🔗 Mention User</a>",
+                parse_mode='HTML'
+            )
+
         else:
             await callback.answer('❌ Оплата не найдена!')
         return

@@ -52,13 +52,14 @@ async def create_clan(message: Message, command: Command):
 
                         await bot.send_message(
                             LOGS_CHAT_ID,
-                            f"<b>#NEWCLAN</b>\n\n"
-                            f"clanid: <code>{clan_id}</code>\n"
-                            f"clanname: <code>{clan_name}</code>\n"
-                            f"clanownerid: <code>{user_id}</code>\n\n"
-                            f"<a href='tg://user?id={user_id}'>clanowner mention</a>",
+                            f"🏆 <b>#NEWCLAN</b>\n\n"
+                            f"🆔 <b>Clan ID:</b> <code>{clan_id}</code>\n"
+                            f"📝 <b>Clan Name:</b> <code>{clan_name}</code>\n"
+                            f"👤 <b>Clan Owner ID:</b> <code>{user_id}</code>\n\n"
+                            f"<a href='tg://user?id={user_id}'>🔗 Mention Clan Owner</a>",
                             parse_mode='HTML'
                         )
+
                         await message.reply(
                             f"✅ Клан <b>{clan_name}</b> успешно создан.\nВаш идентификатор клана: <code>{clan_id}</code>\nС вашего баланса списано <code>100</code> гр.",
                             parse_mode='HTML'
@@ -125,9 +126,15 @@ async def deposit(message: Message, command: Command):
 
         await bot.send_message(
             LOGS_CHAT_ID,
-            f"<b>#DEPOSIT</b>\nclanname: <code>{clan.clan_name}</code>\namount: <code>{cost}</code>\nuserid: <code>{user_id}</code>\nfirstname: {message.from_user.first_name}\n<a href='tg://user?id={user_id}'>mention</a>",
+            f"💰 <b>#DEPOSIT</b>\n\n"
+            f"🏷️ <b>Clan Name:</b> <code>{clan.clan_name}</code>\n"
+            f"💵 <b>Amount:</b> <code>{cost}</code>\n"
+            f"🆔 <b>User ID:</b> <code>{user_id}</code>\n"
+            f"👤 <b>First Name:</b> {message.from_user.first_name}\n\n"
+            f"<a href='tg://user?id={user_id}'>🔗 Mention</a>",
             parse_mode='HTML'
         )
+
 
 @router.message(Command('withdraw'))
 async def withdraw(message: Message, command: Command):
@@ -185,7 +192,12 @@ async def withdraw(message: Message, command: Command):
 
         await bot.send_message(
             LOGS_CHAT_ID,
-            f"<b>#DEPOSIT</b>\nclanname: <code>{clan.clan_name}</code>\namount: <code>{cost}</code>\nuserid: <code>{user_id}</code>\nfirstname: {message.from_user.first_name}\n<a href='tg://user?id={user_id}'>mention</a>",
+            f"💰 <b>#WITHDRAW</b>\n\n"
+            f"🏷️ <b>Clan Name:</b> <code>{clan.clan_name}</code>\n"
+            f"💵 <b>Amount:</b> <code>{cost}</code>\n"
+            f"🆔 <b>User ID:</b> <code>{user_id}</code>\n"
+            f"👤 <b>First Name:</b> {message.from_user.first_name}\n\n"
+            f"<a href='tg://user?id={user_id}'>🔗 Mention User</a>",
             parse_mode='HTML'
         )
 

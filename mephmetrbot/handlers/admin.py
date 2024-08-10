@@ -97,13 +97,27 @@ async def banuser_command(message: Message, command: CommandObject):
             await ban_user.save()
 
             await message.reply(f"🛑 Пользователь с ID: <code>{ban_user_id}</code> заблокирован на <code>{duration}</code> минут.\nПричина: <code>{reason}</code>", parse_mode='HTML')
-            await bot.send_message(LOGS_CHAT_ID, f"#BAN\n\nid: <code>{ban_user_id}</code>\nReason: <code>{reason}</code>\nDuration: <code>{duration}</code> min.", parse_mode='HTML')
+            await bot.send_message(
+                LOGS_CHAT_ID,
+                f"🚫 <b>#BAN</b>\n\n"
+                f"🆔 <b>ID:</b> <code>{ban_user_id}</code>\n"
+                f"📋 <b>Reason:</b> <code>{reason}</code>\n"
+                f"⏳ <b>Duration:</b> <code>{duration}</code> min.",
+                parse_mode='HTML'
+            )
 
             await asyncio.sleep(duration * 60)
             ban_user.is_banned = 0
             ban_user.ban_end_time = None
             await ban_user.save()
-            await bot.send_message(LOGS_CHAT_ID, f"#UNBAN\n\nid: <code>{ban_user_id}</code>\n*Duration has ended*", parse_mode='HTML')
+            await bot.send_message(
+                LOGS_CHAT_ID,
+                f"✅ <b>#UNBAN</b>\n\n"
+                f"🆔 <b>ID:</b> <code>{ban_user_id}</code>\n"
+                f"⏳ <i>Duration has ended</i>",
+                parse_mode='HTML'
+            )
+
         else:
             await message.reply("🚨 Пользователь не найден.")
     else:
@@ -141,7 +155,13 @@ async def unbanuser_command(message: Message, command: CommandObject):
             updated_ban_user = await get_user(ban_user_id)
             if updated_ban_user.is_banned == 0:
                 await message.reply(f"✅ Пользователь с ID: <code>{ban_user_id}</code> разблокирован.", parse_mode='HTML')
-                await bot.send_message(LOGS_CHAT_ID, f"#UNBAN\n\nid: <code>{ban_user_id}</code>", parse_mode='HTML')
+                await bot.send_message(
+                    LOGS_CHAT_ID,
+                    f"✅ <b>#UNBAN</b>\n\n"
+                    f"🆔 <b>ID:</b> <code>{ban_user_id}</code>\n",
+                    parse_mode='HTML'
+                )
+
         else:
             await message.reply("🚨 Пользователь не найден")
     else:
@@ -165,7 +185,11 @@ async def settester_command(message: Message):
                 await message.reply('✅')
                 await bot.send_message(
                     LOGS_CHAT_ID,
-                    f"<b>#SETTESTER</b>\n\nuser_id_receiver: <code>{target_id}</code>\nuser_id_sender: <code>{user_id}</code>\n\n<a href='tg://user?id={user_id}'>mention sender</a>\n<a href='tg://user?id={target_id}'>mention receiver</a>",
+                    f"🔧 <b>#SETTESTER</b>\n\n"
+                    f"👤 <b>Receiver ID:</b> <code>{target_id}</code>\n"
+                    f"👤 <b>Sender ID:</b> <code>{user_id}</code>\n\n"
+                    f"<a href='tg://user?id={user_id}'>🔗 Mention Sender</a>\n"
+                    f"<a href='tg://user?id={target_id}'>🔗 Mention Receiver</a>",
                     parse_mode='HTML'
                 )
             except DoesNotExist:
@@ -209,9 +233,15 @@ async def setdrugs_command(message: Message, command: CommandObject):
                 await message.reply('✅')
                 await bot.send_message(
                     LOGS_CHAT_ID,
-                    f"<b>#SETDRUGS</b>\n\nuser_id_receiver: <code>{target_id}</code>\nuser_id_sender: <code>{user_id}</code>\ndrug_count: <code>{drug_count}</code>\n\n<a href='tg://user?id={user_id}'>mention sender</a>\n<a href='tg://user?id={target_id}'>mention receiver</a>",
+                    f"💊 <b>#SETDRUGS</b>\n\n"
+                    f"👤 <b>Receiver ID:</b> <code>{target_id}</code>\n"
+                    f"👤 <b>Sender ID:</b> <code>{user_id}</code>\n"
+                    f"🔢 <b>Drug Count:</b> <code>{drug_count}</code>\n\n"
+                    f"<a href='tg://user?id={user_id}'>🔗 Mention Sender</a>\n"
+                    f"<a href='tg://user?id={target_id}'>🔗 Mention Receiver</a>",
                     parse_mode='HTML'
                 )
+
             except DoesNotExist:
                 await message.reply(f'❌ Пользователь с ID {target_id} не найден.')
         else:
@@ -317,7 +347,13 @@ async def cmd_broadcast_start(message: Message):
                     else:
                         await message.reply('Не поддерживаемый тип медиа для рассылки.')
                 except Exception as e:
-                    await message.bot.send_message(LOGS_CHAT_ID, f"#SENDERROR\n\nchatid: <code>{chat_id}</code>\nerror: {str(e)}", parse_mode='HTML')
+                    await message.bot.send_message(
+                        LOGS_CHAT_ID,
+                        f"❌ <b>#SENDERROR</b>\n\n"
+                        f"💬 <b>Chat ID:</b> <code>{chat_id}</code>\n"
+                        f"🚨 <b>Error:</b> <code>{str(e)}</code>",
+                        parse_mode='HTML'
+                    )
 
             for user_id in users:
                 try:
@@ -334,7 +370,13 @@ async def cmd_broadcast_start(message: Message):
                     else:
                         await message.reply('Не поддерживаемый тип медиа для рассылки.')
                 except Exception as e:
-                    await message.bot.send_message(LOGS_CHAT_ID, f"#SENDERROR\n\nuser_id: <code>{user_id}</code>\nerror: {str(e)}", parse_mode='HTML')
+                    await message.bot.send_message(
+                        LOGS_CHAT_ID,
+                        f"❌ <b>#SENDERROR</b>\n\n"
+                        f"🆔 <b>User ID:</b> <code>{user_id}</code>\n"
+                        f"🚨 <b>Error:</b> <code>{str(e)}</code>",
+                        parse_mode='HTML'
+                    )
         else:
             await message.reply('Пожалуйста, ответьте на сообщение с медиафайлом для рассылки.')
     else:
@@ -351,4 +393,10 @@ async def add_chat(event: ChatMemberUpdated):
     if event.new_chat_member.user.is_bot:
         chat_id = event.chat.id
         await Chats.get_or_create(chat_id=chat_id, defaults={'is_ads_enable': True})
-        await bot.send_message(LOGS_CHAT_ID, f"<b>#NEW_CHAT</b>\n\nchat_id: <code>{chat_id}</code>", parse_mode='HTML')
+        await bot.send_message(
+            LOGS_CHAT_ID,
+            f"💬 <b>#NEW_CHAT</b>\n\n"
+            f"📜 <b>Chat ID:</b> <code>{chat_id}</code>",
+            parse_mode='HTML'
+        )
+
