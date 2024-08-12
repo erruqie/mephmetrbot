@@ -69,6 +69,44 @@ async def setvip_command(message: Message, command: CommandObject):
     else:
         await message.reply('🚨 У вас нет прав для выполнения этой команды.')
 
+@router.message(Command('removevip'))
+async def removevip_command(message: Message, command: CommandObject):
+    user = await get_user(message.from_user.id)
+
+    command_args = command.args.strip().split()
+
+    vip_user_id = None
+
+    if len(command_args) == 1:
+        try:
+            vip_user_id = int(command_args[0])
+        except ValueError:
+            await message.reply("🚨 Неправильный формат ID.")
+            return
+
+    if not vip_user_id and message.reply_to_message:
+        vip_user_id = message.reply_to_message.from_user.id
+
+    if not vip_user_id:
+        await message.reply("🚨 Не указан ID пользователя для забирания вип.")
+        return
+
+    if user.is_admin:
+        vip_user = await get_user(vip_user_id)
+        if vip_user:
+            if vip_user.vip == 1:
+                await message.reply(f"🔍 Пользователь с ID: <code>{vip_user_id}</code> и так без VIP-статуса.",
+                                    parse_mode='HTML')
+                return
+            vip_user.vip = 0
+            await vip_user.save()
+            await message.reply(f"✅ VIP-статус забран у пользователя с ID: <code>{vip_user_id}</code>.", parse_mode='HTML')
+        else:
+            await message.reply(f"🚨 Пользователь с ID: <code>{vip_user_id}</code> не найден.", parse_mode='HTML')
+    else:
+        await message.reply('🚨 У вас нет прав для выполнения этой команды.')
+
+
 
 @router.message(Command('restartbot'))
 async def restartbot_command(message: Message):
