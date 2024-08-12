@@ -31,13 +31,26 @@ async def getadmin_command(message: Message):
     else:
         return
 
+
 @router.message(Command('setvip'))
-async def setvip_command(message: Message):
+async def setvip_command(message: Message, command: CommandObject):
     user = await get_user(message.from_user.id)
 
-    if message.reply_to_message:
+    command_args = command.args.strip().split()
+
+    vip_user_id = None
+
+    if len(command_args) == 1:
+        try:
+            vip_user_id = int(command_args[0])
+        except ValueError:
+            await message.reply("🚨 Неправильный формат ID.")
+            return
+
+    if not vip_user_id and message.reply_to_message:
         vip_user_id = message.reply_to_message.from_user.id
-    else:
+
+    if not vip_user_id:
         await message.reply("🚨 Не указан ID пользователя для выдачи.")
         return
 
@@ -45,11 +58,14 @@ async def setvip_command(message: Message):
         vip_user = await get_user(vip_user_id)
         if vip_user:
             if vip_user.vip == 1:
-                await message.reply(f"🔍 Пользователь с ID: <code>{vip_user_id}</code> уже имеет VIP-статус.", parse_mode='HTML')
+                await message.reply(f"🔍 Пользователь с ID: <code>{vip_user_id}</code> уже имеет VIP-статус.",
+                                    parse_mode='HTML')
                 return
             vip_user.vip = 1
             await vip_user.save()
-            await message.reply('✅')
+            await message.reply(f"✅ VIP-статус выдан пользователю с ID: <code>{vip_user_id}</code>.", parse_mode='HTML')
+        else:
+            await message.reply(f"🚨 Пользователь с ID: <code>{vip_user_id}</code> не найден.", parse_mode='HTML')
     else:
         await message.reply('🚨 У вас нет прав для выполнения этой команды.')
 
@@ -92,7 +108,7 @@ async def banuser_command(message: Message, command: CommandObject):
                 return
             
             ban_user.is_banned = 1
-            ban_user.ban_end_time = datetime.datetime.now() + datetime.timedelta(minutes=duration)
+            ban_user.ban_end_time = datetime.now() + timedelta(minutes=duration)
             ban_user.ban_reason = reason
             await ban_user.save()
 

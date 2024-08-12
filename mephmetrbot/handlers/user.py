@@ -214,19 +214,19 @@ async def give_command(message: Message, command: CommandObject):
         await recipient.save()
         await user.save()
         await bot_user.save()
-
+        recipient_full_name = message.reply_to_message.from_user.full_name if message.reply_to_message else ""
         await bot.send_message(
             LOGS_CHAT_ID,
             f"🎁 <b>#GIVE</b>\n\n"
-            f"👤 <b>First Name:</b> <code>{message.from_user.first_name}</code>\n"
+            f"👤 <b>Sender Name:</b> <code>{message.from_user.first_name}</code>\n"
+            f"🆔 <b>Sender ID:</b> <code>{message.from_user.id}</code>\n"
+            f"👤 <b>Receiver Name:</b> <code>{recipient_full_name}</code>\n"
             f"🆔 <b>Recipient ID:</b> <code>{recipient_id}</code>\n"
             f"💸 <b>Value:</b> <code>{net_value}</code>\n"
-            f"💼 <b>Commission:</b> <code>{commission}</code>\n\n"
             f"<a href='tg://user?id={recipient_id}'>🔗 Mention Recipient</a>",
             parse_mode='HTML'
         )
 
-        recipient_full_name = message.reply_to_message.from_user.full_name if message.reply_to_message else ""
 
         await message.reply(
             f"✅ <a href='tg://user?id={message.from_user.id}'>{message.from_user.first_name}</a> <i>подарил(-а) {value} гр. мефа</i> "
@@ -242,23 +242,23 @@ async def give_command(message: Message, command: CommandObject):
         await recipient.save()
         await user.save()
         await bot_user.save()
-
+        recipient_full_name = message.reply_to_message.from_user.full_name if message.reply_to_message else ""
         await bot.send_message(
             LOGS_CHAT_ID,
             f"🎁 <b>#GIVE</b>\n\n"
-            f"👤 <b>First Name:</b> <code>{message.from_user.first_name}</code>\n"
+            f"👤 <b>Sender Name:</b> <code>{message.from_user.first_name}</code>\n"
+            f"🆔 <b>Sender ID:</b> <code>{message.from_user.id}</code>\n"
+            f"👤 <b>Receiver Name:</b> <code>{recipient_full_name}</code>\n"
             f"🆔 <b>Recipient ID:</b> <code>{recipient_id}</code>\n"
             f"💸 <b>Value:</b> <code>{net_value}</code>\n"
             f"<a href='tg://user?id={recipient_id}'>🔗 Mention Recipient</a>",
             parse_mode='HTML'
         )
 
-        recipient_full_name = message.reply_to_message.from_user.full_name if message.reply_to_message else ""
-
         await message.reply(
-            f"✅ <a href='tg://user?id={message.from_user.id}'>{message.from_user.first_name}</a> <i>подарил(-а) {value} гр. мефа</i> "
-            f"<a href='tg://user?id={recipient_id}'>{recipient_full_name}</a>!\n"
-            f"Получено <code>{value}</code> гр. мефа.",
+            f"🎁 <a href='tg://user?id={message.from_user.id}'>{message.from_user.first_name}</a> <i>подарил(-а)</i> <b>{value} гр. мефа</b> "
+            f"<a href='tg://user?id={recipient_id}'>{recipient_full_name}</a>!\n\n"
+            f"📥 Получено: <code>{value} гр.</code> мефа.",
             parse_mode='HTML'
         )
 
@@ -283,28 +283,34 @@ async def work_command(message: Message):
 
         if remaining_hours > 0:
             await message.reply(
-                f'⏳ Ты недавно ходил прятать <b>закладку</b>, подожди <code>{remaining_hours} часов</code> и <code>{remaining_minutes} минут.</code>',
-                parse_mode='HTML')
+                f'⏳ Ты недавно ходил прятать <b>закладку</b>. Пожалуйста, подожди: <code>{remaining_hours} часов</code> и <code>{remaining_minutes} минут.</code>',
+                parse_mode='HTML'
+            )
         else:
             await message.reply(
-                f'⏳ Ты недавно ходил прятать <b>закладку</b>, подожди <code>{remaining_minutes} минут.</code>',
-                parse_mode='HTML')
-
+                f'⏳ Ты недавно ходил прятать <b>закладку</b>. Пожалуйста, подожди: <code>{remaining_minutes} минут.</code>',
+                parse_mode='HTML'
+            )
 
         return
 
-    if random.randint(1, 100) > 50:
+    if random.randint(1, 100) > 30:
         count = random.randint(500, 1300)
         user.balance += count
         user.last_work = datetime.now()
         await user.save()
-        await message.reply(f"🌿 {message.from_user.first_name}, ты пошёл в лес и <b>спрятал закладку</b>, тебя никто не спалил, ты заработал <code>{count} $MEF.</code>", parse_mode='HTML')
+        await message.reply(
+            f"🌿 <a href='tg://user?id={message.from_user.id}'>{message.from_user.first_name}</a>, ты пошёл в лес и <b>спрятал закладку</b>. Тебя никто не заметил, и ты заработал <code>{count} $MEF</code>.",
+            parse_mode='HTML'
+        )
     else:
         user.last_work = datetime.now()
         await user.save()
-        await message.reply(f"❌ <b>{message.from_user.first_name}</b>, тебя <b>спалил мент</b> и <b>дал тебе по ебалу</b>\n⏳ Следующая попытка доступна через <b>12 часов.</b>", parse_mode='HTML')
-
-
+        await message.reply(
+            f"❌ <a href='tg://user?id={message.from_user.id}'><b>{message.from_user.first_name}</b></a>, тебя <b>спалил мент</b> и <b>дал тебе по ебалу</b>.\n"
+            f"⏳ Следующая попытка будет доступна через <b>12 часов</b>.",
+            parse_mode='HTML'
+        )
 
 @router.message(Command('find'))
 async def find_command(message: Message):
@@ -324,20 +330,27 @@ async def find_command(message: Message):
 
         if remaining_hours > 0:
             await message.reply(
-                f'⏳ <b>Ты недавно ходил за кладом, подожди</b> <code>{remaining_hours} часов</code> <b>и</b> <code>{remaining_minutes} минут.</code>',parse_mode='HTML')
+                f'⏳ Ты недавно ходил прятать <b>закладку</b>. Пожалуйста, подожди: <code>{remaining_hours} часов</code> и <code>{remaining_minutes} минут.</code>',
+                parse_mode='HTML'
+            )
         else:
             await message.reply(
-                f'⏳ <b>Ты недавно ходил за кладом, подожди</b> <code>{remaining_minutes} минут.</code>',
-                parse_mode='HTML')
+                f'⏳ Ты недавно ходил прятать <b>закладку</b>. Пожалуйста, подожди: <code>{remaining_minutes} минут.</code>',
+                parse_mode='HTML'
+            )
         return
 
-    if random.randint(1, 100) > 50:
+    if random.randint(1, 100) > 30:
         count = random.randint(2, 10)
         user.drug_count += count
         user.last_find = datetime.now()
         user.last_use_time = datetime.fromtimestamp(0)
         await user.save()
-        await message.reply(f"👍 {message.from_user.first_name}, ты пошёл в лес и <b>нашел клад</b>, там лежало <code>{count} гр.</code> мефчика!\n🌿 Твое время команды /drug обновлено", parse_mode='HTML')
+        await message.reply(
+            f"👍 <a href='tg://user?id={message.from_user.id}'>{message.from_user.first_name}</a>, ты пошёл в лес и <b>нашел клад</b>! Там лежало <code>{count} гр.</code> мефчика.\n"
+            f"🌿 Твое время для команды <code>/drug</code> обновлено.",
+            parse_mode='HTML'
+        )
     else:
         if drug_count > 1:
             count = random.randint(1, round(drug_count))
@@ -347,9 +360,19 @@ async def find_command(message: Message):
         user.last_find = datetime.now()
         await user.save()
         if count != 0:
-            await message.reply(f"❌ <b>{message.from_user.first_name}</b>, тебя <b>спалил мент</b> и <b>дал тебе по ебалу</b>\n🌿 Тебе нужно откупиться, мент предложил взятку в размере <code>{count} гр.</code>\n⏳ Следующая попытка доступна через <b>6 часов.</b>", parse_mode='HTML')
+            await message.reply(
+                f"❌ <a href='tg://user?id={message.from_user.id}'><b>{message.from_user.first_name}</b></a>, тебя <b>спалил мент</b> и <b>дал тебе по ебалу</b>.\n"
+                f"🌿 Тебе нужно откупиться, мент требует взятку в размере <code>{count} гр.</code>.\n"
+                f"⏳ Следующая попытка будет доступна через <b>6 часов</b>.",
+                parse_mode='HTML'
+            )
         else:
-            await message.reply(f"❌ <b>{message.from_user.first_name}</b>, тебя <b>спалил мент</b> и <b>дал тебе по ебалу</b>\n⏳ Следующая попытка доступна через <b>6 часов.</b>", parse_mode='HTML')
+            await message.reply(
+                f"❌ <a href='tg://user?id={message.from_user.id}'><b>{message.from_user.first_name}</b></a>, тебя <b>спалил мент</b> и <b>дал тебе по ебалу</b>.\n"
+                f"⏳ Следующая попытка будет доступна через <b>6 часов</b>.",
+                parse_mode='HTML'
+            )
+
 
 @router.message(Command('top'))
 async def top_command(message: Message):
@@ -412,24 +435,34 @@ async def take_command(message: Message, state: FSMContext):
             last_time_data = await state.get_data()
             last_time = last_time_data.get('time') if last_time_data else None
 
-            if last_time and (datetime.now() - datetime.fromisoformat(last_time)).total_seconds() < 86400:
-                await message.reply("❌ Нельзя пиздить меф так часто! Ты сможешь спиздить меф через 1 день.")
+            if last_time and (datetime.now() - datetime.fromisoformat(last_time)).total_seconds() < 3600:
+                await message.reply("❌ Нельзя пиздить меф так часто! Ты сможешь спиздить меф через 1 час.")
                 return
 
             variables = ['noticed', 'hit', 'pass']
             randomed = random.choice(variables)
             if randomed == 'noticed':
                 user.drug_count -= 1
-                await message.reply('❌ <b>Жертва тебя заметила</b>, и ты решил убежать. Спиздить меф не получилось. Пока ты бежал, <b>ты потерял</b> <code>1 гр.</code>', parse_mode='HTML')
+                await message.reply(
+                    "❌ <b>Жертва тебя заметила</b>, и ты решил убежать. Спиздить меф не получилось. Пока ты бежал, <b>ты потерял</b> <code>1 гр.</code>.",
+                    parse_mode='HTML'
+                )
             elif randomed == 'hit':
                 user.drug_count -= 1
-                await message.reply('❌ <b>Жертва тебя заметила</b>, и пизданула тебя бутылкой по башке. Спиздить меф не получилось. <b>Жертва достала из твоего кармана</b> `1 гр.`', parse_mode='HTML')
+                victim.drug_count += 1
+                await message.reply(
+                    "❌ <b>Жертва тебя заметила</b> и пизданула бутылкой по башке. Спиздить меф не получилось. <b>Жертва достала из твоего кармана</b> <code>1 гр.</code>",
+                    parse_mode='HTML'
+                )
             elif randomed == 'pass':
                 victim.drug_count -= 1
                 user.drug_count += 1
                 await victim.save()
                 victim_user_id = reply_msg.from_user.id
-                await message.reply(f"✅ <a href='tg://user?id={message.from_user.id}'>{message.from_user.first_name}</a> <b>спиздил(-а) один грамм мефа</b> у <a href='tg://user?id={victim_user_id}'>{reply_msg.from_user.first_name}</a>!", parse_mode='HTML')
+                await message.reply(
+                    f"✅ <a href='tg://user?id={message.from_user.id}'>{message.from_user.first_name}</a> <b>спиздил(-а) 1 грамм мефа</b> у <a href='tg://user?id={victim_user_id}'>{reply_msg.from_user.first_name}</a>!",
+                    parse_mode='HTML'
+                )
             await state.update_data(time=datetime.now().isoformat())
             await user.save()
     else:
@@ -449,9 +482,9 @@ async def bonus_command(message: Message):
     await user.save()
 
     await message.reply(
-        f"🎉 <b>Ты получил стартовый бонус в размере 20 грамм! Твой новый баланс:</b> <code>{user.drug_count} грамм.</code>", parse_mode='HTML')
-
-
+        f"🎉 <b>Ты получил стартовый бонус в размере 20 грамм!</b> Твой новый баланс: <code>{user.drug_count} грамм</code>.",
+        parse_mode='HTML'
+    )
 
 @router.message(Command('vipbonus'))
 async def vipbonus_command(message: Message):
@@ -470,8 +503,9 @@ async def vipbonus_command(message: Message):
 
         await user.save()
         await message.reply(
-            f"🎉 <b>Ты получил бонус в размере 50 грамм! Твой новый баланс:</b> <code>{user.drug_count} грамм.</code>", parse_mode='HTML')
-
+            f"🎉 <b>Ты получил бонус в размере 50 грамм!</b> Твой новый баланс: <code>{user.drug_count} грамм</code>.",
+            parse_mode='HTML'
+        )
     else:
         await message.reply("<b>🛑 Вы уже получали сегодня бонус!</b>", parse_mode='HTML')
 
@@ -487,18 +521,33 @@ async def drug_command(message: Message):
 
     if last_use_time and (now - last_use_time).total_seconds() < 3600:
         remaining_time = timedelta(hours=1) - (now - last_use_time)
-        await message.reply(f"❌ <b>{message.from_user.first_name}</b>, <i>ты уже нюхал(-а)!</i>\n🌿 Всего снюхано <code>{drug_count} грамм</code> мефедрона\n\n⏳ Следующую дорогу начертим через <code>{remaining_time.seconds // 60} минут.</code>", parse_mode='HTML')
+        await message.reply(
+            f"❌ <b>{message.from_user.first_name}</b>, <i>ты уже нюхал(-а)!</i>\n"
+            f"🌿 Всего снюхано: <code>{drug_count} грамм</code> мефедрона.\n\n"
+            f"⏳ Следующую дорогу начертим через <code>{remaining_time.seconds // 60} минут</code>.",
+            parse_mode='HTML'
+        )
         return
 
     if random.randint(0, 100) < 5:
-        await message.reply(f"💀 <b>{message.from_user.first_name}</b>, <i>ты поймал(-а) передоз!</i>\n🚑 <i>Тебя отвезли в рехаб,</i> весь твой баланс <b>был сброшен</b>\n\n⏳ Тебя отпустят через <code>1 час.</code>", parse_mode='HTML')
+        await message.reply(
+            f"💀 <b>{message.from_user.first_name}</b>, <i>ты поймал(-а) передоз!</i>\n"
+            f"🚑 <i>Тебя отвезли в рехаб,</i> и весь твой баланс <b>был сброшен</b>.\n\n"
+            f"⏳ Тебя отпустит через <code>1 час</code>.",
+            parse_mode='HTML'
+        )
         user.last_use_time = now
         user.drug_count = 0
         await user.save()
         return
     elif random.randint(0, 100) < 40:
-        await message.reply(f"🧂 <b>{message.from_user.first_name}</b>, <i>ты просыпал(-а) весь мефчик!</i>\n🌿 Всего снюхано <code>{drug_count}</code> грамм мефедрона\n\n⏳ Следующую дорогу начертим через <code>1 час.</code>", parse_mode='HTML')
-        user.last_use_time = now    
+        await message.reply(
+            f"🧂 <b>{message.from_user.first_name}</b>, <i>ты просыпал(-а) весь мефчик!</i>\n"
+            f"🌿 Всего снюхано: <code>{drug_count}</code> грамм мефедрона.\n\n"
+            f"⏳ Следующую дорогу начертим через <code>1 час</code>.",
+            parse_mode='HTML'
+        )
+        user.last_use_time = now
         await user.save()
         return
     else:
@@ -506,7 +555,12 @@ async def drug_command(message: Message):
         user.drug_count += count
         user.last_use_time = now
         await user.save()
-        await message.reply(f"👍 <b>{message.from_user.first_name}</b>, <i>ты занюхнул(-а) {count} грамм мефчика!</i>\n🌿 Всего снюхано <code>{user.drug_count}</code> грамм мефедрона\n\n⏳ Следующую дорогу начертим через <code>1 час.</code>", parse_mode='HTML')
+        await message.reply(
+            f"👍 <b>{message.from_user.first_name}</b>, <i>ты занюхнул(-а) {count} грамм мефчика!</i>\n"
+            f"🌿 Всего снюхано: <code>{user.drug_count}</code> грамм мефедрона.\n\n"
+            f"⏳ Следующую дорогу начертим через <code>1 час</code>.",
+            parse_mode='HTML'
+        )
 
 
 @router.message(Command('help'))

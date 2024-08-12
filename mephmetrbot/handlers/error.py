@@ -21,4 +21,4 @@ async def error_handler(event: ErrorEvent, message: Message):
         f"⚠️ <b>Exception:</b> <code>{exception}</code>\n\n",
         parse_mode='HTML'
     )
-    await message.reply('💀 Произошла непредвиденная ошибка, пожалуйста обратитесь к разработчику бота: @vccuser')
+    await message.reply('💀 Произошла непредвиденная ошибка, пожалуйста обратитесь к разработчикам бота: @vccuser, @awaysmoke')

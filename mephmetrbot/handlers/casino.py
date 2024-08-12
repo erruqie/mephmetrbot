@@ -57,6 +57,7 @@ async def casino_command(message: Message, command: CommandObject):
     if user.last_game_day != today:
         user.game_count = 0
         user.last_game_day = today
+        await user.save()
 
     if (user.vip == 0 and user.game_count >= 20) and (user.is_admin == 0 and user.is_tester == 0):
         await message.reply("🛑 <b>Ты достиг дневного лимита игр в казино. Приобрети</b> <code>VIP-статус</code> <b>для снятия ограничений.</b>",parse_mode='HTML')
@@ -69,14 +70,6 @@ async def casino_command(message: Message, command: CommandObject):
         return
     if bot_balance <= bet:
         await message.reply("🛑 <b>У бота недостаточно средств для проведения игры. Попробуй позже.</b>", parse_mode='HTML')
-        return
-
-    last_casino = user.last_casino
-    if last_casino:
-        last_casino = last_casino.replace(tzinfo=None)
-
-    if last_casino and (now - last_casino).total_seconds() < 20:
-        await message.reply('⏳ Ты только что <b>крутил казик</b>, солевая обезьяна, <b>подожди 10 секунд по братски.</b>', parse_mode='HTML')
         return
 
     if bet > drug_count:
@@ -97,7 +90,7 @@ async def casino_command(message: Message, command: CommandObject):
         random_number = random.uniform(0, 1)
         if random_number < 0.11:
             random_multiplier = 0
-        elif random_number < 0.55:
+        elif random_number < 0.35:
             random_multiplier = round(random.uniform(1, 1.9), 2)
         elif random_number > 0.55 and random_number < 0.65:
             random_multiplier = round(random.uniform(4, 6), 2)
@@ -105,11 +98,11 @@ async def casino_command(message: Message, command: CommandObject):
             random_multiplier = round(random.uniform(2, 5), 2)
     else:
         random_number = random.uniform(0, 1)
-        if random_number < 0.143:
+        if random_number < 0.05:
             random_multiplier = 0
-        elif random_number < 0.715:
+        elif random_number < 0.70:
             random_multiplier = round(random.uniform(1, 1.9), 2)
-        elif random_number < 0.78:
+        elif random_number < 0.30:
             random_multiplier = round(random.uniform(4, 6), 2)
         else:
             random_multiplier = round(random.uniform(2, 5), 2)
@@ -175,7 +168,8 @@ async def casino_command(message: Message, command: CommandObject):
                 f"<b>👤 User:</b> <code>{message.from_user.first_name}</code>\n"
                 f"<b>🆔 ID:</b> <code>{user_id}</code>\n"
                 f"<b>💸 Bet:</b> <code>{bet}</code>\n"
-                f"<b>🔢 Multiplier:</b> <code>{random_multiplier}</code>\n"
+                f"<b>🎯 Target Multiplier:</b> <code>{target_multiplier}</code>\n"
+                f"<b>📉 Actual Multiplier:</b> <code>{random_multiplier}</code>\n"
                 f"<b>💊 Drug Count:</b> <code>{new_balance}</code>\n\n"
                 f"<a href='tg://user?id={user_id}'>🔗 Mention</a>",
                 parse_mode='HTML'
