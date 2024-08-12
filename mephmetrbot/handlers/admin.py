@@ -47,7 +47,7 @@ async def setvip_command(message: Message, command: CommandObject):
             await message.reply("🚨 Неправильный формат ID.")
             return
 
-    if not vip_user_id and message.reply_to_message:
+    if not command_args and message.reply_to_message:
         vip_user_id = message.reply_to_message.from_user.id
 
     if not vip_user_id:
@@ -84,7 +84,7 @@ async def removevip_command(message: Message, command: CommandObject):
             await message.reply("🚨 Неправильный формат ID.")
             return
 
-    if not vip_user_id and message.reply_to_message:
+    if not command_args and message.reply_to_message:
         vip_user_id = message.reply_to_message.from_user.id
 
     if not vip_user_id:
@@ -94,7 +94,7 @@ async def removevip_command(message: Message, command: CommandObject):
     if user.is_admin:
         vip_user = await get_user(vip_user_id)
         if vip_user:
-            if vip_user.vip == 1:
+            if vip_user.vip == 0:
                 await message.reply(f"🔍 Пользователь с ID: <code>{vip_user_id}</code> и так без VIP-статуса.",
                                     parse_mode='HTML')
                 return
